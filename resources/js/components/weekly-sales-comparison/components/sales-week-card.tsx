@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { cn } from '@/lib/utils';
 import type { SalesWeekCardProps } from '../types';
 import { formatSalesAmount, formatDateForWeekCard, getDayLetter } from '../utils';
 

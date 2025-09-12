@@ -1,0 +1,377 @@
+import type { DateRange } from '@/components/main-filter-calendar';
+import type { SalesMonthData, ValidationResult } from './types';
+import { isCompleteMonthSelected } from '@/lib/date-validation';
+
+// Re-export the month validation function
+export { isCompleteMonthSelected };
+
+/**
+ * Generates an array of monthly dates from a date range.
+ * Creates a single date representing the selected month.
+ * Works with complete month selections.
+ * 
+ * @function generateMonthDays
+ * @param {Date} startDate - The start date of the range (first day of month)
+ * @returns {Date[]} Array of 1 date representing the month
+ * 
+ * @example
+ * const firstDay = new Date('2025-09-01'); // First day of September
+ * 
+ * generateMonthDays(firstDay);  // Returns: [Sept 1] (representing September 2025)
+ */
+export function generateMonthDays(startDate: Date): Date[] {
+  return [new Date(startDate)];
+}
+
+/**
+ * Formats a sales amount as a currency string with thousands separators.
+ * Uses Mexican peso format with $ symbol and proper MXN locale.
+ * Includes configurable currency support for future internationalization.
+ * 
+ * @function formatSalesAmount
+ * @param {number} amount - The sales amount to format
+ * @param {string} currency - Currency code (default: 'MXN' for Mexican pesos)
+ * @returns {string} Formatted currency string
+ * 
+ * @example
+ * formatSalesAmount(250533.98); // "$250,533.98"
+ * formatSalesAmount(7068720.45); // "$7,068,720.45"
+ * formatSalesAmount(1000000, 'USD'); // "$1,000,000.00" (USD format)
+ */
+export function formatSalesAmount(
+  amount: number, 
+  currency: 'MXN' | 'USD' | 'COP' = 'MXN'
+): string {
+  // Currency configuration mapping
+  const currencyConfig = {
+    MXN: { locale: 'es-MX', symbol: '$' },
+    USD: { locale: 'en-US', symbol: '$' },
+    COP: { locale: 'es-CO', symbol: '$' }
+  };
+  
+  const config = currencyConfig[currency];
+  
+  const formatted = new Intl.NumberFormat(config.locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount);
+  
+  // Replace currency code with symbol for cleaner display
+  return formatted.replace(currency, config.symbol).trim();
+}
+
+/**
+ * Formats a date for display in the monthly sales cards.
+ * Returns format like "Enero - 01/2025" or "Septiembre - 09/2025".
+ * 
+ * @function formatDateForMonthCard
+ * @param {Date} date - The date to format
+ * @returns {string} Formatted date string with month name
+ * 
+ * @example
+ * const january = new Date('2025-01-01');
+ * const september = new Date('2025-09-01');
+ * 
+ * formatDateForMonthCard(january);  // "Enero - 01/2025"
+ * formatDateForMonthCard(september); // "Septiembre - 09/2025"
+ */
+export function formatDateForMonthCard(date: Date): string {
+  const monthName = date.toLocaleDateString('es-MX', { month: 'long' });
+  const monthYear = date.toLocaleDateString('es-MX', {
+    month: '2-digit',
+    year: 'numeric'
+  });
+  
+  return `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} - ${monthYear}`;
+}
+
+/**
+ * Gets the first letter for the circular indicator in the monthly sales card.
+ * Returns the first letter of the Spanish month name (E, F, M, A, etc.).
+ * 
+ * @function getMonthLetter
+ * @param {Date} date - The date to get the letter for
+ * @returns {string} Single letter representing the month
+ * 
+ * @example
+ * const january = new Date('2025-01-01');    // Enero
+ * const march = new Date('2025-03-01');      // Marzo
+ * 
+ * getMonthLetter(january);    // "E"
+ * getMonthLetter(march);      // "M"
+ */
+export function getMonthLetter(date: Date): string {
+  const monthName = date.toLocaleDateString('es-MX', { month: 'long' });
+  return monthName.charAt(0).toUpperCase();
+}
+
+/**
+ * Gets the full Spanish month name for a given date.
+ * 
+ * @function getMonthName
+ * @param {Date} date - The date to get the month name for
+ * @returns {string} Full Spanish month name
+ * 
+ * @example
+ * const january = new Date('2025-01-01');
+ * getMonthName(january); // "Enero"
+ */
+export function getMonthName(date: Date): string {
+  return date.toLocaleDateString('es-MX', { month: 'long' })
+    .charAt(0).toUpperCase() + 
+    date.toLocaleDateString('es-MX', { month: 'long' }).slice(1);
+}
+
+/**
+ * Generates realistic monthly sales amounts with business pattern variation.
+ * Creates amounts that follow typical monthly sales fluctuations.
+ * Different months have different seasonal patterns.
+ * 
+ * @function generateRealisticMonthlySalesAmount
+ * @param {Date} date - The date to generate sales for
+ * @returns {number} Realistic sales amount with monthly variation
+ * 
+ * @example
+ * const january = new Date('2025-01-01');
+ * const amount = generateRealisticMonthlySalesAmount(january);
+ * // Returns amount like 450,000,000.00 with realistic monthly business variation
+ */
+function generateRealisticMonthlySalesAmount(date: Date): number {
+  const baseAmount = 450000000; // Base amount of $450M MXN for months
+  const month = date.getMonth(); // 0-11 for Jan-Dec
+  
+  // Apply realistic business patterns based on month
+  // These factors reflect typical retail/sales patterns in Mexican markets
+  let monthFactor = 1;
+  switch (month) {
+    case 0: // January - post-holiday slowdown
+      monthFactor = 0.8; // 20% below baseline
+      break;
+    case 1: // February - Valentine's Day boost
+      monthFactor = 0.9; // 10% below baseline
+      break;
+    case 2: // March - spring pickup
+      monthFactor = 1.0; // baseline
+      break;
+    case 3: // April - Easter season
+      monthFactor = 1.1; // 10% above baseline
+      break;
+    case 4: // May - Mother's Day, spring peak
+      monthFactor = 1.15; // 15% above baseline
+      break;
+    case 5: // June - summer start
+      monthFactor = 1.05; // 5% above baseline
+      break;
+    case 6: // July - summer vacation
+      monthFactor = 0.95; // 5% below baseline
+      break;
+    case 7: // August - back to school prep
+      monthFactor = 1.2; // 20% above baseline
+      break;
+    case 8: // September - back to school peak
+      monthFactor = 1.25; // 25% above baseline
+      break;
+    case 9: // October - Halloween, autumn
+      monthFactor = 1.1; // 10% above baseline
+      break;
+    case 10: // November - Black Friday, pre-Christmas
+      monthFactor = 1.4; // 40% above baseline (highest)
+      break;
+    case 11: // December - Christmas season
+      monthFactor = 1.35; // 35% above baseline
+      break;
+    default:
+      monthFactor = 1; // Fallback for unexpected values
+  }
+  
+  const variation = 0.2; // 20% variation range
+  const randomFactor = (Math.random() - 0.5) * 2 * variation + 1;
+  
+  return Math.round(baseAmount * monthFactor * randomFactor * 100) / 100;
+}
+
+/**
+ * Generates mock monthly sales data for development and testing purposes.
+ * Creates realistic sales amounts based on the provided monthly dates.
+ * Includes proper timezone handling for date comparisons.
+ * 
+ * @function generateMockMonthlySalesData
+ * @param {Date[]} dates - Array of monthly dates to generate sales data for
+ * @returns {SalesMonthData[]} Array of mock monthly sales data
+ * 
+ * @example
+ * const months = generateMonthDays(new Date('2025-09-01'));
+ * const mockData = generateMockMonthlySalesData(months);
+ * // Returns realistic monthly sales data for the month
+ */
+export function generateMockMonthlySalesData(dates: Date[]): SalesMonthData[] {
+  // Calculate the current month boundaries for accurate comparison
+  const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  currentMonthStart.setHours(0, 0, 0, 0);
+  currentMonthEnd.setHours(23, 59, 59, 999);
+  
+  return dates.map((date) => ({
+    date,
+    amount: generateRealisticMonthlySalesAmount(date),
+    monthName: getMonthName(date),
+    // Timezone-safe comparison: check if this date falls within current month
+    isCurrentMonth: date >= currentMonthStart && date <= currentMonthEnd
+  }));
+}
+
+/**
+ * Validates monthly sales data for integrity and consistency.
+ * Performs comprehensive runtime validation with detailed error reporting.
+ * 
+ * @function validateMonthlySalesData
+ * @param {SalesMonthData[]} salesData - Array of monthly sales data to validate
+ * @returns {ValidationResult} Detailed validation result with errors and warnings
+ * 
+ * @example
+ * const data = [{ date: new Date(), amount: 1000, isCurrentMonth: true, monthName: 'Enero' }];
+ * const result = validateMonthlySalesData(data);
+ * if (!result.isValid) {
+ *   console.error('Validation failed:', result.errors);
+ * }
+ */
+export function validateMonthlySalesData(salesData: SalesMonthData[]): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const now = new Date();
+  
+  // Check for empty or null data
+  if (!salesData || salesData.length === 0) {
+    errors.push('Monthly sales data array is empty or null');
+    return {
+      isValid: false,
+      errors,
+      warnings,
+      metadata: {
+        validatedAt: now,
+        source: 'monthly-sales-data-validation',
+        itemCount: 0
+      }
+    };
+  }
+  
+  // Should have exactly 1 item for a complete month
+  if (salesData.length !== 1) {
+    errors.push(`Monthly sales data should contain exactly 1 month, found ${salesData.length}`);
+  }
+  
+  // Validate each sales record
+  salesData.forEach((item) => {
+    const monthName = getMonthName(item.date);
+    
+    // Validate date
+    if (!item.date || !(item.date instanceof Date)) {
+      errors.push(`${monthName}: Invalid or missing date`);
+    } else if (isNaN(item.date.getTime())) {
+      errors.push(`${monthName}: Date is invalid (NaN)`);
+    } else if (item.date > now) {
+      warnings.push(`${monthName}: Date is in the future`);
+    }
+    
+    // Validate amount
+    if (typeof item.amount !== 'number') {
+      errors.push(`${monthName}: Amount must be a number`);
+    } else if (isNaN(item.amount)) {
+      errors.push(`${monthName}: Amount is NaN`);
+    } else if (item.amount < 0) {
+      errors.push(`${monthName}: Amount cannot be negative`);
+    } else if (item.amount === 0) {
+      warnings.push(`${monthName}: Amount is zero`);
+    } else if (item.amount > 1000000000) {
+      warnings.push(`${monthName}: Amount seems unusually high (>${formatSalesAmount(1000000000)})`);
+    }
+    
+    // Validate isCurrentMonth flag
+    if (typeof item.isCurrentMonth !== 'boolean') {
+      errors.push(`${monthName}: isCurrentMonth must be a boolean`);
+    }
+    
+    // Validate monthName
+    if (typeof item.monthName !== 'string' || item.monthName.trim() === '') {
+      errors.push(`${monthName}: monthName must be a non-empty string`);
+    }
+  });
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+    metadata: {
+      validatedAt: now,
+      source: 'monthly-sales-data-validation',
+      itemCount: salesData.length
+    }
+  };
+}
+
+/**
+ * Validates date range for complete month selection requirements.
+ * Ensures the date range meets the monthly component's display requirements.
+ * 
+ * @function validateMonthDateRange
+ * @param {DateRange | undefined} dateRange - Date range to validate
+ * @returns {ValidationResult} Validation result with specific month date range errors
+ * 
+ * @example
+ * const range = { from: new Date('2025-09-01'), to: new Date('2025-09-30') };
+ * const result = validateMonthDateRange(range);
+ * if (result.isValid) {
+ *   // Safe to display monthly sales comparison
+ * }
+ */
+export function validateMonthDateRange(dateRange: DateRange | undefined): ValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  const now = new Date();
+  
+  if (!dateRange) {
+    errors.push('Date range is required');
+  } else {
+    if (!dateRange.from) {
+      errors.push('Start date (from) is required');
+    } else if (!(dateRange.from instanceof Date)) {
+      errors.push('Start date must be a Date object');
+    } else if (isNaN(dateRange.from.getTime())) {
+      errors.push('Start date is invalid');
+    }
+    
+    if (!dateRange.to) {
+      errors.push('End date (to) is required');
+    } else if (!(dateRange.to instanceof Date)) {
+      errors.push('End date must be a Date object');
+    } else if (isNaN(dateRange.to.getTime())) {
+      errors.push('End date is invalid');
+    }
+    
+    // Validate complete month requirement
+    if (dateRange.from && dateRange.to && 
+        dateRange.from instanceof Date && dateRange.to instanceof Date) {
+      
+      if (!isCompleteMonthSelected(dateRange)) {
+        errors.push('Date range must represent exactly one complete month (first day to last day) for monthly sales comparison');
+      }
+      
+      if (dateRange.from > now) {
+        warnings.push('Selected month is in the future');
+      }
+    }
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    warnings,
+    metadata: {
+      validatedAt: now,
+      source: 'month-date-range-validation'
+    }
+  };
+}

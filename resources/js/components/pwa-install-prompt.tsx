@@ -1,0 +1,163 @@
+import { useState, useEffect } from 'react';
+import { usePWA } from '@/hooks/use-pwa';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { X, Download, Smartphone, Share } from 'lucide-react';
+
+export function PWAInstallPrompt() {
+    const { isInstallable, isIOS, isInstalled, install } = usePWA();
+    const [isDismissed, setIsDismissed] = useState(false);
+    const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+
+    useEffect(() => {
+        // Check if user has previously dismissed the prompt
+        const dismissed = localStorage.getItem('pwa-install-dismissed');
+        if (dismissed) {
+            const dismissedDate = new Date(dismissed);
+            const now = new Date();
+            const daysSinceDismissed = (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+            
+            // Show again after 7 days
+            if (daysSinceDismissed < 7) {
+                setIsDismissed(true);
+            } else {
+                localStorage.removeItem('pwa-install-dismissed');
+            }
+        }
+    }, []);
+
+    const handleInstall = async () => {
+        if (isIOS) {
+            setShowIOSInstructions(true);
+            return;
+        }
+
+        const installed = await install();
+        if (installed) {
+            setIsDismissed(true);
+        }
+    };
+
+    const handleDismiss = () => {
+        setIsDismissed(true);
+        localStorage.setItem('pwa-install-dismissed', new Date().toISOString());
+    };
+
+    if (isInstalled || isDismissed || !isInstallable) {
+        return null;
+    }
+
+    if (showIOSInstructions) {
+        return (
+            <div className="fixed bottom-4 right-4 z-50 max-w-md animate-in slide-in-from-bottom-5">
+                <Card className="shadow-lg">
+                    <CardHeader className="relative">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-2 h-6 w-6"
+                            onClick={() => setShowIOSInstructions(false)}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                        <CardTitle className="flex items-center gap-2">
+                            <Smartphone className="h-5 w-5" />
+                            Install on iOS
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            To install this app on your iOS device:
+                        </p>
+                        <ol className="space-y-2 text-sm">
+                            <li className="flex items-start gap-2">
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                                    1
+                                </span>
+                                <span>
+                                    Tap the <Share className="inline h-4 w-4" /> Share button in Safari
+                                </span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                                    2
+                                </span>
+                                <span>Scroll down and tap "Add to Home Screen"</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                                    3
+                                </span>
+                                <span>Tap "Add" to confirm</span>
+                            </li>
+                        </ol>
+                    </CardContent>
+                    <CardFooter>
+                        <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => setShowIOSInstructions(false)}
+                        >
+                            Got it
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+        );
+    }
+
+    return (
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-5">
+            <Card className="shadow-lg">
+                <CardHeader className="relative">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-2 h-6 w-6"
+                        onClick={handleDismiss}
+                    >
+                        <X className="h-4 w-4" />
+                    </Button>
+                    <CardTitle className="flex items-center gap-2">
+                        <Download className="h-5 w-5" />
+                        Install App
+                    </CardTitle>
+                    <CardDescription>
+                        Install Costeno Sales for a better experience
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            Works offline
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            Faster loading
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                            Home screen access
+                        </li>
+                    </ul>
+                </CardContent>
+                <CardFooter className="flex gap-2">
+                    <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={handleDismiss}
+                    >
+                        Not now
+                    </Button>
+                    <Button 
+                        className="flex-1"
+                        onClick={handleInstall}
+                    >
+                        Install
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
+}

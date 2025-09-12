@@ -8,7 +8,7 @@ import { PeriodSelector } from './components/period-selector';
 import { CalendarView } from './components/calendar-view';
 import { RefreshButton } from './components/refresh-button';
 import { formatDateRange, getDateRange } from './utils';
-import type { MainFilterCalendarProps, DateRange } from './types';
+import type { MainFilterCalendarProps } from './types';
 
 /**
  * MainFilterCalendar - A comprehensive date range selection component with Spanish localization.
@@ -107,7 +107,7 @@ export function MainFilterCalendar({
         onChange?.(fallbackRange);
       }
     }
-  }, []); // Intentionally empty deps - run only once on mount
+  }, [value, onChange, setTempRange]);
 
   // Synchronize internal state when popover opens
   React.useEffect(() => {

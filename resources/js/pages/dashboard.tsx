@@ -5,7 +5,10 @@ import { Head } from '@inertiajs/react';
 import { MainFilterCalendar, type DateRange } from '@/components/main-filter-calendar';
 import { DailySalesComparison } from '@/components/daily-sales-comparison';
 import { WeeklySalesComparison, WeeklyErrorBoundary } from '@/components/weekly-sales-comparison';
+import { MonthlySalesComparison, MonthlyErrorBoundary } from '@/components/monthly-sales-comparison';
 import { DailySalesBranches } from '@/components/daily-sales-branches';
+import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
+import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -20,7 +23,6 @@ export default function Dashboard() {
 
     const handleDateChange = (range: DateRange | undefined) => {
         setSelectedDateRange(range);
-        console.log('Selected date range:', range);
     };
 
     return (
@@ -42,7 +44,21 @@ export default function Dashboard() {
                     />
                 </WeeklyErrorBoundary>
                 
+                <MonthlyErrorBoundary>
+                    <MonthlySalesComparison 
+                        selectedDateRange={selectedDateRange}
+                    />
+                </MonthlyErrorBoundary>
+                
                 <DailySalesBranches 
+                    selectedDateRange={selectedDateRange}
+                />
+                
+                <WeeklySalesBranches 
+                    selectedDateRange={selectedDateRange}
+                />
+                
+                <MonthlySalesBranches 
                     selectedDateRange={selectedDateRange}
                 />
             </div>

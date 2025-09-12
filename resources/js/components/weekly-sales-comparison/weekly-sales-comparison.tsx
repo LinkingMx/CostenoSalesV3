@@ -78,7 +78,7 @@ export function WeeklySalesComparison({
   const weekdaysToShow = React.useMemo(() => {
     if (!selectedStartDate) return [];
     return generateWeekdays(selectedStartDate);
-  }, [selectedStartDate?.getTime()]); // Use getTime() for stable dependency
+  }, [selectedStartDate]); // selectedStartDate dependency is sufficient
   
   // Performance: Memoize salesData reference to avoid unnecessary regeneration
   const stableSalesData = React.useMemo(() => salesData, [salesData]);
@@ -149,7 +149,7 @@ export function WeeklySalesComparison({
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
+      <CardContent className="px-4 py-3">
         {/* Header section - memoized for performance */}
         <MemoizedWeeklyComparisonHeader />
         

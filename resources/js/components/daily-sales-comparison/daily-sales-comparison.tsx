@@ -109,7 +109,7 @@ export function DailySalesComparison({
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
+      <CardContent className="px-4 py-3">
         {/* Header section */}
         <SalesComparisonHeader />
         

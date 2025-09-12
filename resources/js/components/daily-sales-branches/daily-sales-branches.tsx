@@ -99,7 +99,7 @@ export function DailySalesBranches({
   if (sortedBranches.length === 0) {
     return (
       <Card className="w-full">
-        <CardContent className="p-4">
+        <CardContent className="px-4 py-3">
           {/* Header section - matching daily-sales-comparison style exactly */}
           <header className="mb-3">
             <div className="flex items-center gap-2 mb-1">
@@ -123,7 +123,7 @@ export function DailySalesBranches({
 
   return (
     <Card className="w-full">
-      <CardContent className="p-4">
+      <CardContent className="px-4 py-3">
         {/* Header section - matching daily-sales-comparison style exactly */}
         <header className="mb-3">
           <div className="flex items-center gap-2 mb-1">

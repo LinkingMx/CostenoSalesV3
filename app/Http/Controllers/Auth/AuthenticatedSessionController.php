@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\PersistentAuth;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,14 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        
+        // Create persistent token if remember me is checked
+        if ($request->boolean('remember')) {
+            PersistentAuth::createPersistentToken(Auth::id());
+        }
+        
+        // Set session expiry for refresh handling
+        session(['session_expiry' => now()->addMinutes(config('session.lifetime'))->timestamp]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -41,6 +50,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Revoke persistent tokens when logging out
+        if (Auth::check()) {
+            PersistentAuth::revokePersistentTokens(Auth::id());
+        }
+        
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

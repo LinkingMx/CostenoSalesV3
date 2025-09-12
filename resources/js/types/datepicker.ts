@@ -1,4 +1,4 @@
-import type { DayPickerProps, SelectionState } from 'react-day-picker';
+import type { DayPickerProps } from 'react-day-picker';
 
 /**
  * Base props that all datepicker components share
@@ -185,10 +185,10 @@ export interface DatePickerContextValue {
  */
 export interface Locale {
   code?: string;
-  formatDistance?: any;
-  formatRelative?: any;
-  localize?: any;
-  formatLong?: any;
+  formatDistance?: (...args: unknown[]) => string;
+  formatRelative?: (...args: unknown[]) => string;
+  localize?: Record<string, unknown>;
+  formatLong?: Record<string, unknown>;
   options?: {
     weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
     firstWeekContainsDate?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
