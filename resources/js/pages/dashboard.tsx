@@ -3,6 +3,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { MainFilterCalendar, type DateRange } from '@/components/main-filter-calendar';
+import { DailySalesComparison } from '@/components/daily-sales-comparison';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -27,6 +28,10 @@ export default function Dashboard() {
                 <MainFilterCalendar 
                     value={selectedDateRange} 
                     onChange={handleDateChange}
+                />
+                
+                <DailySalesComparison 
+                    selectedDateRange={selectedDateRange}
                 />
             </div>
         </AppLayout>

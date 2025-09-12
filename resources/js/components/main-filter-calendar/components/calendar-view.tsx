@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -176,7 +177,4 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
             </div>
         </div>
     );
-});
-
-// Set display name for debugging
-CalendarView.displayName = 'CalendarView';
+}
