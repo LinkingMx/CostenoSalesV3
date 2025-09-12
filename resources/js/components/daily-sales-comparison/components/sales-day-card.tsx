@@ -85,9 +85,6 @@ export function SalesDayCard({
 
       {/* Right side - Sales information */}
       <div className="text-right">
-        <div className="text-xs text-gray-500 mb-0.5">
-          Ventas Total
-        </div>
         <div 
           className={cn(
             "text-lg font-bold tabular-nums",

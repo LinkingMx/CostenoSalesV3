@@ -4,6 +4,8 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { MainFilterCalendar, type DateRange } from '@/components/main-filter-calendar';
 import { DailySalesComparison } from '@/components/daily-sales-comparison';
+import { WeeklySalesComparison, WeeklyErrorBoundary } from '@/components/weekly-sales-comparison';
+import { DailySalesBranches } from '@/components/daily-sales-branches';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -31,6 +33,16 @@ export default function Dashboard() {
                 />
                 
                 <DailySalesComparison 
+                    selectedDateRange={selectedDateRange}
+                />
+                
+                <WeeklyErrorBoundary>
+                    <WeeklySalesComparison 
+                        selectedDateRange={selectedDateRange}
+                    />
+                </WeeklyErrorBoundary>
+                
+                <DailySalesBranches 
                     selectedDateRange={selectedDateRange}
                 />
             </div>
