@@ -8,7 +8,7 @@ import { PeriodSelector } from './components/period-selector';
 import { CalendarView } from './components/calendar-view';
 import { RefreshButton } from './components/refresh-button';
 import { formatDateRange, getDateRange } from './utils';
-import type { MainFilterCalendarProps } from './types';
+import type { MainFilterCalendarProps, DateRange } from './types';
 
 /**
  * MainFilterCalendar - A comprehensive date range selection component with Spanish localization.
@@ -21,11 +21,11 @@ import type { MainFilterCalendarProps } from './types';
  * @returns {JSX.Element} Complete date filter interface with popover calendar
  * 
  * @description Key features:
- * - Quick period selection (today, yesterday, this week, etc.)
- * - Interactive calendar with date range selection
+ * - Quick period selection (today, yesterday, this week, etc.) with auto-apply
+ * - Interactive calendar with date range selection and manual confirmation
  * - Spanish localization for all text and date formats
  * - Automatic initialization to today's date
- * - Apply/Cancel actions for confirming selections
+ * - Smart UX: Auto-apply for quick periods, manual Apply/Cancel for custom dates
  * - Integrated refresh button for triggering data updates
  * 
  * @example
@@ -76,6 +76,17 @@ export function MainFilterCalendar({
     }
   }, []);
   
+  // Auto-apply handler for quick period selections
+  const handleAutoApply = React.useCallback((range: DateRange | undefined) => {
+    try {
+      onChange?.(range);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('MainFilterCalendar: Error in auto-apply callback:', error);
+      setIsOpen(false);
+    }
+  }, [onChange]);
+
   // Custom hook for managing all date range state and interactions
   const {
     tempRange,
@@ -90,7 +101,7 @@ export function MainFilterCalendar({
     handleDayClick,
     handlePreviousMonth,
     handleNextMonth,
-  } = useDateRange({ value });
+  } = useDateRange({ value, onAutoApply: handleAutoApply });
 
   // Initialize component with today's date on mount if no external value provided
   React.useEffect(() => {

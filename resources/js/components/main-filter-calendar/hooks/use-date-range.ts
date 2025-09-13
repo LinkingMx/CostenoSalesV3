@@ -4,14 +4,16 @@ import { getDateRange } from '../utils';
 
 /**
  * Options for configuring the useDateRange hook behavior.
- * 
+ *
  * @interface UseDateRangeOptions
  * @property {DateRange} [value] - External date range value for controlled usage
  * @property {PeriodKey} [defaultPeriod='today'] - Default period to initialize with
+ * @property {function} [onAutoApply] - Callback for automatic period application
  */
 interface UseDateRangeOptions {
   value?: DateRange;
   defaultPeriod?: PeriodKey;
+  onAutoApply?: (range: DateRange | undefined) => void;
 }
 
 /**
@@ -43,9 +45,10 @@ interface UseDateRangeOptions {
  * });
  * ```
  */
-export function useDateRange({ 
-  value, 
-  defaultPeriod = 'today' 
+export function useDateRange({
+  value,
+  defaultPeriod = 'today',
+  onAutoApply
 }: UseDateRangeOptions = {}): UseDateRangeReturn {
   // Get current date once to avoid recalculation
   const today = React.useMemo(() => new Date(), []);
@@ -66,27 +69,36 @@ export function useDateRange({
   /**
    * Handles period selection changes from the dropdown.
    * Updates the selected period and calculates the corresponding date range.
-   * For non-custom periods, also updates the calendar view to show the relevant month.
-   * 
+   * For non-custom periods, also updates the calendar view and auto-applies if callback provided.
+   *
    * @function handlePeriodChange
    * @param {string} period - The selected period key (today, thisWeek, custom, etc.)
    */
   const handlePeriodChange = React.useCallback((period: string) => {
     setSelectedPeriod(period);
-    
+
     if (period !== 'custom') {
       // Calculate the date range for the selected period
       const dateRange = getDateRange(period as PeriodKey);
       setTempRange(dateRange);
-      
+
       // Navigate calendar to show the selected date range
       if (dateRange.from) {
         setCurrentMonth(dateRange.from.getMonth());
         setCurrentYear(dateRange.from.getFullYear());
       }
+
+      // Auto-apply for quick periods if callback provided
+      if (onAutoApply) {
+        try {
+          onAutoApply(dateRange);
+        } catch (error) {
+          console.error('MainFilterCalendar: Error in onAutoApply callback:', error);
+        }
+      }
     }
     // For 'custom' period, keep existing tempRange and let user select manually
-  }, []);
+  }, [onAutoApply, setCurrentMonth, setCurrentYear]);
 
   /**
    * Handles day clicks on the calendar for manual date range selection.

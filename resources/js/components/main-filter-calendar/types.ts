@@ -188,7 +188,8 @@ export interface RefreshButtonProps {
 /**
  * Return type for the useDateRange custom hook.
  * Provides state management and event handlers for date range selection.
- * 
+ * Supports both auto-apply for quick periods and manual confirmation for custom ranges.
+ *
  * @interface UseDateRangeReturn
  * @property {DateRange | undefined} tempRange - Temporary date range during selection process
  * @property {function} setTempRange - React state setter for tempRange
@@ -198,7 +199,7 @@ export interface RefreshButtonProps {
  * @property {function} setCurrentMonth - React state setter for currentMonth
  * @property {number} currentYear - Four-digit year being displayed in calendar
  * @property {function} setCurrentYear - React state setter for currentYear
- * @property {function} handlePeriodChange - Handler for period dropdown changes
+ * @property {function} handlePeriodChange - Handler for period dropdown changes with auto-apply support
  * @property {function} handleDayClick - Handler for calendar day clicks
  * @property {function} handlePreviousMonth - Handler for previous month navigation
  * @property {function} handleNextMonth - Handler for next month navigation
