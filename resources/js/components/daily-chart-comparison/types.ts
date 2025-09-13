@@ -62,20 +62,23 @@ export interface DailyChartData {
  * Props for the DailyChartComparison component.
  * Controls the display and behavior of the daily chart comparison.
  * The component only renders when selectedDateRange contains exactly one day.
- * 
+ *
  * @interface DailyChartComparisonProps
  * @property {DateRange | undefined} selectedDateRange - Current date range from calendar filter (must contain single day)
- * @property {DailyChartData} [chartData] - Optional custom chart data (defaults to mock data if not provided)
- * 
+ * @property {DailyChartData} [chartData] - Optional custom chart data (defaults to API data if not provided)
+ * @property {boolean} [useMockData] - Whether to use mock data instead of API data (defaults to false)
+ *
  * @example
- * <DailyChartComparison 
+ * <DailyChartComparison
  *   selectedDateRange={singleDayRange}
  *   chartData={customChartData}
+ *   useMockData={false}
  * />
  */
 export interface DailyChartComparisonProps {
   selectedDateRange: DateRange | undefined;
   chartData?: DailyChartData;
+  useMockData?: boolean;
 }
 
 /**
@@ -213,4 +216,19 @@ export interface ComparisonPeriodConfig {
   daysOffset: number;
   color: string;
   isSelected: boolean;
+}
+
+/**
+ * Props for the DailyChartError component.
+ * Controls the error state display for the daily chart.
+ *
+ * @interface DailyChartErrorProps
+ * @property {string} [message] - Error message to display
+ * @property {() => void} [onRetry] - Callback function for retry button
+ * @property {number} [height] - Height of the error container
+ */
+export interface DailyChartErrorProps {
+  message?: string;
+  onRetry?: () => void;
+  height?: number;
 }

@@ -34,13 +34,24 @@ import { formatSalesAmount, formatDateForCard, getDayLetter } from '../utils';
  * />
  * ```
  */
-export function SalesDayCard({ 
-  data, 
-  isHighlighted = false 
+export function SalesDayCard({
+  data,
+  isHighlighted = false
 }: SalesDayCardProps) {
   const dayLetter = getDayLetter(data.date, data.isToday);
   const formattedDate = formatDateForCard(data.date, data.isToday);
   const formattedAmount = formatSalesAmount(data.amount);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📇 SalesDayCard rendering:', {
+      date: data.date.toISOString(),
+      dateString: data.date.toLocaleDateString('es-ES'),
+      formattedDate,
+      dayLetter,
+      amount: data.amount,
+      isToday: data.isToday
+    });
+  }
 
   return (
     <div

@@ -25,20 +25,23 @@ export interface SalesDayData {
 /**
  * Props for the DailySalesComparison component.
  * Controls the display and behavior of the daily sales comparison.
- * 
+ *
  * @interface DailySalesComparisonProps
  * @property {DateRange | undefined} selectedDateRange - Current date range from the calendar filter
  * @property {SalesDayData[]} [salesData] - Optional array of sales data for each day
- * 
+ * @property {boolean} [useMockData] - Force use of mock data (for testing/development)
+ *
  * @example
- * <DailySalesComparison 
+ * <DailySalesComparison
  *   selectedDateRange={dateRange}
  *   salesData={mockSalesData}
+ *   useMockData={false}
  * />
  */
 export interface DailySalesComparisonProps {
   selectedDateRange: DateRange | undefined;
   salesData?: SalesDayData[];
+  useMockData?: boolean;
 }
 
 /**

@@ -13,6 +13,8 @@ export { default } from './daily-sales-comparison';
 // Sub-component exports
 export { SalesDayCard } from './components/sales-day-card';
 export { SalesComparisonHeader } from './components/sales-comparison-header';
+export { SalesComparisonSkeleton } from './components/sales-comparison-skeleton';
+export { SalesComparisonError } from './components/sales-comparison-error';
 
 // Type exports
 export type {
@@ -32,5 +34,6 @@ export {
   getDayLetter,
   generateMockSalesData,
   validateSalesDayData,
-  validateDateRange
+  validateDateRange,
+  convertProcessedChartDataToSalesData
 } from './utils';

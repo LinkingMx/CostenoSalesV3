@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import type { DailyComparisonChartProps } from '../types';
 import { formatChartAmount, formatFullDayName, getDefaultDailyChartTheme } from '../utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 /**
  * Custom tooltip component for the daily comparison chart.
@@ -24,31 +25,24 @@ import { formatChartAmount, formatFullDayName, getDefaultDailyChartTheme } from 
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     const data = payload[0]?.payload;
-    
+
     if (!data) return null;
-    
-    // Get the full date information
-    const fullDate = data.date ? formatFullDayName(data.date) : '';
-    const formattedDate = data.date ? 
-      data.date.toLocaleDateString('es-ES', {
+
+    // Format full Spanish date (05 de Septiembre)
+    const fullSpanishDate = data.date ?
+      data.date.toLocaleDateString('es-CO', {
         day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
+        month: 'long'
       }) : '';
-    
+
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
         <p className="text-sm font-semibold text-foreground mb-2 border-b border-border pb-2">
-          {label} {/* Period label: "Hoy", "Ayer", etc. */}
+          {label} {/* Period label from API: "Sep 05" */}
         </p>
-        {fullDate && (
-          <p className="text-xs text-muted-foreground mb-2">
-            {fullDate} {/* Full day name: "Jueves, 12 de Septiembre" */}
-          </p>
-        )}
-        {formattedDate && (
+        {fullSpanishDate && (
           <p className="text-xs text-muted-foreground mb-3">
-            {formattedDate} {/* Date: "12/09/2025" */}
+            {fullSpanishDate} {/* Full Spanish date: "05 de septiembre" */}
           </p>
         )}
         <div className="flex items-center justify-between gap-3">
@@ -104,20 +98,23 @@ function CustomTooltip({ active, payload, label }: any) {
  * />
  * ```
  */
-export function DailyComparisonChart({ 
+export function DailyComparisonChart({
   data,
-  height = 300,
+  height = 210, // Reduced from 300 to 210 (70% of original height)
   showGrid = true,
   orientation = 'vertical'
 }: DailyComparisonChartProps) {
   const theme = getDefaultDailyChartTheme();
-  
-  // Memoize chart configuration for performance
+  const isMobile = useIsMobile();
+
+  // Memoize chart configuration for performance - with mobile optimizations
   const chartConfig = React.useMemo(() => ({
-    margin: { top: 20, right: 30, left: 20, bottom: 5 },
+    margin: isMobile
+      ? { top: 20, right: 35, left: 35, bottom: 25 } // Extra margins for mobile
+      : { top: 20, right: 30, left: 30, bottom: 20 }, // Standard margins for desktop
     cornerRadius: 4,
     maxBarSize: orientation === 'vertical' ? 80 : undefined
-  }), [orientation]);
+  }), [orientation, isMobile]);
   
   // Format Y-axis tick values for better readability
   const formatYAxisTick = React.useCallback((value: number) => {
@@ -188,6 +185,11 @@ export function DailyComparisonChart({
             }}
             dy={10}
             height={40}
+            interval={0}
+            angle={0}
+            textAnchor="middle"
+            domain={['dataMin', 'dataMax']}
+            padding={{ left: 10, right: 10 }}
           />
 
           {/* Y-axis hidden - no labels needed */}

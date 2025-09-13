@@ -1,11 +1,13 @@
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { 
-  DailyChartData, 
-  ChartPoint, 
-  ChartValidationResult, 
+import type {
+  DailyChartData,
+  ChartPoint,
+  ChartValidationResult,
   DailyChartTheme,
   ComparisonPeriodConfig
 } from './types';
+import type { ProcessedChartData, ProcessedDayData } from '@/lib/services/types';
+import { parseLocalDate } from '@/lib/services/hours-chart.service';
 
 /**
  * Checks if the selected date range represents exactly one day for chart display.
@@ -25,11 +27,23 @@ import type {
  * isSingleDaySelected(undefined); // false
  */
 export function isSingleDaySelected(dateRange: DateRange | undefined): boolean {
-  if (!dateRange?.from || !dateRange?.to) {
+  if (!dateRange?.from) {
     return false;
   }
-  
-  return dateRange.from.getTime() === dateRange.to.getTime();
+
+  // If 'to' is not provided, assume it's a single day selection
+  if (!dateRange.to) {
+    return true;
+  }
+
+  // Compare dates without time (normalize to start of day)
+  const fromDate = new Date(dateRange.from);
+  const toDate = new Date(dateRange.to);
+
+  fromDate.setHours(0, 0, 0, 0);
+  toDate.setHours(0, 0, 0, 0);
+
+  return fromDate.getTime() === toDate.getTime();
 }
 
 /**
@@ -257,19 +271,19 @@ export function generateMockDailyChartData(selectedDate: Date): DailyChartData {
     
     if (index === 0) {
       // First item is the selected day
-      period = dayData.isToday ? 'Hoy' : formatDayForChart(dayData.date);
+      period = 'Inicial';
       color = '#897053'; // Primary color for selected day
     } else {
       // Previous days
       const daysAgo = index;
       if (daysAgo === 1) {
-        period = 'Ayer';
+        period = 'Ant(1)';
         color = '#6b5d4a';
       } else if (daysAgo === 2) {
-        period = 'Hace 2 días';
+        period = 'Ant(2)';
         color = '#8b7355';
       } else {
-        period = 'Hace 3 días';
+        period = 'Ant(3)';
         color = '#7a6649';
       }
     }
@@ -484,13 +498,103 @@ export function getDefaultDailyChartTheme(): DailyChartTheme {
 }
 
 /**
+ * Converts API response data to chart-ready format.
+ * Transforms the processed service data into the format expected by the chart component.
+ *
+ * @function convertApiDataToChartData
+ * @param {ProcessedChartData} apiData - Processed data from the API service
+ * @param {Date} selectedDate - The selected date for the chart
+ * @returns {DailyChartData | null} Chart-ready data or null if conversion fails
+ *
+ * @example
+ * const apiData = await fetchHoursChartData('2025-09-12');
+ * const chartData = convertApiDataToChartData(apiData, new Date('2025-09-12'));
+ */
+export function convertApiDataToChartData(
+  apiData: ProcessedChartData,
+  selectedDate: Date
+): DailyChartData | null {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎉 convertApiDataToChartData: Input data', {
+      selectedDate: selectedDate.toLocaleDateString('es-ES'),
+      apiData,
+      hasApiData: !!apiData,
+      hasError: apiData?.hasError,
+      hasDays: !!apiData?.days,
+      daysLength: apiData?.days?.length,
+      daysDetail: apiData?.days?.map(d => ({
+        label: d.label,
+        date: d.date,
+        total: d.total
+      }))
+    });
+  }
+
+  // Check if we have valid data
+  if (!apiData || apiData.hasError || !apiData.days || apiData.days.length === 0) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('convertApiDataToChartData: Failed validation', {
+        noApiData: !apiData,
+        hasError: apiData?.hasError,
+        noDays: !apiData?.days,
+        emptyDays: apiData?.days?.length === 0
+      });
+    }
+    return null;
+  }
+
+  // Colors for the 4 days
+  const dayColors = ['#897053', '#6b5d4a', '#8b7355', '#7a6649'];
+
+  // Convert API days to chart points - use real API dates and labels
+  const comparisonData: ChartPoint[] = apiData.days.slice(0, 4).map((day, index) => {
+    // Use safe date parsing to avoid timezone issues
+    const dayDate = day.date ? parseLocalDate(day.date) : new Date(selectedDate);
+
+    // Use the real label from API service (already formatted as "Sep 05")
+    const periodLabel = day.label || `Día ${index + 1}`;
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📈 Chart point ${index}:`, {
+        apiLabel: day.label,
+        apiDate: day.date,
+        parsedDate: dayDate.toLocaleDateString('es-ES'),
+        periodLabel,
+        amount: day.total
+      });
+    }
+
+    return {
+      period: periodLabel, // Real API date label (Sep 05)
+      amount: day.total || 0,
+      color: dayColors[index] || '#897053',
+      date: dayDate, // Real API date
+      isSelected: index === 0 // First day is the selected day
+    };
+  });
+
+  // Get the selected day data (first day in the array)
+  const selectedDayData = apiData.days[0];
+  const selectedDayAmount = selectedDayData?.total || 0;
+
+  return {
+    selectedDay: {
+      date: selectedDate,
+      fullDayName: formatFullDayName(selectedDate),
+      amount: selectedDayAmount
+    },
+    comparisonData
+  };
+}
+
+/**
  * Validates date range for single day selection requirements.
  * Ensures the date range meets the daily chart component's display requirements.
- * 
+ *
  * @function validateChartDateRange
  * @param {DateRange | undefined} dateRange - Date range to validate
  * @returns {ChartValidationResult} Validation result with specific date range errors
- * 
+ *
  * @example
  * const range = { from: new Date(), to: new Date() };
  * const result = validateChartDateRange(range);
@@ -502,7 +606,7 @@ export function validateChartDateRange(dateRange: DateRange | undefined): ChartV
   const errors: string[] = [];
   const warnings: string[] = [];
   const now = new Date();
-  
+
   if (!dateRange) {
     errors.push('Date range is required for chart display');
   } else {
@@ -513,29 +617,33 @@ export function validateChartDateRange(dateRange: DateRange | undefined): ChartV
     } else if (isNaN(dateRange.from.getTime())) {
       errors.push('Start date is invalid');
     }
-    
-    if (!dateRange.to) {
-      errors.push('End date (to) is required');
-    } else if (!(dateRange.to instanceof Date)) {
-      errors.push('End date must be a Date object');
-    } else if (isNaN(dateRange.to.getTime())) {
-      errors.push('End date is invalid');
-    }
-    
-    // Validate single day requirement
-    if (dateRange.from && dateRange.to && 
-        dateRange.from instanceof Date && dateRange.to instanceof Date) {
-      
-      if (!isSingleDaySelected(dateRange)) {
-        errors.push('Date range must represent exactly one day for daily chart comparison');
+
+    // For single day selections, 'to' is optional - if missing, treat as single day
+    if (dateRange.to) {
+      if (!(dateRange.to instanceof Date)) {
+        errors.push('End date must be a Date object');
+      } else if (isNaN(dateRange.to.getTime())) {
+        errors.push('End date is invalid');
       }
-      
+    }
+
+    // Validate single day requirement
+    if (dateRange.from && dateRange.from instanceof Date) {
+
+      // If 'to' is provided, ensure it matches 'from' for single day
+      if (dateRange.to && dateRange.to instanceof Date) {
+        if (!isSingleDaySelected(dateRange)) {
+          errors.push('Date range must represent exactly one day for daily chart comparison');
+        }
+      }
+      // If no 'to' date, it's automatically treated as single day selection
+
       if (dateRange.from > now) {
         warnings.push('Selected day is in the future');
       }
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,

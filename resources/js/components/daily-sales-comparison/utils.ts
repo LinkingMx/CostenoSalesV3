@@ -1,5 +1,7 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { SalesDayData, ValidationResult } from './types';
+import type { ProcessedChartData } from '@/lib/services/types';
+import { parseLocalDate } from '@/lib/services/hours-chart.service';
 
 /**
  * Checks if the selected date range represents exactly one day.
@@ -107,22 +109,22 @@ export function formatSalesAmount(
  */
 export function formatDateForCard(date: Date, isToday: boolean): string {
   if (isToday) {
-    const formatted = date.toLocaleDateString('es-CO', {
+    const formatted = date.toLocaleDateString('es-ES', {
       day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+      month: '2-digit'
     });
-    return `Hoy - ${formatted}`;
+    return `Hoy ${formatted}`;
   }
-  
-  const dayName = date.toLocaleDateString('es-CO', { weekday: 'short' });
-  const formatted = date.toLocaleDateString('es-CO', {
+
+  const dayName = date.toLocaleDateString('es-ES', { weekday: 'short' });
+  const formatted = date.toLocaleDateString('es-ES', {
     day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+    month: '2-digit'
   });
-  
-  return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)} - ${formatted}`;
+
+  // Capitalize first letter and format as "Vie 13/09"
+  const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+  return `${capitalizedDay} ${formatted}`;
 }
 
 /**
@@ -145,8 +147,8 @@ export function getDayLetter(date: Date, isToday: boolean): string {
   if (isToday) {
     return 'H';
   }
-  
-  const dayName = date.toLocaleDateString('es-CO', { weekday: 'long' });
+
+  const dayName = date.toLocaleDateString('es-ES', { weekday: 'long' });
   return dayName.charAt(0).toUpperCase();
 }
 
@@ -291,13 +293,76 @@ export function validateSalesDayData(salesData: SalesDayData[]): ValidationResul
 }
 
 /**
+ * Converts ProcessedChartData from the API to SalesDayData array for display.
+ * Maps the days data from the hours chart service to the format needed by daily-sales-comparison.
+ *
+ * @function convertProcessedChartDataToSalesData
+ * @param {ProcessedChartData} chartData - Processed data from hours chart service
+ * @param {Date} selectedDate - The selected date to determine "today"
+ * @returns {SalesDayData[]} Array of sales data for display in daily-sales-comparison
+ *
+ * @example
+ * const apiData = { days: [...], isEmpty: false, hasError: false };
+ * const salesData = convertProcessedChartDataToSalesData(apiData, new Date());
+ * // Returns array of 4 days with sales amounts
+ */
+export function convertProcessedChartDataToSalesData(
+  chartData: ProcessedChartData,
+  selectedDate: Date
+): SalesDayData[] {
+  if (!chartData || chartData.hasError || chartData.isEmpty || !chartData.days) {
+    return [];
+  }
+
+  // Normalize dates for comparison
+  const selectedDateString = selectedDate.toDateString();
+  const todayDateString = new Date().toDateString();
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('📊 convertProcessedChartDataToSalesData:', {
+      selectedDate: selectedDate.toLocaleDateString('es-ES'),
+      apiDays: chartData.days.map(d => ({
+        label: d.label,
+        date: d.date,
+        total: d.total
+      }))
+    });
+  }
+
+  // Convert ProcessedDayData to SalesDayData
+  // The API returns 4 days in reverse chronological order (most recent first)
+  return chartData.days.map((day, index) => {
+    // Use safe date parsing to avoid timezone issues
+    const dayDate = parseLocalDate(day.date);
+    const dayDateString = dayDate.toDateString();
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📅 Sales card ${index}:`, {
+        apiLabel: day.label,
+        apiDate: day.date,
+        parsedDate: dayDate.toLocaleDateString('es-ES'),
+        dayOfWeek: dayDate.toLocaleDateString('es-ES', { weekday: 'short' }),
+        amount: day.total
+      });
+    }
+
+    return {
+      date: dayDate,
+      amount: day.total,
+      // Check if this day matches today's date (not the selected date)
+      isToday: dayDateString === todayDateString
+    };
+  });
+}
+
+/**
  * Validates date range for single day selection requirements.
  * Ensures the date range meets the component's display requirements.
- * 
+ *
  * @function validateDateRange
  * @param {DateRange | undefined} dateRange - Date range to validate
  * @returns {ValidationResult} Validation result with specific date range errors
- * 
+ *
  * @example
  * const range = { from: new Date(), to: new Date() };
  * const result = validateDateRange(range);
@@ -309,7 +374,7 @@ export function validateDateRange(dateRange: DateRange | undefined): ValidationR
   const errors: string[] = [];
   const warnings: string[] = [];
   const now = new Date();
-  
+
   if (!dateRange) {
     errors.push('Date range is required');
   } else {
@@ -320,28 +385,32 @@ export function validateDateRange(dateRange: DateRange | undefined): ValidationR
     } else if (isNaN(dateRange.from.getTime())) {
       errors.push('Start date is invalid');
     }
-    
-    if (!dateRange.to) {
-      errors.push('End date (to) is required');
-    } else if (!(dateRange.to instanceof Date)) {
-      errors.push('End date must be a Date object');
-    } else if (isNaN(dateRange.to.getTime())) {
-      errors.push('End date is invalid');
-    }
-    
-    // Validate single day requirement
-    if (dateRange.from && dateRange.to && 
-        dateRange.from instanceof Date && dateRange.to instanceof Date) {
-      if (dateRange.from.getTime() !== dateRange.to.getTime()) {
-        errors.push('Date range must represent exactly one day for daily sales comparison');
+
+    // For single day selections, 'to' is optional - if missing, treat as single day
+    if (dateRange.to) {
+      if (!(dateRange.to instanceof Date)) {
+        errors.push('End date must be a Date object');
+      } else if (isNaN(dateRange.to.getTime())) {
+        errors.push('End date is invalid');
       }
-      
+    }
+
+    // Validate single day requirement
+    if (dateRange.from && dateRange.from instanceof Date) {
+      // If 'to' is provided, ensure it matches 'from' for single day
+      if (dateRange.to && dateRange.to instanceof Date) {
+        if (dateRange.from.getTime() !== dateRange.to.getTime()) {
+          errors.push('Date range must represent exactly one day for daily sales comparison');
+        }
+      }
+      // If no 'to' date, it's automatically treated as single day selection
+
       if (dateRange.from > now) {
         warnings.push('Selected date is in the future');
       }
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,

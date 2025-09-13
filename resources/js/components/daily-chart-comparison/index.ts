@@ -34,6 +34,8 @@ export { DailyChartComparison, default as DailyChartComparisonDefault } from './
 // Subcomponent exports for advanced usage
 export { DailyChartHeader } from './components/daily-chart-header';
 export { DailyComparisonChart } from './components/daily-comparison-chart';
+export { DailyChartSkeleton } from './components/daily-chart-skeleton';
+export { DailyChartError } from './components/daily-chart-error';
 
 // Type exports for TypeScript integration
 export type {
@@ -42,6 +44,7 @@ export type {
   DailyChartComparisonProps,
   DailyComparisonChartProps,
   DailyChartHeaderProps,
+  DailyChartErrorProps,
   ChartValidationResult,
   DailyChartTheme,
   ComparisonPeriodConfig
@@ -56,5 +59,6 @@ export {
   generateMockDailyChartData,
   validateDailyChartData,
   getDefaultDailyChartTheme,
-  validateChartDateRange
+  validateChartDateRange,
+  convertApiDataToChartData
 } from './utils';

@@ -2,14 +2,19 @@ import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SalesComparisonHeader } from './components/sales-comparison-header';
 import { SalesDayCard } from './components/sales-day-card';
+import { SalesComparisonSkeleton } from './components/sales-comparison-skeleton';
+import { SalesComparisonError } from './components/sales-comparison-error';
 import type { DailySalesComparisonProps, SalesDayData } from './types';
-import { 
-  isSingleDaySelected, 
-  generatePreviousDays, 
+import {
+  isSingleDaySelected,
+  generatePreviousDays,
   generateMockSalesData,
   validateSalesDayData,
-  validateDateRange
+  validateDateRange,
+  convertProcessedChartDataToSalesData
 } from './utils';
+import { useHoursChart } from '@/hooks/use-hours-chart';
+import { formatDateForApi } from '@/lib/services/hours-chart.service';
 
 /**
  * DailySalesComparison - Main component for displaying daily sales comparison.
@@ -44,33 +49,71 @@ import {
  * />
  * ```
  */
-export function DailySalesComparison({ 
-  selectedDateRange, 
-  salesData 
+export function DailySalesComparison({
+  selectedDateRange,
+  salesData,
+  useMockData = false // Allow override for testing
 }: DailySalesComparisonProps) {
   // Get the selected date (from and to are the same for single day)
   const selectedDate = selectedDateRange?.from;
   
-  // Generate the dates to display (selected date + 3 previous days)
-  const datesToShow = React.useMemo(() => 
-    selectedDate ? generatePreviousDays(selectedDate) : [], 
+  // Note: datesToShow is only used for mock data fallback when API is unavailable
+  // Real API data provides the actual dates (e.g., 4 consecutive Fridays, not calculated days)
+  const datesToShow = React.useMemo(() =>
+    selectedDate ? generatePreviousDays(selectedDate) : [],
     [selectedDate]
   );
+
+  // Format date for API
+  const apiDateString = React.useMemo(() => {
+    if (!selectedDate) return null;
+    return formatDateForApi(selectedDate);
+  }, [selectedDate]);
+
+  // Memoize hook options to prevent re-renders
+  const hookOptions = React.useMemo(() => ({
+    enableRetry: true,
+    maxRetries: 3,
+    debounceMs: 300,
+    onError: (errorMessage: string) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Daily sales API error:', errorMessage);
+      }
+    }
+  }), []);
+
+  // Fetch real data from API using the custom hook
+  const {
+    data: apiData,
+    isLoading,
+    error,
+    refetch
+  } = useHoursChart(apiDateString, hookOptions);
   
-  // Use provided sales data or generate mock data with validation
+  // Use provided sales data, API data, or generate mock data with validation
   const displayData = React.useMemo((): SalesDayData[] => {
     let data: SalesDayData[];
-    
+
+    // Priority 1: Use provided sales data if available
     if (salesData) {
       data = salesData;
-    } else {
-      // Generate mock data for development
+    }
+    // Priority 2: Use API data if available and valid
+    else if (apiData && !apiData.hasError && !apiData.isEmpty) {
+      data = convertProcessedChartDataToSalesData(apiData, selectedDate || new Date());
+    }
+    // Priority 3: Use mock data if explicitly requested or as fallback
+    else if (useMockData || (!isLoading && !apiData)) {
       data = generateMockSalesData(datesToShow);
     }
-    
+    // Priority 4: Return empty array while loading
+    else {
+      return [];
+    }
+
     // Validate the data for runtime integrity
     const validation = validateSalesDayData(data);
-    
+
     if (process.env.NODE_ENV === 'development') {
       if (!validation.isValid) {
         console.error('DailySalesComparison: Sales data validation failed:', validation.errors);
@@ -79,11 +122,10 @@ export function DailySalesComparison({
         console.warn('DailySalesComparison: Sales data warnings:', validation.warnings);
       }
     }
-    
+
     // Return data even if validation fails (graceful degradation in production)
-    // In production, you might want to return empty array or show error state
     return validation.isValid ? data : (process.env.NODE_ENV === 'production' ? data : []);
-  }, [salesData, datesToShow]);
+  }, [salesData, apiData, useMockData, isLoading, datesToShow, selectedDate]);
 
   // Validate date range before processing
   const dateRangeValidation = React.useMemo(() => {
@@ -107,14 +149,29 @@ export function DailySalesComparison({
     return null;
   }
 
+  // Show loading state
+  if (isLoading && !salesData && !useMockData) {
+    return <SalesComparisonSkeleton />;
+  }
+
+  // Show error state
+  if (error && !salesData && !useMockData) {
+    return (
+      <SalesComparisonError
+        error={error}
+        onRetry={refetch}
+      />
+    );
+  }
+
   return (
     <Card className="w-full border-border">
       <CardContent className="px-4 py-3">
         {/* Header section */}
         <SalesComparisonHeader />
-        
+
         {/* Sales cards grid */}
-        <div 
+        <div
           className="space-y-2"
           role="region"
           aria-label="Comparación de ventas diarias"
