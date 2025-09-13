@@ -18,52 +18,59 @@ import { useIsMobile } from '@/hooks/use-mobile';
  * Custom tooltip component for the daily comparison chart.
  * Provides formatted currency values and proper Spanish localization.
  * Shows data for the specific comparison period with full date information.
- * 
+ * Only renders when actively hovering over a data point.
+ *
  * @component
  * @param {any} props - Recharts tooltip props
  * @returns {JSX.Element | null} Custom tooltip component
  */
 function CustomTooltip({ active, payload, label }: any) {
-  if (active && payload && payload.length) {
-    const data = payload[0]?.payload;
+  // Only show tooltip when actively hovering over a data point
+  if (!active || !payload || !payload.length || payload.length === 0) {
+    return null;
+  }
 
-    if (!data) return null;
+  const data = payload[0]?.payload;
+  const value = payload[0]?.value;
 
-    // Format full Spanish date (05 de Septiembre)
-    const fullSpanishDate = data.date ?
-      data.date.toLocaleDateString('es-CO', {
-        day: '2-digit',
-        month: 'long'
-      }) : '';
+  // Additional validation to ensure we have valid data
+  if (!data || typeof value !== 'number') {
+    return null;
+  }
 
-    return (
-      <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
-        <p className="text-sm font-semibold text-foreground mb-2 border-b border-border pb-2">
-          {label} {/* Period label from API: "Sep 05" */}
+  // Format full Spanish date (05 de Septiembre)
+  const fullSpanishDate = data.date ?
+    data.date.toLocaleDateString('es-CO', {
+      day: '2-digit',
+      month: 'long'
+    }) : '';
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
+      <p className="text-sm font-semibold text-foreground mb-2 border-b border-border pb-2">
+        {label} {/* Period label from API: "Sep 05" */}
+      </p>
+      {fullSpanishDate && (
+        <p className="text-xs text-muted-foreground mb-3">
+          {fullSpanishDate} {/* Full Spanish date: "05 de septiembre" */}
         </p>
-        {fullSpanishDate && (
-          <p className="text-xs text-muted-foreground mb-3">
-            {fullSpanishDate} {/* Full Spanish date: "05 de septiembre" */}
-          </p>
-        )}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: payload[0]?.color }}
-            />
-            <span className="text-sm font-medium text-foreground">
-              Ventas
-            </span>
-          </div>
-          <span className="text-sm font-bold text-primary">
-            {formatChartAmount(payload[0]?.value)}
+      )}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: payload[0]?.color }}
+          />
+          <span className="text-sm font-medium text-foreground">
+            Ventas
           </span>
         </div>
+        <span className="text-sm font-bold text-primary">
+          {formatChartAmount(value)}
+        </span>
       </div>
-    );
-  }
-  return null;
+    </div>
+  );
 }
 
 /**
@@ -196,10 +203,13 @@ export function DailyComparisonChart({
           {/* Y-axis hidden - no labels needed */}
           <YAxis hide />
 
-          {/* Custom tooltip with proper formatting */}
+          {/* Custom tooltip with proper hover behavior */}
           <Tooltip
             content={<CustomTooltip />}
-            cursor={false}
+            cursor={{ stroke: theme.primaryColor, strokeWidth: 1, strokeDasharray: '3 3' }}
+            allowEscapeViewBox={{ x: false, y: false }}
+            wrapperStyle={{ outline: 'none' }}
+            animationDuration={200}
           />
 
           {/* Line with improved styling matching weekly chart */}
@@ -211,13 +221,15 @@ export function DailyComparisonChart({
             dot={{
               fill: theme.primaryColor,
               strokeWidth: 0,
-              r: 4
+              r: 4,
+              cursor: 'pointer'
             }}
             activeDot={{
               r: 6,
               stroke: theme.primaryColor,
               strokeWidth: 2,
-              fill: theme.backgroundColor
+              fill: theme.backgroundColor,
+              cursor: 'pointer'
             }}
             connectNulls={false}
           />
