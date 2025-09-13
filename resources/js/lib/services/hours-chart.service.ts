@@ -28,36 +28,11 @@ export const parseLocalDate = (dateStr: string): Date => {
   return new Date(dateStr + 'T00:00:00');
 };
 
-/**
- * Calculate total from hourly data
- */
-const calculateDayTotal = (dayData: DayData): number => {
-  if (!dayData.hours || !Array.isArray(dayData.hours)) {
-    return 0;
-  }
-
-  return dayData.hours.reduce((total, hour) => {
-    const value = typeof hour.value === 'number' ? hour.value : 0;
-    return total + value;
-  }, 0);
-};
 
 /**
  * Process API response into chart-ready data
  */
 const processApiResponse = (response: HoursChartApiResponse): ProcessedChartData => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 processApiResponse: Input response', {
-      response,
-      hasData: !!response.data,
-      dataType: typeof response.data,
-      isArray: Array.isArray(response.data),
-      dataKeys: response.data ? Object.keys(response.data) : [],
-      firstElement: Array.isArray(response.data) ? response.data[0] : null,
-      rawData: response.data
-    });
-  }
-
   // Handle the actual API response structure: { success: true, data: { "2025-09-13": amount, ... } }
   let salesData: any = response.data;
 
@@ -66,21 +41,10 @@ const processApiResponse = (response: HoursChartApiResponse): ProcessedChartData
     // If it's an object with success and data properties
     if ('success' in response.data && 'data' in response.data && typeof response.data.data === 'object' && response.data.data !== null) {
       salesData = response.data.data;
-      if (process.env.NODE_ENV === 'development') {
-        console.log('processApiResponse: Using nested data object from API response', salesData);
-      }
-    } else if (!Array.isArray(response.data)) {
-      // Direct data object (dates as keys, amounts as values)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('processApiResponse: Using direct data object', salesData);
-      }
     }
   }
 
   if (!salesData || typeof salesData !== 'object') {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('processApiResponse: Invalid data structure, returning empty days');
-    }
     return {
       days: [],
       isEmpty: true,
@@ -88,8 +52,6 @@ const processApiResponse = (response: HoursChartApiResponse): ProcessedChartData
     };
   }
 
-  // Convert the date-hourly data object to array format with daily totals
-  // API already returns the correct dates in the correct order - NO SORTING/SLICING needed
   const dateEntries = Object.entries(salesData)
     .map(([dateKey, hoursObject]) => {
       // Sum all hourly values to get daily total
@@ -102,55 +64,25 @@ const processApiResponse = (response: HoursChartApiResponse): ProcessedChartData
           .reduce((sum, value) => sum + value, 0);
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`📊 processApiResponse: Processing ${dateKey}`, {
-          hoursObject,
-          hoursCount: Object.keys(hoursObject || {}).length,
-          dailyTotal,
-          firstFewHours: Object.entries(hoursObject || {}).slice(0, 3)
-        });
-      }
 
       return [dateKey, dailyTotal] as [string, number];
     })
-    .filter(([key, amount]) => amount > 0); // Only process entries with positive amounts
+    .filter(([, amount]) => amount > 0); // Only process entries with positive amounts
     // NO SORTING - API already provides correct order
     // NO SLICING - API already provides correct number of days
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('📅 processApiResponse: Date entries extracted', {
-      entriesCount: dateEntries.length,
-      dateEntries: dateEntries.map(([date, amount]) => ({
-        date,
-        amount,
-        dayOfWeek: new Date(date).toLocaleDateString('es-ES', { weekday: 'short' }),
-        dayMonth: new Date(date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-      }))
-    });
-  }
 
   // Process each day's data
-  const processedDays: ProcessedDayData[] = dateEntries.map(([dateStr, amount], index) => {
-    // Use safe date parsing to avoid timezone issues
-    const date = parseLocalDate(dateStr);
-    const shortMonthName = date.toLocaleDateString('es-ES', { month: 'short' });
-    const day = date.getDate();
-    // Spanish format: "sep. 13" instead of "Sep 13"
-    const chartLabel = `${shortMonthName.toLowerCase()}. ${day}`;
+  const processedDays: ProcessedDayData[] = dateEntries.map(([dateStr, amount]) => {
+    // Parse date from string "2025-09-13" without timezone issues
+    const [, month, day] = dateStr.split('-');
+    const monthNames = ['', 'ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const monthName = monthNames[parseInt(month)] || 'mes';
+    const chartLabel = `${monthName}. ${parseInt(day)}`;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ processApiResponse: Processing day ${index}`, {
-        dateStr,
-        amount,
-        parsedDate: date,
-        formattedLabel: chartLabel,
-        dayOfWeek: date.toLocaleDateString('es-ES', { weekday: 'short' }),
-        fullDate: date.toLocaleDateString('es-ES')
-      });
-    }
 
     return {
-      label: chartLabel, // Use real API date instead of generic labels
+      label: chartLabel, // Direct string parsing - no Date objects
       date: dateStr,
       total: amount as number,
     };
@@ -178,9 +110,6 @@ export const fetchHoursChartData = async (
   // Check cache first
   const cachedData = cacheManager.get<ProcessedChartData>(cacheKey);
   if (cachedData) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Using cached hours chart data for date:', date);
-    }
     return cachedData;
   }
 
@@ -188,9 +117,7 @@ export const fetchHoursChartData = async (
     // Prepare request
     const request: HoursChartRequest = { date };
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Fetching hours chart data:', request);
-    }
+    console.log('🚀 FETCHING API DATA FOR DATE:', date, request);
 
     // Make API call
     const response = await apiPost<HoursChartApiResponse>(

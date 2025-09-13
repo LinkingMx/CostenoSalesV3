@@ -15,6 +15,7 @@ import { DailySalesBranches } from '@/components/daily-sales-branches';
 import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
 import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
 import { useState } from 'react';
+import { DailyChartProvider } from '@/contexts/daily-chart-context';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -39,13 +40,10 @@ export default function Dashboard() {
                     onChange={handleDateChange}
                 />
                 
-                <DailyChartComparison 
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <DailySalesComparison 
-                    selectedDateRange={selectedDateRange}
-                />
+                <DailyChartProvider selectedDateRange={selectedDateRange}>
+                    <DailyChartComparison />
+                    <DailySalesComparison />
+                </DailyChartProvider>
                 
                 <WeeklyErrorBoundary>
                     <WeeklySalesComparison 

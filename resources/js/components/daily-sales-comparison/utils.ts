@@ -2,30 +2,10 @@ import type { DateRange } from '@/components/main-filter-calendar';
 import type { SalesDayData, ValidationResult } from './types';
 import type { ProcessedChartData } from '@/lib/services/types';
 import { parseLocalDate } from '@/lib/services/hours-chart.service';
+import { validateDailyDateRange } from '@/lib/utils/date-validation';
+import { formatCurrencyAmount } from '@/lib/utils/currency-formatting';
 
-/**
- * Checks if the selected date range represents exactly one day.
- * Returns true only when both from and to dates exist and are the same day.
- * 
- * @function isSingleDaySelected
- * @param {DateRange | undefined} dateRange - The date range to check
- * @returns {boolean} True if exactly one day is selected, false otherwise
- * 
- * @example
- * const singleDay = { from: new Date('2025-09-11'), to: new Date('2025-09-11') };
- * const range = { from: new Date('2025-09-11'), to: new Date('2025-09-15') };
- * 
- * isSingleDaySelected(singleDay); // true
- * isSingleDaySelected(range);     // false
- * isSingleDaySelected(undefined); // false
- */
-export function isSingleDaySelected(dateRange: DateRange | undefined): boolean {
-  if (!dateRange?.from || !dateRange?.to) {
-    return false;
-  }
-  
-  return dateRange.from.getTime() === dateRange.to.getTime();
-}
+// isSingleDaySelected is now imported from shared utilities
 
 /**
  * Generates an array of the selected date plus the 3 previous days.
@@ -52,44 +32,8 @@ export function generatePreviousDays(selectedDate: Date): Date[] {
   return days;
 }
 
-/**
- * Formats a sales amount as a currency string with thousands separators.
- * Uses Mexican peso format with $ symbol and proper MXN locale.
- * Includes configurable currency support for future internationalization.
- * 
- * @function formatSalesAmount
- * @param {number} amount - The sales amount to format
- * @param {string} currency - Currency code (default: 'MXN' for Mexican pesos)
- * @returns {string} Formatted currency string
- * 
- * @example
- * formatSalesAmount(250533.98); // "$250,533.98"
- * formatSalesAmount(7068720.45); // "$7,068,720.45"
- * formatSalesAmount(1000000, 'USD'); // "$1,000,000.00" (USD format)
- */
-export function formatSalesAmount(
-  amount: number, 
-  currency: 'MXN' | 'USD' | 'COP' = 'MXN'
-): string {
-  // Currency configuration mapping
-  const currencyConfig = {
-    MXN: { locale: 'es-MX', symbol: '$' },
-    USD: { locale: 'en-US', symbol: '$' },
-    COP: { locale: 'es-CO', symbol: '$' }
-  };
-  
-  const config = currencyConfig[currency];
-  
-  const formatted = new Intl.NumberFormat(config.locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount);
-  
-  // Replace currency code with symbol for cleaner display
-  return formatted.replace(currency, config.symbol).trim();
-}
+// formatSalesAmount is now replaced by formatCurrencyAmount from shared utilities
+export const formatSalesAmount = formatCurrencyAmount;
 
 /**
  * Formats a date for display in the sales cards.
@@ -315,7 +259,6 @@ export function convertProcessedChartDataToSalesData(
   }
 
   // Normalize dates for comparison
-  const selectedDateString = selectedDate.toDateString();
   const todayDateString = new Date().toDateString();
 
   if (process.env.NODE_ENV === 'development') {
@@ -355,69 +298,17 @@ export function convertProcessedChartDataToSalesData(
   });
 }
 
-/**
- * Validates date range for single day selection requirements.
- * Ensures the date range meets the component's display requirements.
- *
- * @function validateDateRange
- * @param {DateRange | undefined} dateRange - Date range to validate
- * @returns {ValidationResult} Validation result with specific date range errors
- *
- * @example
- * const range = { from: new Date(), to: new Date() };
- * const result = validateDateRange(range);
- * if (result.isValid) {
- *   // Safe to display daily sales comparison
- * }
- */
-export function validateDateRange(dateRange: DateRange | undefined): ValidationResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-  const now = new Date();
-
-  if (!dateRange) {
-    errors.push('Date range is required');
-  } else {
-    if (!dateRange.from) {
-      errors.push('Start date (from) is required');
-    } else if (!(dateRange.from instanceof Date)) {
-      errors.push('Start date must be a Date object');
-    } else if (isNaN(dateRange.from.getTime())) {
-      errors.push('Start date is invalid');
-    }
-
-    // For single day selections, 'to' is optional - if missing, treat as single day
-    if (dateRange.to) {
-      if (!(dateRange.to instanceof Date)) {
-        errors.push('End date must be a Date object');
-      } else if (isNaN(dateRange.to.getTime())) {
-        errors.push('End date is invalid');
-      }
-    }
-
-    // Validate single day requirement
-    if (dateRange.from && dateRange.from instanceof Date) {
-      // If 'to' is provided, ensure it matches 'from' for single day
-      if (dateRange.to && dateRange.to instanceof Date) {
-        if (dateRange.from.getTime() !== dateRange.to.getTime()) {
-          errors.push('Date range must represent exactly one day for daily sales comparison');
-        }
-      }
-      // If no 'to' date, it's automatically treated as single day selection
-
-      if (dateRange.from > now) {
-        warnings.push('Selected date is in the future');
-      }
-    }
-  }
-
+// validateDateRange is now replaced by validateDailyDateRange from shared utilities
+export const validateDateRange = (dateRange: DateRange | undefined): ValidationResult => {
+  const result = validateDailyDateRange(dateRange);
+  // Convert to local ValidationResult format
   return {
-    isValid: errors.length === 0,
-    errors,
-    warnings,
+    isValid: result.isValid,
+    errors: result.errors,
+    warnings: result.warnings,
     metadata: {
-      validatedAt: now,
+      validatedAt: result.metadata?.validatedAt || new Date(),
       source: 'date-range-validation'
     }
   };
-}
+};

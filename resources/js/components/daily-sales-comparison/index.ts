@@ -27,7 +27,6 @@ export type {
 
 // Utility function exports
 export {
-  isSingleDaySelected,
   generatePreviousDays,
   formatSalesAmount,
   formatDateForCard,
@@ -37,3 +36,6 @@ export {
   validateDateRange,
   convertProcessedChartDataToSalesData
 } from './utils';
+
+// Shared utility imports
+export { isSingleDaySelected } from '@/lib/utils/date-validation';

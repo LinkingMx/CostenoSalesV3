@@ -6,15 +6,14 @@ import { SalesComparisonSkeleton } from './components/sales-comparison-skeleton'
 import { SalesComparisonError } from './components/sales-comparison-error';
 import type { DailySalesComparisonProps, SalesDayData } from './types';
 import {
-  isSingleDaySelected,
   generatePreviousDays,
   generateMockSalesData,
   validateSalesDayData,
   validateDateRange,
   convertProcessedChartDataToSalesData
 } from './utils';
-import { useHoursChart } from '@/hooks/use-hours-chart';
-import { formatDateForApi } from '@/lib/services/hours-chart.service';
+import { useDailyChartContext } from '@/contexts/daily-chart-context';
+import { isSingleDaySelected } from '@/lib/utils/date-validation';
 
 /**
  * DailySalesComparison - Main component for displaying daily sales comparison.
@@ -50,45 +49,34 @@ import { formatDateForApi } from '@/lib/services/hours-chart.service';
  * ```
  */
 export function DailySalesComparison({
-  selectedDateRange,
   salesData,
   useMockData = false // Allow override for testing
-}: DailySalesComparisonProps) {
-  // Get the selected date (from and to are the same for single day)
-  const selectedDate = selectedDateRange?.from;
-  
+}: Omit<DailySalesComparisonProps, 'selectedDateRange'>) {
+
+  // Get shared data from context (single API call)
+  const {
+    data: apiData,
+    isLoading,
+    error,
+    refetch,
+    isValidForDailyComponents
+  } = useDailyChartContext();
+
+  // Get the selected date from context data
+  const selectedDate = React.useMemo(() => {
+    if (apiData?.days?.[0]?.date) {
+      // Use the first day's date from API data
+      return new Date(apiData.days[0].date + 'T00:00:00');
+    }
+    return new Date();
+  }, [apiData?.days]);
+
   // Note: datesToShow is only used for mock data fallback when API is unavailable
   // Real API data provides the actual dates (e.g., 4 consecutive Fridays, not calculated days)
   const datesToShow = React.useMemo(() =>
     selectedDate ? generatePreviousDays(selectedDate) : [],
     [selectedDate]
   );
-
-  // Format date for API
-  const apiDateString = React.useMemo(() => {
-    if (!selectedDate) return null;
-    return formatDateForApi(selectedDate);
-  }, [selectedDate]);
-
-  // Memoize hook options to prevent re-renders
-  const hookOptions = React.useMemo(() => ({
-    enableRetry: true,
-    maxRetries: 3,
-    debounceMs: 300,
-    onError: (errorMessage: string) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Daily sales API error:', errorMessage);
-      }
-    }
-  }), []);
-
-  // Fetch real data from API using the custom hook
-  const {
-    data: apiData,
-    isLoading,
-    error,
-    refetch
-  } = useHoursChart(apiDateString, hookOptions);
   
   // Use provided sales data, API data, or generate mock data with validation
   const displayData = React.useMemo((): SalesDayData[] => {
@@ -127,25 +115,10 @@ export function DailySalesComparison({
     return validation.isValid ? data : (process.env.NODE_ENV === 'production' ? data : []);
   }, [salesData, apiData, useMockData, isLoading, datesToShow, selectedDate]);
 
-  // Validate date range before processing
-  const dateRangeValidation = React.useMemo(() => {
-    return validateDateRange(selectedDateRange);
-  }, [selectedDateRange]);
+  // Date range validation is handled by the context
 
-  // Log validation issues in development
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && selectedDateRange) {
-      if (!dateRangeValidation.isValid) {
-        console.error('DailySalesComparison: Date range validation failed:', dateRangeValidation.errors);
-      }
-      if (dateRangeValidation.warnings.length > 0) {
-        console.warn('DailySalesComparison: Date range warnings:', dateRangeValidation.warnings);
-      }
-    }
-  }, [dateRangeValidation, selectedDateRange]);
-
-  // Only render if exactly one day is selected
-  if (!isSingleDaySelected(selectedDateRange)) {
+  // Only render if exactly one day is selected (using context validation)
+  if (!isValidForDailyComponents) {
     return null;
   }
 

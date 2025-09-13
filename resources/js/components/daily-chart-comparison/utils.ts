@@ -3,232 +3,21 @@ import type {
   DailyChartData,
   ChartPoint,
   ChartValidationResult,
-  DailyChartTheme,
-  ComparisonPeriodConfig
+  DailyChartTheme
 } from './types';
-import type { ProcessedChartData, ProcessedDayData } from '@/lib/services/types';
+import type { ProcessedChartData } from '@/lib/services/types';
 import { parseLocalDate } from '@/lib/services/hours-chart.service';
+import { validateDailyDateRange } from '@/lib/utils/date-validation';
+import { formatCurrencyAmount, formatFullDayName } from '@/lib/utils/currency-formatting';
 
-/**
- * Checks if the selected date range represents exactly one day for chart display.
- * Reuses the same logic as other daily components for consistency.
- * Returns true when the date range represents a single day selection.
- * 
- * @function isSingleDaySelected
- * @param {DateRange | undefined} dateRange - The date range to check
- * @returns {boolean} True if exactly one day is selected, false otherwise
- * 
- * @example
- * const singleDay = { from: new Date('2025-09-12'), to: new Date('2025-09-12') };
- * const range = { from: new Date('2025-09-12'), to: new Date('2025-09-15') };
- * 
- * isSingleDaySelected(singleDay); // true
- * isSingleDaySelected(range);     // false
- * isSingleDaySelected(undefined); // false
- */
-export function isSingleDaySelected(dateRange: DateRange | undefined): boolean {
-  if (!dateRange?.from) {
-    return false;
-  }
+// isSingleDaySelected is now imported from shared utilities
 
-  // If 'to' is not provided, assume it's a single day selection
-  if (!dateRange.to) {
-    return true;
-  }
+// formatFullDayName is now imported from shared utilities
 
-  // Compare dates without time (normalize to start of day)
-  const fromDate = new Date(dateRange.from);
-  const toDate = new Date(dateRange.to);
+// formatChartAmount is now replaced by formatCurrencyAmount from shared utilities
+export const formatChartAmount = formatCurrencyAmount;
 
-  fromDate.setHours(0, 0, 0, 0);
-  toDate.setHours(0, 0, 0, 0);
 
-  return fromDate.getTime() === toDate.getTime();
-}
-
-/**
- * Formats a date to a full Spanish day name with date.
- * Returns format like "Lunes, 12 de Septiembre".
- * 
- * @function formatFullDayName
- * @param {Date} date - The date to format
- * @returns {string} Full Spanish day name with date
- * 
- * @example
- * const date = new Date('2025-09-12');
- * formatFullDayName(date); // "Jueves, 12 de Septiembre"
- */
-export function formatFullDayName(date: Date): string {
-  return date.toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  });
-}
-
-/**
- * Formats a sales amount as a Mexican peso currency string.
- * Uses the same formatting as other components for consistency.
- * Provides abbreviated format for chart display (e.g., "1.5M").
- * 
- * @function formatChartAmount
- * @param {number} amount - The sales amount to format
- * @param {boolean} [abbreviated] - Whether to use abbreviated format (default: false)
- * @returns {string} Formatted currency string
- * 
- * @example
- * formatChartAmount(1500000);      // "$1,500,000.00"
- * formatChartAmount(1500000, true); // "$1.5M"
- * formatChartAmount(850000, true);  // "$850K"
- */
-export function formatChartAmount(amount: number, abbreviated: boolean = false): string {
-  if (abbreviated) {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
-    }
-    return `$${amount.toFixed(0)}`;
-  }
-
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount).replace('MXN', '$').trim();
-}
-
-/**
- * Gets the default comparison period configuration.
- * Defines the 4 periods for daily comparison: Today, Yesterday, Last Week, Last Month.
- * 
- * @function getComparisonPeriods
- * @returns {ComparisonPeriodConfig[]} Array of comparison period configurations
- * 
- * @example
- * const periods = getComparisonPeriods();
- * // Returns configuration for Hoy, Ayer, Hace 1 semana, Hace 1 mes
- */
-export function getComparisonPeriods(): ComparisonPeriodConfig[] {
-  return [
-    {
-      label: 'Hoy',
-      daysOffset: 0,
-      color: '#897053', // Primary color for selected day
-      isSelected: true
-    },
-    {
-      label: 'Ayer',
-      daysOffset: 1,
-      color: '#6b5d4a', // Secondary color
-      isSelected: false
-    },
-    {
-      label: 'Hace 1 semana',
-      daysOffset: 7,
-      color: '#8b7355', // Tertiary color
-      isSelected: false
-    },
-    {
-      label: 'Hace 1 mes',
-      daysOffset: 30,
-      color: '#7a6649', // Quaternary color
-      isSelected: false
-    }
-  ];
-}
-
-/**
- * Generates realistic sales amounts with business pattern variation.
- * Creates amounts that follow typical Mexican business sales patterns.
- * Includes daily variation, weekly patterns, and seasonal trends.
- * 
- * @function generateRealisticDailySalesAmount
- * @param {Date} date - The date to generate sales for
- * @param {number} daysOffset - Days offset for comparison periods
- * @returns {number} Realistic sales amount with business pattern variation
- * 
- * @example
- * const today = new Date('2025-09-12');
- * const todayAmount = generateRealisticDailySalesAmount(today, 0); // Today
- * const yesterdayAmount = generateRealisticDailySalesAmount(today, 1); // Yesterday
- */
-function generateRealisticDailySalesAmount(date: Date, daysOffset: number): number {
-  const baseAmount = 12000000; // Base amount of $12M MXN for selected day
-  
-  // Get the actual date for the period
-  const periodDate = new Date(date);
-  periodDate.setDate(date.getDate() - daysOffset);
-  
-  // Apply day-of-week business patterns
-  const dayOfWeek = periodDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  let dayFactor = 1;
-  
-  switch (dayOfWeek) {
-    case 0: // Sunday - lowest sales (many businesses closed or reduced hours)
-      dayFactor = 0.6; // 40% below baseline
-      break;
-    case 1: // Monday - slow start to the week
-      dayFactor = 0.8; // 20% below baseline
-      break;
-    case 2: // Tuesday - business picking up
-      dayFactor = 1.0; // Baseline
-      break;
-    case 3: // Wednesday - mid-week peak
-      dayFactor = 1.15; // 15% above baseline
-      break;
-    case 4: // Thursday - strong business day
-      dayFactor = 1.2; // 20% above baseline
-      break;
-    case 5: // Friday - highest sales (payday, weekend preparation)
-      dayFactor = 1.35; // 35% above baseline
-      break;
-    case 6: // Saturday - good weekend activity
-      dayFactor = 1.1; // 10% above baseline
-      break;
-    default:
-      dayFactor = 1;
-  }
-  
-  // Apply comparison period variation
-  let periodFactor = 1;
-  switch (daysOffset) {
-    case 0: // Today (selected day) - baseline
-      periodFactor = 1.0;
-      break;
-    case 1: // Yesterday - slight variation
-      periodFactor = 0.95 + (Math.random() * 0.1); // -5% to +5%
-      break;
-    case 7: // Last week same day - weekly variation
-      periodFactor = 0.9 + (Math.random() * 0.2); // -10% to +10%
-      break;
-    case 30: // Last month same day - monthly trend
-      periodFactor = 0.85 + (Math.random() * 0.3); // -15% to +15%
-      break;
-    default:
-      periodFactor = 1;
-  }
-  
-  // Add seasonal variation (simplified - based on month)
-  const month = periodDate.getMonth(); // 0 = January, 11 = December
-  let seasonalFactor = 1;
-  
-  // Mexican business seasonality patterns
-  if (month >= 10 || month <= 1) { // Nov, Dec, Jan, Feb - holiday season
-    seasonalFactor = 1.2; // 20% increase
-  } else if (month >= 6 && month <= 8) { // Jul, Aug, Sep - summer vacation
-    seasonalFactor = 0.9; // 10% decrease
-  } else if (month >= 2 && month <= 4) { // Mar, Apr, May - spring growth
-    seasonalFactor = 1.1; // 10% increase
-  }
-  
-  // Add small random variation for realism (±5%)
-  const randomVariation = 0.05;
-  const randomFactor = (Math.random() - 0.5) * 2 * randomVariation + 1;
-  
-  return Math.round(baseAmount * dayFactor * periodFactor * seasonalFactor * randomFactor * 100) / 100;
-}
 
 /**
  * Generates mock daily chart data using the same logic as daily-sales-comparison.
@@ -307,14 +96,6 @@ export function generateMockDailyChartData(selectedDate: Date): DailyChartData {
   };
 }
 
-/**
- * Formats a day name for chart period labels.
- * Returns format like "Jue" for Thursday.
- */
-function formatDayForChart(date: Date): string {
-  const dayName = date.toLocaleDateString('es-ES', { weekday: 'short' });
-  return dayName.charAt(0).toUpperCase() + dayName.slice(1);
-}
 
 /**
  * Validates daily chart data for integrity and consistency.
@@ -514,32 +295,8 @@ export function convertApiDataToChartData(
   apiData: ProcessedChartData,
   selectedDate: Date
 ): DailyChartData | null {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🎉 convertApiDataToChartData: Input data', {
-      selectedDate: selectedDate.toLocaleDateString('es-ES'),
-      apiData,
-      hasApiData: !!apiData,
-      hasError: apiData?.hasError,
-      hasDays: !!apiData?.days,
-      daysLength: apiData?.days?.length,
-      daysDetail: apiData?.days?.map(d => ({
-        label: d.label,
-        date: d.date,
-        total: d.total
-      }))
-    });
-  }
-
   // Check if we have valid data
   if (!apiData || apiData.hasError || !apiData.days || apiData.days.length === 0) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('convertApiDataToChartData: Failed validation', {
-        noApiData: !apiData,
-        hasError: apiData?.hasError,
-        noDays: !apiData?.days,
-        emptyDays: apiData?.days?.length === 0
-      });
-    }
     return null;
   }
 
@@ -553,16 +310,6 @@ export function convertApiDataToChartData(
 
     // Use the real label from API service (already formatted as "Sep 05")
     const periodLabel = day.label || `Día ${index + 1}`;
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`📈 Chart point ${index}:`, {
-        apiLabel: day.label,
-        apiDate: day.date,
-        parsedDate: dayDate.toLocaleDateString('es-ES'),
-        periodLabel,
-        amount: day.total
-      });
-    }
 
     return {
       period: periodLabel, // Real API date label (Sep 05)
@@ -587,71 +334,18 @@ export function convertApiDataToChartData(
   };
 }
 
-/**
- * Validates date range for single day selection requirements.
- * Ensures the date range meets the daily chart component's display requirements.
- *
- * @function validateChartDateRange
- * @param {DateRange | undefined} dateRange - Date range to validate
- * @returns {ChartValidationResult} Validation result with specific date range errors
- *
- * @example
- * const range = { from: new Date(), to: new Date() };
- * const result = validateChartDateRange(range);
- * if (result.isValid) {
- *   // Safe to display daily chart comparison
- * }
- */
-export function validateChartDateRange(dateRange: DateRange | undefined): ChartValidationResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-  const now = new Date();
-
-  if (!dateRange) {
-    errors.push('Date range is required for chart display');
-  } else {
-    if (!dateRange.from) {
-      errors.push('Start date (from) is required');
-    } else if (!(dateRange.from instanceof Date)) {
-      errors.push('Start date must be a Date object');
-    } else if (isNaN(dateRange.from.getTime())) {
-      errors.push('Start date is invalid');
-    }
-
-    // For single day selections, 'to' is optional - if missing, treat as single day
-    if (dateRange.to) {
-      if (!(dateRange.to instanceof Date)) {
-        errors.push('End date must be a Date object');
-      } else if (isNaN(dateRange.to.getTime())) {
-        errors.push('End date is invalid');
-      }
-    }
-
-    // Validate single day requirement
-    if (dateRange.from && dateRange.from instanceof Date) {
-
-      // If 'to' is provided, ensure it matches 'from' for single day
-      if (dateRange.to && dateRange.to instanceof Date) {
-        if (!isSingleDaySelected(dateRange)) {
-          errors.push('Date range must represent exactly one day for daily chart comparison');
-        }
-      }
-      // If no 'to' date, it's automatically treated as single day selection
-
-      if (dateRange.from > now) {
-        warnings.push('Selected day is in the future');
-      }
-    }
-  }
-
+// validateChartDateRange is now replaced by validateDailyDateRange from shared utilities
+export const validateChartDateRange = (dateRange: DateRange | undefined): ChartValidationResult => {
+  const result = validateDailyDateRange(dateRange);
+  // Convert ValidationResult to ChartValidationResult format
   return {
-    isValid: errors.length === 0,
-    errors,
-    warnings,
+    isValid: result.isValid,
+    errors: result.errors,
+    warnings: result.warnings,
     metadata: {
-      validatedAt: now,
+      validatedAt: result.metadata?.validatedAt || new Date(),
       source: 'chart-date-range-validation',
-      selectedDate: dateRange?.from
+      selectedDate: result.metadata?.selectedDate
     }
   };
-}
+};

@@ -10,7 +10,8 @@ import {
   ReferenceDot
 } from 'recharts';
 import type { DailyComparisonChartProps } from '../types';
-import { formatChartAmount, formatFullDayName, getDefaultDailyChartTheme } from '../utils';
+import { formatChartAmount, getDefaultDailyChartTheme } from '../utils';
+import { formatFullDayName } from '@/lib/utils/currency-formatting';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 /**

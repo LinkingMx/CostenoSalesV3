@@ -6,14 +6,12 @@ import { DailyChartSkeleton } from './components/daily-chart-skeleton';
 import { DailyChartError } from './components/daily-chart-error';
 import type { DailyChartComparisonProps, DailyChartData } from './types';
 import {
-  isSingleDaySelected,
   generateMockDailyChartData,
   validateDailyChartData,
-  validateChartDateRange,
   convertApiDataToChartData
 } from './utils';
-import { useHoursChart } from '@/hooks/use-hours-chart';
-import { formatDateForApi } from '@/lib/services/hours-chart.service';
+import { isSingleDaySelected } from '@/lib/utils/date-validation';
+import { useDailyChartContext } from '@/contexts/daily-chart-context';
 
 // Performance: Pre-memoized header component to prevent unnecessary re-renders
 const MemoizedDailyChartHeader = React.memo(DailyChartHeader);
@@ -110,123 +108,43 @@ const MemoizedDailyComparisonChart = React.memo(DailyComparisonChart, (prevProps
  * ```
  */
 export function DailyChartComparison({
-  selectedDateRange,
   chartData,
   useMockData = false // Allow override for testing
-}: DailyChartComparisonProps) {
-  // Debug logging in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log('DailyChartComparison debug:', {
-      selectedDateRange,
-      hasFrom: !!selectedDateRange?.from,
-      hasTo: !!selectedDateRange?.to,
-      fromDate: selectedDateRange?.from?.toString(),
-      toDate: selectedDateRange?.to?.toString()
-    });
-  }
+}: Omit<DailyChartComparisonProps, 'selectedDateRange'>) {
 
-  // Simplified validation - check if we have a single day selected
-  const isValidSingleDay = React.useMemo(() => {
-    const result = isSingleDaySelected(selectedDateRange);
-    if (process.env.NODE_ENV === 'development') {
-      console.log('isSingleDaySelected result:', result);
-    }
-    return result;
-  }, [selectedDateRange]);
-
-  // Get the selected date - use stable today as fallback to prevent re-renders
-  const selectedDate = React.useMemo(() => {
-    return selectedDateRange?.from || new Date();
-  }, [selectedDateRange?.from]);
-
-  // Format date for API
-  const apiDateString = React.useMemo(() => {
-    if (!selectedDate) return null;
-    return formatDateForApi(selectedDate);
-  }, [selectedDate]);
-
-  // Memoize hook options to prevent re-renders
-  const hookOptions = React.useMemo(() => ({
-    enableRetry: true,
-    maxRetries: 3,
-    debounceMs: 300,
-    onError: (errorMessage: string) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Daily chart API error:', errorMessage);
-      }
-    }
-  }), []);
-
-  // Fetch real data from API using the custom hook
+  // Get shared data from context (single API call)
   const {
     data: apiData,
     isLoading,
     error,
-    refetch
-  } = useHoursChart(apiDateString, hookOptions);
+    refetch,
+    isValidForDailyComponents: isValidSingleDay
+  } = useDailyChartContext();
 
-  // Debug component lifecycle
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: Component mounted/updated');
-      return () => {
-        console.log('DailyChartComparison: Component unmounting');
-      };
+  // Get the selected date from context data
+  const selectedDate = React.useMemo(() => {
+    if (apiData?.days?.[0]?.date) {
+      // Use the first day's date from API data
+      return new Date(apiData.days[0].date + 'T00:00:00');
     }
-  }, []);
+    return new Date();
+  }, [apiData?.days]);
 
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: selectedDateRange changed', selectedDateRange);
-    }
-  }, [selectedDateRange]);
-
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: selectedDate changed', selectedDate);
-    }
-  }, [selectedDate]);
-
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: apiDateString changed', apiDateString);
-    }
-  }, [apiDateString]);
 
   // Convert API data to chart format or use mock/provided data
   const displayData = React.useMemo((): DailyChartData | null => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: Computing displayData', {
-        hasChartData: !!chartData,
-        useMockData,
-        hasApiData: !!apiData,
-        isLoading,
-        apiDataHasError: apiData?.hasError,
-        selectedDate
-      });
-    }
-
     // If explicit chart data is provided, use it
     if (chartData) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('DailyChartComparison: Using provided chartData');
-      }
       return chartData;
     }
 
     // If using mock data or API failed, generate mock data
     if (useMockData || (!apiData && !isLoading)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('DailyChartComparison: Using mock data');
-      }
       return generateMockDailyChartData(selectedDate);
     }
 
     // Convert API data to chart format
     if (apiData && !apiData.hasError) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('DailyChartComparison: Converting API data', apiData);
-      }
       const converted = convertApiDataToChartData(apiData, selectedDate);
       if (converted) {
         // Validate the converted data in development
@@ -235,46 +153,26 @@ export function DailyChartComparison({
           if (!validation.isValid) {
             console.error('Daily chart data validation failed:', validation.errors);
           }
-          if (validation.warnings.length > 0) {
-            console.warn('Daily chart data warnings:', validation.warnings);
-          }
-          console.log('DailyChartComparison: Converted API data successfully', converted);
         }
         return converted;
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('DailyChartComparison: API data conversion failed');
-        }
       }
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: No displayData available, returning null');
-    }
     return null;
   }, [chartData, useMockData, apiData, isLoading, selectedDate]);
 
   // Only show for single day selections
   if (!isValidSingleDay) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: Not showing - single day validation failed');
-    }
     return null;
   }
 
   // Show loading skeleton while fetching data
   if (isLoading && !displayData) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: Showing loading skeleton');
-    }
     return <DailyChartSkeleton height={210} />;
   }
 
   // Show error state if API failed and no fallback data
   if (error && !displayData) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: Showing error state', error);
-    }
     return (
       <DailyChartError
         message={error}
@@ -286,19 +184,7 @@ export function DailyChartComparison({
 
   // Show nothing if no data available
   if (!displayData) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('DailyChartComparison: No display data available');
-    }
     return null;
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log('DailyChartComparison: About to render chart component', {
-      displayData: displayData ? 'present' : 'null',
-      isLoading,
-      error,
-      hasChart: !!displayData
-    });
   }
 
   return (

@@ -4,7 +4,7 @@ export default function AppLogo() {
             <img
                 src="/logo_costeno_gold.svg"
                 alt="Costeno Sales"
-                className="h-4 w-auto object-contain max-w-full"
+                className="h-6 w-auto object-contain max-w-full"
             />
         </div>
     );

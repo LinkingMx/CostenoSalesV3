@@ -46,19 +46,19 @@ export type {
   DailyChartHeaderProps,
   DailyChartErrorProps,
   ChartValidationResult,
-  DailyChartTheme,
-  ComparisonPeriodConfig
+  DailyChartTheme
 } from './types';
 
 // Utility function exports for advanced integration
 export {
-  isSingleDaySelected,
-  formatFullDayName,
   formatChartAmount,
-  getComparisonPeriods,
   generateMockDailyChartData,
   validateDailyChartData,
   getDefaultDailyChartTheme,
   validateChartDateRange,
   convertApiDataToChartData
 } from './utils';
+
+// Shared utility imports
+export { isSingleDaySelected } from '@/lib/utils/date-validation';
+export { formatFullDayName } from '@/lib/utils/currency-formatting';
