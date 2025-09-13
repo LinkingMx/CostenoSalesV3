@@ -36,12 +36,12 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       variant="outline"
       size="sm"
       onClick={handleRefresh}
-      className="h-9 w-9 p-0 bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors shadow-sm"
+      className="h-9 w-9 p-0 bg-card border-border hover:bg-muted hover:border-border transition-colors shadow-sm"
       title="Actualizar página"
       aria-label="Actualizar datos de la página"
       type="button"
     >
-      <RefreshCw className="h-4 w-4 text-gray-600" aria-hidden="true" />
+      <RefreshCw className="h-4 w-4 text-primary" aria-hidden="true" />
     </Button>
   );
 }

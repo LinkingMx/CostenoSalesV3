@@ -94,17 +94,17 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                         className={cn(
                             // Base button styles with focus management
                             'focus:ring-opacity-50 relative z-10 h-9 w-9 rounded-md text-sm font-medium',
-                            'transition-all hover:bg-gray-100 focus:ring-2 focus:ring-gray-500 focus:outline-none',
+                            'transition-all hover:bg-muted focus:ring-2 focus:ring-primary focus:outline-none',
                             // Today styling (when not selected)
-                            dayIsToday && !dayIsSelected && 'bg-gray-900 font-semibold text-white shadow-sm hover:bg-gray-800',
+                            dayIsToday && !dayIsSelected && 'bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90',
                             // Pending start date (first click, waiting for end date)
-                            dayIsPendingStart && 'ring-opacity-75 bg-gray-600 font-semibold text-white shadow-md ring-2 ring-gray-300 hover:bg-gray-700',
+                            dayIsPendingStart && 'ring-opacity-75 bg-primary font-semibold text-primary-foreground shadow-md ring-2 ring-border hover:bg-primary/90',
                             // Range start and end dates
-                            (dayIsRangeStart || dayIsRangeEnd) && !dayIsPendingStart && 'bg-gray-600 font-semibold text-white shadow-md hover:bg-gray-700',
+                            (dayIsRangeStart || dayIsRangeEnd) && !dayIsPendingStart && 'bg-primary font-semibold text-primary-foreground shadow-md hover:bg-primary/90',
                             // Dates in between range
-                            dayIsInRange && 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+                            dayIsInRange && 'bg-muted text-foreground hover:bg-muted/80',
                             // Today when it's part of selection
-                            dayIsToday && (dayIsSelected || dayIsInRange) && 'ring-opacity-40 ring-2 ring-gray-900',
+                            dayIsToday && (dayIsSelected || dayIsInRange) && 'ring-opacity-40 ring-2 ring-primary',
                         )}
                         aria-label={ariaLabel}
                         aria-pressed={dayIsSelected || dayIsInRange}
@@ -114,7 +114,7 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                     </button>
 
                     {/* Range connection background for visual continuity */}
-                    {dayIsInRange && <div className="absolute inset-0 -z-10 rounded-md bg-gray-50" />}
+                    {dayIsInRange && <div className="absolute inset-0 -z-10 rounded-md bg-muted/50" />}
                 </div>,
             );
         }
@@ -130,15 +130,15 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                     variant="ghost" 
                     size="sm" 
                     onClick={onPreviousMonth} 
-                    className="h-9 w-9 rounded-md p-0 hover:bg-gray-100"
+                    className="h-9 w-9 rounded-md p-0 hover:bg-muted"
                     aria-label="Mes anterior"
                     type="button"
                 >
-                    <ChevronLeft className="h-4 w-4 text-gray-600" aria-hidden="true" />
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </Button>
 
                 <h4 
-                    className="text-base font-semibold text-gray-900 capitalize" 
+                    className="text-base font-semibold text-foreground capitalize" 
                     aria-live="polite"
                     id="calendar-month-year"
                 >
@@ -149,11 +149,11 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                     variant="ghost" 
                     size="sm" 
                     onClick={onNextMonth} 
-                    className="h-9 w-9 rounded-md p-0 hover:bg-gray-100"
+                    className="h-9 w-9 rounded-md p-0 hover:bg-muted"
                     aria-label="Mes siguiente"
                     type="button"
                 >
-                    <ChevronRight className="h-4 w-4 text-gray-600" aria-hidden="true" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </Button>
             </div>
 
@@ -162,7 +162,7 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                 {SPANISH_DAYS.map((day, index) => (
                     <div 
                         key={day} 
-                        className="flex h-9 items-center justify-center text-xs font-semibold tracking-wide text-gray-600 uppercase"
+                        className="flex h-9 items-center justify-center text-xs font-semibold tracking-wide text-muted-foreground uppercase"
                         role="columnheader"
                         aria-label={`Columna ${index + 1}: ${day}`}
                     >

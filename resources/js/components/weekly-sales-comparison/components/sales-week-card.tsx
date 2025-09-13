@@ -45,7 +45,7 @@ export function SalesWeekCard({
 
   return (
     <div
-      className="flex items-center justify-between px-3 py-3 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-all duration-200"
+      className="flex items-center justify-between px-3 py-3 rounded-lg bg-card border border-border hover:bg-muted transition-all duration-200"
       role="article"
       aria-label={`Ventas del ${formattedDate}: ${formattedAmount}`}
     >
@@ -53,7 +53,7 @@ export function SalesWeekCard({
       <div className="flex items-center gap-2.5">
         {/* Circular day indicator with Spanish day letter */}
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm bg-gray-600"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-primary-foreground shadow-sm bg-primary"
           aria-hidden="true" // Decorative element, screen readers use aria-label on container
         >
           {dayLetter} {/* L, M, X, J, V for Lunes, Martes, Miércoles, Jueves, Viernes */}
@@ -62,7 +62,7 @@ export function SalesWeekCard({
         {/* Formatted date display */}
         <div className="flex flex-col">
           <span 
-            className="text-sm font-medium leading-tight text-gray-900"
+            className="text-sm font-medium leading-tight text-foreground"
           >
             {formattedDate} {/* Format: "Lun - 15/09/2025" */}
           </span>
@@ -72,7 +72,7 @@ export function SalesWeekCard({
       {/* Right side - Sales amount information */}
       <div className="text-right">
         <div 
-          className="text-lg font-bold tabular-nums text-gray-900" // tabular-nums ensures consistent number alignment
+          className="text-lg font-bold tabular-nums text-foreground" // tabular-nums ensures consistent number alignment
         >
           {formattedAmount} {/* Mexican peso formatted amount */}
         </div>

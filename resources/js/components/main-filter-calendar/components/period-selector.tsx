@@ -31,8 +31,8 @@ import { CUSTOM_OPTION, PERIOD_GROUPS } from '../utils';
  */
 export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod, onPeriodChange }) => {
     return (
-        <div className="border-b border-gray-100 px-6 py-4">
-            <h3 className="mb-3 text-sm font-semibold text-gray-800" id="period-selector-heading">
+        <div className="border-b border-border px-6 py-4">
+            <h3 className="mb-3 text-sm font-semibold text-foreground" id="period-selector-heading">
                 Selección de período rápido
             </h3>
             <Select 
@@ -41,7 +41,7 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                 aria-labelledby="period-selector-heading"
             >
                 <SelectTrigger 
-                    className="h-10 w-full border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100"
+                    className="h-10 w-full border-border bg-muted transition-colors hover:bg-muted/80"
                     aria-label="Seleccionar período de tiempo"
                 >
                     <SelectValue placeholder="Seleccionar período" />
@@ -50,16 +50,16 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                     {/* Custom date option at the top */}
                     <SelectItem
                         value={CUSTOM_OPTION.value}
-                        className="px-3 py-1.5 font-medium text-gray-900 hover:bg-gray-50 hover:text-gray-900 focus:bg-gray-50 focus:text-gray-900"
+                        className="px-3 py-1.5 font-medium text-foreground hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
                         aria-label="Seleccionar fechas personalizadas usando el calendario"
                     >
                         <span className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-gray-600" aria-hidden="true" />
+                            <Calendar className="h-4 w-4 text-primary" aria-hidden="true" />
                             <span>Fechas personalizadas</span>
                         </span>
                     </SelectItem>
 
-                    <SelectSeparator className="my-0.5 bg-gray-200" />
+                    <SelectSeparator className="my-0.5 bg-border" />
 
                     {/* Grouped period options with semantic organization */}
                     {PERIOD_GROUPS.map((group, index) => (
@@ -67,7 +67,7 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                             <SelectGroup role="group" aria-labelledby={`group-${group.label}`}>
                                 <SelectLabel 
                                     id={`group-${group.label}`}
-                                    className="border-b border-gray-100 bg-gray-50 px-3 py-1 text-xs font-bold tracking-wider text-gray-600 uppercase"
+                                    className="border-b border-border bg-muted px-3 py-1 text-xs font-bold tracking-wider text-muted-foreground uppercase"
                                 >
                                     {group.label}
                                 </SelectLabel>
@@ -75,7 +75,7 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                                     <SelectItem
                                         key={option.value}
                                         value={option.value}
-                                        className="px-3 py-1.5 font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900 focus:bg-gray-50 focus:text-gray-900"
+                                        className="px-3 py-1.5 font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground"
                                         aria-label={`Seleccionar período: ${option.label}`}
                                     >
                                         {option.label}
@@ -83,7 +83,7 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                                 ))}
                             </SelectGroup>
                             {index < PERIOD_GROUPS.length - 1 && (
-                                <SelectSeparator className="my-0.5 bg-gray-200" role="separator" />
+                                <SelectSeparator className="my-0.5 bg-border" role="separator" />
                             )}
                         </React.Fragment>
                     ))}

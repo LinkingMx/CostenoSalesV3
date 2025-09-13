@@ -50,7 +50,7 @@ export function SalesCustomCard({
 
   return (
     <div
-      className="flex items-center justify-between px-3 py-3 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-all duration-200"
+      className="flex items-center justify-between px-3 py-3 rounded-lg bg-card border border-border hover:bg-muted transition-all duration-200"
       role="article"
       aria-label={`Ventas del ${formattedDateRange}: Total ${formattedTotal}`}
     >
@@ -58,7 +58,7 @@ export function SalesCustomCard({
       <div className="flex items-center gap-2.5">
         {/* Circular range indicator with "R" for custom range */}
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm bg-black"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-primary-foreground shadow-sm bg-primary"
           aria-hidden="true" // Decorative element, screen readers use aria-label on container
         >
           {rangeIndicator} {/* R for Rango personalizado */}
@@ -67,7 +67,7 @@ export function SalesCustomCard({
         {/* Formatted date range display */}
         <div className="flex flex-col">
           <span 
-            className="text-sm font-medium leading-tight text-gray-900"
+            className="text-sm font-medium leading-tight text-foreground"
           >
             {formattedDateRange} {/* Format: "Del 01 Sep al 15 Sep" */}
           </span>
@@ -77,7 +77,7 @@ export function SalesCustomCard({
       {/* Right side - Sales amount information */}
       <div className="text-right">
         <div 
-          className="text-lg font-bold tabular-nums text-gray-900" // tabular-nums ensures consistent number alignment
+          className="text-lg font-bold tabular-nums text-foreground" // tabular-nums ensures consistent number alignment
         >
           {formattedTotal} {/* Mexican peso formatted total amount */}
         </div>

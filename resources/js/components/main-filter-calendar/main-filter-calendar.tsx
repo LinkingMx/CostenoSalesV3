@@ -174,7 +174,7 @@ export function MainFilterCalendar({
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-medium h-9 px-3 py-1",
-                "bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400", 
+                "bg-card border-border hover:bg-muted hover:border-border", 
                 "transition-colors shadow-sm",
                 !currentValue && "text-muted-foreground"
               )}
@@ -182,8 +182,8 @@ export function MainFilterCalendar({
               aria-haspopup="dialog"
               aria-expanded={isOpen}
             >
-              <Calendar className="mr-3 h-4 w-4 text-gray-600" aria-hidden="true" />
-              <span className="flex-1 text-gray-700">{displayText}</span>
+              <Calendar className="mr-3 h-4 w-4 text-primary" aria-hidden="true" />
+              <span className="flex-1 text-foreground">{displayText}</span>
             </Button>
           </PopoverTrigger>
           
@@ -194,7 +194,7 @@ export function MainFilterCalendar({
             role="dialog"
             aria-label="Selector de rango de fechas"
           >
-            <div className="bg-white rounded-lg shadow-xl border border-gray-200">
+            <div className="bg-card rounded-lg shadow-xl border border-border">
               {/* Period Selector Section */}
               <PeriodSelector 
                 selectedPeriod={selectedPeriod} 
@@ -212,18 +212,18 @@ export function MainFilterCalendar({
               />
 
               {/* Action buttons */}
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/50">
                 <Button
                   variant="outline"
                   onClick={handleCancel}
-                  className="px-6 py-2 h-9 text-sm font-medium border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
+                  className="px-6 py-2 h-9 text-sm font-medium border-border text-foreground hover:bg-muted hover:border-border"
                   aria-label="Cancelar selección de fechas"
                 >
                   Cancelar
                 </Button>
                 <Button
                   onClick={handleApply}
-                  className="px-6 py-2 h-9 text-sm font-medium bg-gray-900 text-white hover:bg-gray-800 shadow-sm"
+                  className="px-6 py-2 h-9 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                   aria-label="Aplicar selección de fechas"
                 >
                   Aplicar

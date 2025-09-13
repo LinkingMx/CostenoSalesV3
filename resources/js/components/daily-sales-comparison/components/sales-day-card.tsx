@@ -45,10 +45,10 @@ export function SalesDayCard({
   return (
     <div
       className={cn(
-        "flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200",
+        "flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 bg-card border border-border",
         isHighlighted 
-          ? "bg-amber-50 border border-amber-200 shadow-sm" 
-          : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+          ? "shadow-sm" 
+          : "hover:bg-card/80"
       )}
       role="article"
       aria-label={`Ventas del ${formattedDate}: ${formattedAmount}`}
@@ -57,12 +57,7 @@ export function SalesDayCard({
       <div className="flex items-center gap-2.5">
         {/* Circular day indicator */}
         <div
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-white shadow-sm",
-            isHighlighted 
-              ? "bg-amber-600" 
-              : "bg-gray-600"
-          )}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-primary-foreground shadow-sm bg-primary"
           aria-hidden="true"
         >
           {dayLetter}
@@ -70,14 +65,7 @@ export function SalesDayCard({
         
         {/* Date display */}
         <div className="flex flex-col">
-          <span 
-            className={cn(
-              "text-sm font-medium leading-tight",
-              isHighlighted 
-                ? "text-amber-900" 
-                : "text-gray-900"
-            )}
-          >
+          <span className="text-sm font-medium leading-tight text-foreground">
             {formattedDate}
           </span>
         </div>
@@ -85,14 +73,7 @@ export function SalesDayCard({
 
       {/* Right side - Sales information */}
       <div className="text-right">
-        <div 
-          className={cn(
-            "text-lg font-bold tabular-nums",
-            isHighlighted 
-              ? "text-amber-900" 
-              : "text-gray-900"
-          )}
-        >
+        <div className="text-lg font-bold tabular-nums text-foreground">
           {formattedAmount}
         </div>
       </div>
