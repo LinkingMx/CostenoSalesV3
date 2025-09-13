@@ -169,3 +169,108 @@ const [dateRange, setDateRange] = useState<DateRange | undefined>();
 - React.memo optimization for sub-components
 - useMemo/useCallback for expensive calculations
 - Optimized dependency arrays to prevent unnecessary re-renders
+
+### WeeklyChartComparison Component
+
+A comprehensive chart component for displaying 3-week sales comparison data in an interactive line chart format. Built with Recharts for optimal performance and accessibility.
+
+**Location**: `@/components/weekly-chart-comparison`
+
+**Key Features**:
+- **Interactive Line Chart**: 3-week daily sales comparison with hover tooltips
+- **Conditional Rendering**: Only displays when exactly one complete week is selected
+- **Spanish Localization**: Day names and currency formatting for Mexican market
+- **Theme Integration**: Fully compatible with light/dark mode theme system
+- **Responsive Design**: Adapts to mobile and desktop screen sizes
+- **Performance Optimized**: Memoized components and efficient re-rendering
+
+**Architecture**:
+```
+weekly-chart-comparison/
+├── weekly-chart-comparison.tsx           # Main container component
+├── types.ts                              # TypeScript interfaces
+├── utils.ts                              # Data generation & validation utilities
+├── index.ts                              # Export configuration
+└── components/
+    ├── weekly-chart-header.tsx           # Header with icon, title, subtitle
+    └── weekly-comparison-chart.tsx       # Recharts line chart implementation
+```
+
+**Technical Implementation**:
+- **Chart Library**: Recharts for React + TypeScript compatibility
+- **Data Validation**: Comprehensive runtime validation with development logging
+- **Currency Formatting**: Mexican peso with proper locale support
+- **Theme Colors**: Uses primary color (#897053) with gradient variations
+- **Grid System**: Horizontal grid lines with theme-adaptive colors
+- **Focus Management**: Removed unwanted focus outlines while maintaining accessibility
+
+**Visual Design**:
+- **Chart Type**: Multi-line chart with 3 colored lines representing different weeks
+- **X-Axis**: Spanish day abbreviations (LUN, MAR, MIÉ, JUE, VIE, SÁB, DOM)
+- **Y-Axis**: Hidden for clean appearance, values shown in tooltips
+- **Legend**: Week labels with color coding
+- **Tooltip**: Enhanced popup showing day name and formatted peso amounts
+
+**Data Structure**:
+```typescript
+interface WeeklyChartData {
+  dailyData: ChartDayData[];        // 7 days of sales data
+  weekLabels: string[];             // ['Semana 1', 'Semana 2', 'Semana 3']
+  weekColors: string[];             // ['#897053', '#6b5d4a', '#4a3d2f']
+}
+
+interface ChartDayData {
+  dayName: string;                  // Short day name (LUN, MAR, etc.)
+  fullDayName: string;              // Full day name (Lunes, Martes, etc.)
+  week1: number;                    // Sales amount for week 1
+  week2: number;                    // Sales amount for week 2
+  week3: number;                    // Sales amount for week 3
+}
+```
+
+**Integration**:
+- **Dashboard Placement**: Positioned below `weekly-sales-comparison` component
+- **Date Range Integration**: Uses same validation logic as other weekly components
+- **Theme System**: Automatically adapts colors based on CSS variables
+- **Mock Data**: Realistic business patterns with weekday/weekend variations
+
+**Performance Features**:
+- **React.memo**: Deep comparison memoization for chart data
+- **useMemo**: Optimized data generation and validation
+- **Lazy Rendering**: Only renders when complete week is selected
+- **Development Mode**: Additional validation and logging for debugging
+
+## Theme System
+
+### Comprehensive Light/Dark Mode Implementation
+
+**Primary Color**: #897053 (warm brown) for buttons, icons, and avatars across all components
+**Background Colors**: #F8F8F8 (light) / #1A1A1A (dark) for main app background
+**Card Colors**: #EFEFEF (light) / #2C2C2C (dark) for component backgrounds
+
+**CSS Variables Structure**:
+```css
+:root {
+  --primary: #897053;              /* Buttons, icons, avatars */
+  --background: #F8F8F8;           /* Main app background */
+  --foreground: #5A5A5A;           /* Primary text */
+  --card: #EFEFEF;                 /* Card backgrounds */
+  --border: #D1D5DB;               /* Borders and dividers */
+  --accent: #64B5F6;               /* Links and accents */
+  --destructive: #EF4444;          /* Error states */
+}
+
+.dark {
+  --background: #1A1A1A;           
+  --foreground: #E0E0E0;           
+  --card: #2C2C2C;                 
+  --border: #3F3F3F;               
+  /* Primary color remains consistent in both modes */
+}
+```
+
+**Component Integration**:
+- All sales components use semantic CSS classes (`bg-primary`, `text-foreground`, etc.)
+- Automatic theme switching without component-level changes
+- Focus ring and interaction states properly themed
+- Chart components adapt grid and text colors based on theme
