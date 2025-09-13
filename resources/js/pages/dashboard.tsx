@@ -6,6 +6,8 @@ import { MainFilterCalendar, type DateRange } from '@/components/main-filter-cal
 import { DailySalesComparison } from '@/components/daily-sales-comparison';
 import { WeeklySalesComparison, WeeklyErrorBoundary } from '@/components/weekly-sales-comparison';
 import { MonthlySalesComparison, MonthlyErrorBoundary } from '@/components/monthly-sales-comparison';
+import { CustomSalesComparison } from '@/components/custom-sales-comparison';
+import { CustomSalesBranches } from '@/components/custom-sales-branches';
 import { DailySalesBranches } from '@/components/daily-sales-branches';
 import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
 import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
@@ -59,6 +61,14 @@ export default function Dashboard() {
                 />
                 
                 <MonthlySalesBranches 
+                    selectedDateRange={selectedDateRange}
+                />
+                
+                <CustomSalesComparison 
+                    selectedDateRange={selectedDateRange}
+                />
+                
+                <CustomSalesBranches 
                     selectedDateRange={selectedDateRange}
                 />
             </div>

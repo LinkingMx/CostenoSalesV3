@@ -33,23 +33,19 @@ export function WeeklyComparisonHeader({
   subtitle = "Semana seleccionada (Lunes - Viernes)"
 }: WeeklyComparisonHeaderProps) {
   return (
-    <header className="mb-3">
-      {/* Main title with calendar icon for visual context */}
-      <div className="flex items-center gap-2 mb-1">
-        <Calendar 
-          className="h-5 w-5 text-gray-600" 
-          aria-hidden="true" // Decorative icon, not essential for screen readers
-        />
-        <h2 className="text-lg font-semibold text-gray-900">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+        <Calendar className="h-4 w-4 text-gray-600" />
+      </div>
+      <div className="flex flex-col">
+        <h2 className="text-base font-semibold leading-none tracking-tight text-gray-900">
           {title} {/* Default: "Ventas semanales" (Weekly Sales) */}
         </h2>
+        <p className="text-sm text-gray-600 mt-0.5">
+          {subtitle} {/* Default: "Semana seleccionada (Lunes - Viernes)" */}
+        </p>
       </div>
-      
-      {/* Descriptive subtitle explaining the data scope */}
-      <p className="text-sm text-gray-600 ml-7"> {/* ml-7 aligns with title text after icon */}
-        {subtitle} {/* Default: "Semana seleccionada (Lunes - Viernes)" */}
-      </p>
-    </header>
+    </div>
   ); // End WeeklyComparisonHeader
 }
 

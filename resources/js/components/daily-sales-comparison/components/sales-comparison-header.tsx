@@ -32,23 +32,19 @@ export function SalesComparisonHeader({
   subtitle = "Día filtrado + 3 días anteriores"
 }: SalesComparisonHeaderProps) {
   return (
-    <header className="mb-3">
-      {/* Main title with calendar icon */}
-      <div className="flex items-center gap-2 mb-1">
-        <Calendar 
-          className="h-5 w-5 text-gray-600" 
-          aria-hidden="true"
-        />
-        <h2 className="text-lg font-semibold text-gray-900">
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+        <Calendar className="h-4 w-4 text-gray-600" />
+      </div>
+      <div className="flex flex-col">
+        <h2 className="text-base font-semibold leading-none tracking-tight text-gray-900">
           {title}
         </h2>
+        <p className="text-sm text-gray-600 mt-0.5">
+          {subtitle}
+        </p>
       </div>
-      
-      {/* Subtitle description */}
-      <p className="text-sm text-gray-600 ml-7">
-        {subtitle}
-      </p>
-    </header>
+    </div>
   );
 }
 

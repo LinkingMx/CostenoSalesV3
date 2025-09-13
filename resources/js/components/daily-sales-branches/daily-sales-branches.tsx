@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Info } from 'lucide-react';
+import { Building } from 'lucide-react';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
 import { isSingleDaySelected, DUMMY_BRANCHES_DATA } from './utils';
 import type { DailySalesBranchesProps } from './types';
@@ -100,18 +100,20 @@ export function DailySalesBranches({
     return (
       <Card className="w-full">
         <CardContent className="px-4 py-3">
-          {/* Header section - matching daily-sales-comparison style exactly */}
-          <header className="mb-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Info className="h-5 w-5 text-gray-600" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-gray-900">
+          {/* Header section - matching custom-sales-branches style exactly */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+              <Building className="h-4 w-4 text-gray-600" />
+            </div>
+            <div className="flex flex-col">
+              <h2 className="text-base font-semibold leading-none tracking-tight text-gray-900">
                 Ventas por sucursal (Por día)
               </h2>
+              <p className="text-sm text-gray-600 mt-0.5">
+                Ventas diarias por sucursal detalladas
+              </p>
             </div>
-            <p className="text-sm text-gray-600 ml-7">
-              Ventas diarias por sucursal detalladas
-            </p>
-          </header>
+          </div>
           
           <div className="text-center py-6 text-gray-500">
             <p className="text-sm">No hay datos de sucursales disponibles para la fecha seleccionada.</p>
@@ -124,18 +126,20 @@ export function DailySalesBranches({
   return (
     <Card className="w-full">
       <CardContent className="px-4 py-3">
-        {/* Header section - matching daily-sales-comparison style exactly */}
-        <header className="mb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Info className="h-5 w-5 text-gray-600" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-gray-900">
+        {/* Header section - matching custom-sales-branches style exactly */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100">
+            <Building className="h-4 w-4 text-gray-600" />
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-base font-semibold leading-none tracking-tight text-gray-900">
               Ventas por sucursal (Por día)
             </h2>
+            <p className="text-sm text-gray-600 mt-0.5">
+              Ventas diarias por sucursal detalladas
+            </p>
           </div>
-          <p className="text-sm text-gray-600 ml-7">
-            Ventas diarias por sucursal detalladas
-          </p>
-        </header>
+        </div>
         {/* Collapsibles section */}
         <div 
           className="space-y-2"
