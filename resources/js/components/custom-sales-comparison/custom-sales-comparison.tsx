@@ -77,7 +77,7 @@ MemoizedSalesCustomCard.displayName = 'MemoizedSalesCustomCard';
  * @see {@link SalesCustomCard} for individual card component
  * @see {@link isCustomRangeSelected} for range validation logic
  */
-export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSalesComparisonProps): JSX.Element | null {
+export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSalesComparisonProps) {
   // Early return: Only proceed if custom range is selected
   if (!isCustomRangeSelected(selectedDateRange)) {
     return null;

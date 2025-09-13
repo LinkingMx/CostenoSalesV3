@@ -4,6 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { MainFilterCalendar, type DateRange } from '@/components/main-filter-calendar';
 import { DailySalesComparison } from '@/components/daily-sales-comparison';
+import { DailyChartComparison } from '@/components/daily-chart-comparison';
 import { WeeklySalesComparison, WeeklyErrorBoundary } from '@/components/weekly-sales-comparison';
 import { WeeklyChartComparison } from '@/components/weekly-chart-comparison';
 import { MonthlySalesComparison, MonthlyErrorBoundary } from '@/components/monthly-sales-comparison';
@@ -35,6 +36,10 @@ export default function Dashboard() {
                 <MainFilterCalendar 
                     value={selectedDateRange} 
                     onChange={handleDateChange}
+                />
+                
+                <DailyChartComparison 
+                    selectedDateRange={selectedDateRange}
                 />
                 
                 <DailySalesComparison 

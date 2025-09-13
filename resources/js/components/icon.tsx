@@ -6,6 +6,14 @@ interface IconProps extends Omit<LucideProps, 'ref'> {
     iconNode: ComponentType<LucideProps>;
 }
 
+/**
+ * Unified Icon component for Lucide icons.
+ * Provides consistent styling and null safety for all icon usage.
+ */
 export function Icon({ iconNode: IconComponent, className, ...props }: IconProps) {
+    if (!IconComponent) {
+        return null;
+    }
+
     return <IconComponent className={cn('h-4 w-4', className)} {...props} />;
 }

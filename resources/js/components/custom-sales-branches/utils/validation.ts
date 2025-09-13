@@ -31,18 +31,15 @@ interface ValidationResult {
  * 
  * @example
  * const data = [{
- *   id: '1', 
- *   name: 'Branch 1', 
- *   totalSales: 50000, 
+ *   id: '1',
+ *   name: 'Branch 1',
+ *   totalSales: 50000,
  *   percentage: 10.5,
  *   openAccounts: 5000,
  *   closedSales: 45000,
  *   averageTicket: 450,
  *   totalTickets: 100,
- *   avatar: 'B',
- *   dailyAverage: 2500,
- *   bestDay: new Date(),
- *   bestDayAmount: 3000
+ *   avatar: 'B'
  * }];
  * const result = validateCustomBranchSalesData(data);
  * if (!result.isValid) {
@@ -100,9 +97,7 @@ export function validateCustomBranchSalesData(branchData: BranchCustomSalesData[
       { field: 'openAccounts', value: branch.openAccounts, allowNegative: false },
       { field: 'closedSales', value: branch.closedSales, allowNegative: false },
       { field: 'averageTicket', value: branch.averageTicket, allowNegative: false },
-      { field: 'totalTickets', value: branch.totalTickets, allowNegative: false },
-      { field: 'dailyAverage', value: branch.dailyAverage, allowNegative: false },
-      { field: 'bestDayAmount', value: branch.bestDayAmount, allowNegative: false }
+      { field: 'totalTickets', value: branch.totalTickets, allowNegative: false }
     ];
     
     numericFields.forEach(({ field, value, allowNegative }) => {
@@ -116,15 +111,6 @@ export function validateCustomBranchSalesData(branchData: BranchCustomSalesData[
         warnings.push(`${branchLabel}: ${field} should be a whole number`);
       }
     });
-    
-    // Validate bestDay date
-    if (!branch.bestDay || !(branch.bestDay instanceof Date)) {
-      errors.push(`${branchLabel}: bestDay must be a valid Date object`);
-    } else if (isNaN(branch.bestDay.getTime())) {
-      errors.push(`${branchLabel}: bestDay is invalid (NaN)`);
-    } else if (branch.bestDay > now) {
-      warnings.push(`${branchLabel}: bestDay is in the future`);
-    }
     
     // Business logic validations
     if (branch.totalSales !== undefined && branch.openAccounts !== undefined && branch.closedSales !== undefined) {
@@ -152,14 +138,6 @@ export function validateCustomBranchSalesData(branchData: BranchCustomSalesData[
       warnings.push(`${branchLabel}: percentage seems unusually high (${branch.percentage}%)`);
     }
     
-    // Validate daily average consistency
-    if (branch.dailyAverage > branch.totalSales) {
-      warnings.push(`${branchLabel}: dailyAverage (${branch.dailyAverage}) is higher than totalSales (${branch.totalSales})`);
-    }
-    
-    if (branch.bestDayAmount > branch.totalSales) {
-      warnings.push(`${branchLabel}: bestDayAmount (${branch.bestDayAmount}) is higher than totalSales (${branch.totalSales})`);
-    }
   });
   
   // Check for duplicate IDs

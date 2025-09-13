@@ -15,7 +15,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {number} averageTicket - Average transaction amount per ticket
  * @property {number} totalTickets - Total number of transactions/tickets processed
  * @property {string} avatar - Single character identifier for branch visual display
- * 
+ *
  * @description This interface represents the core data structure for branch sales analytics
  * for custom date ranges. All monetary values are expected to be in Mexican pesos (MXN) and will be formatted 
  * using Spanish locale conventions (es-MX) for consistent presentation.
@@ -137,4 +137,21 @@ export interface BranchCustomCollapsibleItemProps {
 export interface CustomSalesBranchesHeaderProps {
   title?: string;
   subtitle?: string;
+}
+
+/**
+ * Metrics interface for aggregated custom branch sales data.
+ * Contains calculated summaries and statistics for multiple branches.
+ */
+export interface CustomBranchMetrics {
+  totalBranches: number;
+  totalSales: number;
+  averageBranchSales: number;
+  topBranchId: string;
+  topBranchName: string;
+  topBranchSales: number;
+  totalTickets: number;
+  averageTicketValue: number;
+  dateRange: DateRange;
+  rangeDays: number;
 }
