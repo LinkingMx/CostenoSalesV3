@@ -99,11 +99,8 @@ export default defineConfig({
                 navigationPreload: true
             },
             devOptions: {
-                enabled: true,
-                type: 'module',
-                navigateFallback: '/offline.html'
-            },
-            mode: 'development'
+                enabled: false
+            }
         })
     ],
     esbuild: {

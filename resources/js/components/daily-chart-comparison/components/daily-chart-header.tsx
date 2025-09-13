@@ -25,15 +25,15 @@ import type { DailyChartHeaderProps } from '../types';
  * 
  * @example
  * ```tsx
- * <DailyChartHeader 
- *   title="Comparación Diaria"
- *   subtitle="Análisis del día seleccionado"
+ * <DailyChartHeader
+ *   title="Gráfica de ventas (Diarias)"
+ *   subtitle="Día filtrado + 3 días anteriores"
  * />
  * ```
  */
-export function DailyChartHeader({ 
-  title = "Comparación Diaria",
-  subtitle = "Análisis del día seleccionado"
+export function DailyChartHeader({
+  title = "Gráfica de ventas (Diarias)",
+  subtitle = "Día filtrado + 3 días anteriores"
 }: DailyChartHeaderProps) {
   return (
     <div className="flex items-center gap-3 mb-3">
@@ -42,10 +42,10 @@ export function DailyChartHeader({
       </div>
       <div className="flex flex-col">
         <h2 className="text-base font-semibold leading-none tracking-tight text-foreground">
-          {title} {/* Default: "Comparación Diaria" (Daily Comparison) */}
+          {title} {/* Default: "Gráfica de ventas (Diarias)" (Daily Sales Chart) */}
         </h2>
         <p className="text-sm text-muted-foreground mt-0.5">
-          {subtitle} {/* Default: "Análisis del día seleccionado" (Selected day analysis) */}
+          {subtitle} {/* Default: "Día filtrado + 3 días anteriores" (Filtered day + 3 previous days) */}
         </p>
       </div>
     </div>

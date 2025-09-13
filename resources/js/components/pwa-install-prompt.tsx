@@ -62,12 +62,12 @@ export function PWAInstallPrompt() {
                         </Button>
                         <CardTitle className="flex items-center gap-2">
                             <Smartphone className="h-5 w-5" />
-                            Install on iOS
+                            Instalar en iOS
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <p className="text-sm text-muted-foreground">
-                            To install this app on your iOS device:
+                            Para instalar esta app en tu dispositivo iOS:
                         </p>
                         <ol className="space-y-2 text-sm">
                             <li className="flex items-start gap-2">
@@ -75,30 +75,30 @@ export function PWAInstallPrompt() {
                                     1
                                 </span>
                                 <span>
-                                    Tap the <Share className="inline h-4 w-4" /> Share button in Safari
+                                    Toca el botón <Share className="inline h-4 w-4" /> Compartir en Safari
                                 </span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                                     2
                                 </span>
-                                <span>Scroll down and tap "Add to Home Screen"</span>
+                                <span>Desplázate hacia abajo y toca "Agregar a pantalla de inicio"</span>
                             </li>
                             <li className="flex items-start gap-2">
                                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                                     3
                                 </span>
-                                <span>Tap "Add" to confirm</span>
+                                <span>Toca "Agregar" para confirmar</span>
                             </li>
                         </ol>
                     </CardContent>
                     <CardFooter>
-                        <Button 
-                            variant="outline" 
+                        <Button
+                            variant="outline"
                             className="w-full"
                             onClick={() => setShowIOSInstructions(false)}
                         >
-                            Got it
+                            Entendido
                         </Button>
                     </CardFooter>
                 </Card>
@@ -120,41 +120,41 @@ export function PWAInstallPrompt() {
                     </Button>
                     <CardTitle className="flex items-center gap-2">
                         <Download className="h-5 w-5" />
-                        Install App
+                        Instalar App
                     </CardTitle>
                     <CardDescription>
-                        Install Costeno Sales for a better experience
+                        Instala Costeno Sales para una mejor experiencia
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ul className="space-y-2 text-sm text-muted-foreground">
                         <li className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            Works offline
+                            Funciona sin conexión
                         </li>
                         <li className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            Faster loading
+                            Carga más rápido
                         </li>
                         <li className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                            Home screen access
+                            Acceso desde pantalla de inicio
                         </li>
                     </ul>
                 </CardContent>
                 <CardFooter className="flex gap-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         className="flex-1"
                         onClick={handleDismiss}
                     >
-                        Not now
+                        Ahora no
                     </Button>
-                    <Button 
+                    <Button
                         className="flex-1"
                         onClick={handleInstall}
                     >
-                        Install
+                        Instalar
                     </Button>
                 </CardFooter>
             </Card>

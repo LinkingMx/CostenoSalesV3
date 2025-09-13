@@ -162,23 +162,60 @@ export function DailyComparisonChart({
       <ResponsiveContainer width="100%" height={height}>
         <LineChart
           data={chartData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          margin={chartConfig.margin}
         >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
+          {/* Grid lines for better readability - matching weekly chart style */}
+          {showGrid && (
+            <CartesianGrid
+              strokeDasharray="2 2"
+              stroke={theme.gridColor}
+              opacity={0.8}
+              horizontal={true}
+              vertical={false}
+            />
+          )}
+
+          {/* X-axis with improved styling matching weekly chart */}
+          <XAxis
             dataKey="period"
             axisLine={false}
             tickLine={false}
+            tick={{
+              fontSize: 13,
+              fill: theme.textColor,
+              fontFamily: 'inherit',
+              fontWeight: 600
+            }}
+            dy={10}
+            height={40}
           />
+
+          {/* Y-axis hidden - no labels needed */}
           <YAxis hide />
-          <Tooltip content={<CustomTooltip />} />
-          <Line 
+
+          {/* Custom tooltip with proper formatting */}
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={false}
+          />
+
+          {/* Line with improved styling matching weekly chart */}
+          <Line
             type="monotone"
             dataKey="amount"
-            stroke="#897053"
-            strokeWidth={3}
-            dot={{ r: 6, strokeWidth: 2 }}
-            activeDot={{ r: 8, strokeWidth: 2 }}
+            stroke={theme.primaryColor}
+            strokeWidth={2}
+            dot={{
+              fill: theme.primaryColor,
+              strokeWidth: 0,
+              r: 4
+            }}
+            activeDot={{
+              r: 6,
+              stroke: theme.primaryColor,
+              strokeWidth: 2,
+              fill: theme.backgroundColor
+            }}
             connectNulls={false}
           />
         </LineChart>

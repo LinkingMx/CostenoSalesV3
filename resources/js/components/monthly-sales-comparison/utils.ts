@@ -64,27 +64,29 @@ export function formatSalesAmount(
 
 /**
  * Formats a date for display in the monthly sales cards.
- * Returns format like "Enero - 01/2025" or "Septiembre - 09/2025".
- * 
+ * Returns format like "Sep 25" or "Jul 25".
+ *
  * @function formatDateForMonthCard
  * @param {Date} date - The date to format
- * @returns {string} Formatted date string with month name
- * 
+ * @returns {string} Formatted date string with abbreviated month and short year
+ *
  * @example
  * const january = new Date('2025-01-01');
  * const september = new Date('2025-09-01');
- * 
- * formatDateForMonthCard(january);  // "Enero - 01/2025"
- * formatDateForMonthCard(september); // "Septiembre - 09/2025"
+ *
+ * formatDateForMonthCard(january);  // "Ene 25"
+ * formatDateForMonthCard(september); // "Sep 25"
  */
 export function formatDateForMonthCard(date: Date): string {
-  const monthName = date.toLocaleDateString('es-MX', { month: 'long' });
-  const monthYear = date.toLocaleDateString('es-MX', {
-    month: '2-digit',
-    year: 'numeric'
-  });
-  
-  return `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} - ${monthYear}`;
+  const monthNames = {
+    0: 'Ene', 1: 'Feb', 2: 'Mar', 3: 'Abr', 4: 'May', 5: 'Jun',
+    6: 'Jul', 7: 'Ago', 8: 'Sep', 9: 'Oct', 10: 'Nov', 11: 'Dic'
+  };
+
+  const month = date.getMonth();
+  const year = date.getFullYear().toString().slice(-2); // Get last 2 digits of year
+
+  return `${monthNames[month as keyof typeof monthNames]} ${year}`;
 }
 
 /**
@@ -194,17 +196,17 @@ function generateRealisticMonthlySalesAmount(date: Date): number {
 
 /**
  * Generates mock monthly sales data for development and testing purposes.
- * Creates realistic sales amounts based on the provided monthly dates.
+ * Creates realistic sales amounts for the selected month plus 2 previous months (August and July).
  * Includes proper timezone handling for date comparisons.
- * 
+ *
  * @function generateMockMonthlySalesData
  * @param {Date[]} dates - Array of monthly dates to generate sales data for
- * @returns {SalesMonthData[]} Array of mock monthly sales data
- * 
+ * @returns {SalesMonthData[]} Array of mock monthly sales data for 3 months
+ *
  * @example
  * const months = generateMonthDays(new Date('2025-09-01'));
  * const mockData = generateMockMonthlySalesData(months);
- * // Returns realistic monthly sales data for the month
+ * // Returns realistic monthly sales data for Sep 25, Aug 25, Jul 25
  */
 export function generateMockMonthlySalesData(dates: Date[]): SalesMonthData[] {
   // Calculate the current month boundaries for accurate comparison
@@ -213,10 +215,35 @@ export function generateMockMonthlySalesData(dates: Date[]): SalesMonthData[] {
   const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   currentMonthStart.setHours(0, 0, 0, 0);
   currentMonthEnd.setHours(23, 59, 59, 999);
-  
-  return dates.map((date) => ({
+
+  // Generate data for 3 months: selected month, August, and July
+  const allMonths: Date[] = [];
+
+  if (dates.length > 0) {
+    const selectedDate = dates[0];
+
+    // Add the selected month
+    allMonths.push(new Date(selectedDate));
+
+    // Add August 2025
+    const augustDate = new Date(2025, 7, 1); // Month 7 = August
+    allMonths.push(augustDate);
+
+    // Add July 2025
+    const julyDate = new Date(2025, 6, 1); // Month 6 = July
+    allMonths.push(julyDate);
+  }
+
+  // Use specific dummy amounts for better demo data
+  const dummyAmounts = [
+    614812492.36, // September
+    587654123.89, // August
+    523789456.12  // July
+  ];
+
+  return allMonths.map((date, index) => ({
     date,
-    amount: generateRealisticMonthlySalesAmount(date),
+    amount: dummyAmounts[index] || generateRealisticMonthlySalesAmount(date),
     monthName: getMonthName(date),
     // Timezone-safe comparison: check if this date falls within current month
     isCurrentMonth: date >= currentMonthStart && date <= currentMonthEnd
@@ -258,9 +285,9 @@ export function validateMonthlySalesData(salesData: SalesMonthData[]): Validatio
     };
   }
   
-  // Should have exactly 1 item for a complete month
-  if (salesData.length !== 1) {
-    errors.push(`Monthly sales data should contain exactly 1 month, found ${salesData.length}`);
+  // Should have exactly 3 items (selected month + August + July)
+  if (salesData.length !== 3) {
+    errors.push(`Monthly sales data should contain exactly 3 months, found ${salesData.length}`);
   }
   
   // Validate each sales record

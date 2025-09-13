@@ -32,7 +32,7 @@ export function AppSidebar() {
             icon: LayoutGrid,
         },
         ...(isInstallable && !isInstalled ? [{
-            title: 'Install App',
+            title: 'Instalar App',
             href: '#',
             icon: Smartphone,
             onClick: async () => {

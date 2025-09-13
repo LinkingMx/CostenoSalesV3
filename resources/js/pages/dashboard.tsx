@@ -8,6 +8,7 @@ import { DailyChartComparison } from '@/components/daily-chart-comparison';
 import { WeeklySalesComparison, WeeklyErrorBoundary } from '@/components/weekly-sales-comparison';
 import { WeeklyChartComparison } from '@/components/weekly-chart-comparison';
 import { MonthlySalesComparison, MonthlyErrorBoundary } from '@/components/monthly-sales-comparison';
+import { MonthlyChartComparison } from '@/components/monthly-chart-comparison';
 import { CustomSalesComparison } from '@/components/custom-sales-comparison';
 import { CustomSalesBranches } from '@/components/custom-sales-branches';
 import { DailySalesBranches } from '@/components/daily-sales-branches';
@@ -57,10 +58,14 @@ export default function Dashboard() {
                 />
                 
                 <MonthlyErrorBoundary>
-                    <MonthlySalesComparison 
+                    <MonthlySalesComparison
                         selectedDateRange={selectedDateRange}
                     />
                 </MonthlyErrorBoundary>
+
+                <MonthlyChartComparison
+                    selectedDateRange={selectedDateRange}
+                />
                 
                 <DailySalesBranches 
                     selectedDateRange={selectedDateRange}
