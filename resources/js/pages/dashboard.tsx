@@ -47,8 +47,8 @@ export default function Dashboard() {
                         />
 
                         <DailyChartProvider selectedDateRange={selectedDateRange}>
-                            <DailyChartComparison />
                             <DailySalesComparison />
+                            <DailyChartComparison />
                         </DailyChartProvider>
 
                         <WeeklyErrorBoundary>

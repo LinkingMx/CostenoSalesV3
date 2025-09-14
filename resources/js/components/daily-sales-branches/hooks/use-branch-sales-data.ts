@@ -111,7 +111,15 @@ export function useBranchSalesData(
 
   // API fetch function - FIXED: Removed circular dependency on branches.length
   const fetchData = useCallback(async (isRefresh = false) => {
+    console.log('🎯 BRANCH SALES HOOK - fetchData called:', {
+      enabled,
+      isVisible,
+      formattedDates,
+      isRefresh
+    });
+
     if (!enabled || !isVisible || !formattedDates) {
+      console.log('🚫 BRANCH SALES HOOK - Early return due to conditions');
       return;
     }
 
