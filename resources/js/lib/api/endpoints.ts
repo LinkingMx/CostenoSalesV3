@@ -10,6 +10,7 @@ export const API_CONFIG = {
 
 export const API_ENDPOINTS = {
   HOURS_CHART: 'get_hours_chart',
+  MAIN_DASHBOARD: 'main_dashboard_data',
 } as const;
 
 export const getEndpointUrl = (endpoint: keyof typeof API_ENDPOINTS): string => {

@@ -1,6 +1,25 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 
 /**
+ * @fileoverview Type definitions for the Daily Sales Branches component system
+ *
+ * This file contains comprehensive TypeScript interfaces for the daily sales branches
+ * feature, including data structures for API integration, component props, and
+ * business logic types.
+ *
+ * Key features:
+ * - Full API integration with main_dashboard_data endpoint
+ * - Week-over-week percentage comparison calculations
+ * - Conditional rendering based on single-day selections
+ * - Spanish localization support for all UI elements
+ * - Rate limiting and performance optimizations
+ *
+ * @author CostenoSalesV3 Development Team
+ * @since 2025-09-14
+ * @version 1.2.0
+ */
+
+/**
  * Comprehensive sales data interface for a single branch location.
  * Contains all metrics needed to display detailed branch performance in Spanish-localized UI.
  * 
@@ -54,33 +73,36 @@ export interface BranchSalesData {
 
 /**
  * Props interface for the DailySalesBranches component.
- * Provides configuration options for displaying branch sales data with conditional visibility.
- * 
+ * Provides configuration options for displaying branch sales data with conditional visibility and API integration.
+ *
  * @interface DailySalesBranchesProps
  * @property {DateRange} [selectedDateRange] - Current date selection from main filter calendar
- * @property {BranchSalesData[]} [branches=DUMMY_BRANCHES_DATA] - Array of branch sales data to display
- * 
+ * @property {BranchSalesData[]} [branches] - Optional static branch data (overrides API integration)
+ *
  * @description This interface defines the external API for the DailySalesBranches component.
- * The component uses conditional rendering based on the selectedDateRange to ensure
- * data relevance - it only displays when a single day is selected.
- * 
+ * The component now supports both API integration and static data:
+ * - When `branches` is provided: Uses static data, disables API calls
+ * - When `branches` is undefined: Automatically fetches data from main_dashboard_data endpoint
+ * - Conditional rendering based on selectedDateRange (only shows for single-day selections)
+ *
  * @example
  * ```tsx
- * // Controlled usage with real data
- * <DailySalesBranches 
+ * // API-integrated usage (recommended for production)
+ * <DailySalesBranches selectedDateRange={singleDayRange} />
+ *
+ * // Static data usage (testing/fallback)
+ * <DailySalesBranches
  *   selectedDateRange={singleDayRange}
- *   branches={liveBranchData}
+ *   branches={staticBranchData}
  * />
- * 
- * // Default usage with dummy data (development)
- * <DailySalesBranches selectedDateRange={dateRange} />
- * 
+ *
  * // Will not render when multiple days selected
  * <DailySalesBranches selectedDateRange={multiDayRange} /> // Returns null
  * ```
- * 
+ *
  * @see {@link DateRange} for date range structure details
  * @see {@link BranchSalesData} for branch data structure
+ * @see {@link useBranchSalesData} for API integration hook
  * @see {@link isSingleDaySelected} for visibility logic
  */
 export interface DailySalesBranchesProps {

@@ -34,7 +34,7 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-medium leading-tight text-foreground text-left">
-                  {branch.name}
+                  {branch.name.length > 20 ? `${branch.name.substring(0, 20)}...` : branch.name}
                 </span>
               </div>
             </div>

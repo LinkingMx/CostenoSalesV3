@@ -1,3 +1,26 @@
+/**
+ * @fileoverview Utility functions and constants for Daily Sales Branches component
+ *
+ * This module provides essential utility functions for the daily sales branches feature,
+ * including date validation, currency formatting, and development data.
+ *
+ * Key utilities:
+ * - Date range validation for single-day selections
+ * - Currency formatting with Spanish localization support
+ * - Percentage formatting for growth indicators
+ * - Mock data for development and testing
+ * - Input validation with graceful error handling
+ *
+ * Performance optimizations:
+ * - Early returns for invalid inputs
+ * - Memoization-friendly pure functions
+ * - Error boundary protection for edge cases
+ *
+ * @author CostenoSalesV3 Development Team
+ * @since 2025-09-14
+ * @version 1.2.0
+ */
+
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { BranchSalesData } from './types';
 
