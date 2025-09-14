@@ -32,7 +32,7 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 10080), // 7 days for PWA
+    'lifetime' => (int) env('SESSION_LIFETIME', 43200), // 30 days for PWA persistence
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 
@@ -199,7 +199,7 @@ return [
     |
     */
 
-    'same_site' => env('SESSION_SAME_SITE', 'lax'),
+    'same_site' => env('SESSION_SAME_SITE', 'none'), // Required for PWA cross-origin requests
 
     /*
     |--------------------------------------------------------------------------

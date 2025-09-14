@@ -10,15 +10,58 @@ import React from 'react';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-// Register service worker for PWA
-console.log('🔧 Attempting to register Service Worker...');
+// PWA Detection and Enhanced Session Management
+const setupPWASessionManagement = () => {
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+        ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true) ||
+        document.referrer.includes('android-app://');
+
+    if (isPWA) {
+        console.log('🔐 PWA Mode detected - Enabling enhanced session management');
+
+        // Set PWA indicator cookie
+        document.cookie = 'pwa_mode=true; path=/; max-age=31536000; SameSite=None; Secure';
+
+        // Add PWA header to all fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = function(input: RequestInfo | URL, init?: RequestInit) {
+            const options = init || {};
+            options.headers = {
+                ...options.headers,
+                'X-Requested-With': 'PWA'
+            };
+            return originalFetch(input, options);
+        };
+
+        // Add PWA indicator to XMLHttpRequest
+        const originalOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(
+            method: string,
+            url: string | URL,
+            async?: boolean,
+            username?: string | null,
+            password?: string | null
+        ) {
+            const result = originalOpen.call(this, method, url, async ?? true, username, password);
+            this.setRequestHeader('X-Requested-With', 'PWA');
+            return result;
+        };
+    }
+};
+
+// Initialize PWA session management
+setupPWASessionManagement();
+
+// Register service worker for PWA with enhanced configuration
+console.log('🔧 Attempting to register Service Worker with enhanced session support...');
 const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
         console.log('🔄 PWA: New content available');
         // Use custom modal instead of browser confirm()
-        if ((window as any).__showPWAUpdateModal) {
-            (window as any).__showPWAUpdateModal();
+        const windowWithModal = window as Window & { __showPWAUpdateModal?: () => void };
+        if (windowWithModal.__showPWAUpdateModal) {
+            windowWithModal.__showPWAUpdateModal();
         } else {
             // Fallback for cases where modal isn't ready yet
             if (confirm('New content available. Reload?')) {

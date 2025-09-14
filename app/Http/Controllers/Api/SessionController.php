@@ -14,16 +14,16 @@ class SessionController extends Controller
      */
     public function refresh(Request $request): JsonResponse
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
 
         // Update session expiry
         $sessionLifetime = config('session.lifetime');
         $newExpiry = now()->addMinutes($sessionLifetime)->timestamp;
-        
+
         session(['session_expiry' => $newExpiry]);
-        
+
         // Touch the session to keep it alive
         $request->session()->regenerate();
 
@@ -39,19 +39,19 @@ class SessionController extends Controller
      */
     public function status(Request $request): JsonResponse
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return response()->json([
                 'authenticated' => false,
             ]);
         }
 
         $sessionExpiry = session('session_expiry');
-        
+
         return response()->json([
             'authenticated' => true,
             'user_id' => Auth::id(),
             'session_expiry' => $sessionExpiry,
-            'minutes_remaining' => $sessionExpiry ? (int)(($sessionExpiry - now()->timestamp) / 60) : null,
+            'minutes_remaining' => $sessionExpiry ? (int) (($sessionExpiry - now()->timestamp) / 60) : null,
         ]);
     }
 }

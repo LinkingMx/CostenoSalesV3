@@ -25,7 +25,7 @@ export default defineConfig({
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff,woff2}'],
                 maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB
                 navigateFallback: '/offline.html',
-                navigateFallbackDenylist: [/^\/api/, /^\/login/, /^\/register/],
+                navigateFallbackDenylist: [/^\/api/, /^\/login/, /^\/register/, /^\/logout/, /^\/password/],
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -71,13 +71,17 @@ export default defineConfig({
                         }
                     },
                     {
-                        urlPattern: /\/(dashboard|settings|login|register)/i,
-                        handler: 'StaleWhileRevalidate',
+                        urlPattern: /\/(dashboard|settings)/i,
+                        handler: 'NetworkFirst',
                         options: {
                             cacheName: 'pages-cache',
+                            networkTimeoutSeconds: 3,
                             expiration: {
                                 maxEntries: 20,
                                 maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200]
                             }
                         }
                     },

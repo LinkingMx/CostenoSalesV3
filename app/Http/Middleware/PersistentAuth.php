@@ -19,15 +19,24 @@ class PersistentAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Detect if request is from PWA
+        $isPwa = self::isPwaRequest($request);
+
         // Check if user is already authenticated
         if (Auth::check()) {
             $this->refreshSessionIfNeeded($request);
+
+            // Auto-create persistent token for PWA users
+            if ($isPwa && ! $request->cookie('persistent_token')) {
+                self::createPersistentToken(Auth::id());
+            }
+
             return $next($request);
         }
 
         // Try to authenticate using persistent token
         $token = $request->cookie('persistent_token');
-        
+
         if ($token) {
             $this->authenticateWithToken($token);
         }
@@ -42,18 +51,19 @@ class PersistentAuth
     {
         $sessionLifetime = config('session.lifetime');
         $sessionExpiry = session('session_expiry');
-        
-        if (!$sessionExpiry) {
+
+        if (! $sessionExpiry) {
             session(['session_expiry' => now()->addMinutes($sessionLifetime)->timestamp]);
+
             return;
         }
 
         $minutesUntilExpiry = (int) (($sessionExpiry - now()->timestamp) / 60);
-        
-        // Refresh if less than 1 day remaining
-        if ($minutesUntilExpiry < 1440) {
+
+        // Refresh if less than 7 days remaining (more aggressive for PWA)
+        if ($minutesUntilExpiry < 10080) {
             session(['session_expiry' => now()->addMinutes($sessionLifetime)->timestamp]);
-            
+
             // Also refresh the persistent token if it exists
             if ($request->cookie('persistent_token')) {
                 $this->refreshPersistentToken($request->cookie('persistent_token'));
@@ -73,12 +83,12 @@ class PersistentAuth
 
         if ($tokenData) {
             Auth::loginUsingId($tokenData->user_id, true);
-            
+
             // Update last used timestamp
             DB::table('persistent_tokens')
                 ->where('id', $tokenData->id)
                 ->update(['last_used_at' => now()]);
-            
+
             // Set session expiry
             session(['session_expiry' => now()->addMinutes(config('session.lifetime'))->timestamp]);
         }
@@ -93,8 +103,8 @@ class PersistentAuth
             ->where('token', hash('sha256', $token))
             ->where('expires_at', '>', now())
             ->update([
-                'expires_at' => now()->addDays(30),
-                'last_used_at' => now()
+                'expires_at' => now()->addDays(90), // Extended for PWA
+                'last_used_at' => now(),
             ]);
     }
 
@@ -104,17 +114,26 @@ class PersistentAuth
     public static function createPersistentToken(int $userId): string
     {
         $token = Str::random(60);
-        
+        $request = request();
+
         DB::table('persistent_tokens')->insert([
             'user_id' => $userId,
             'token' => hash('sha256', $token),
-            'expires_at' => now()->addDays(30),
+            'user_agent' => $request->userAgent(),
+            'ip_address' => $request->ip(),
+            'is_pwa' => self::isPwaRequest($request),
+            'expires_at' => now()->addDays(90), // Extended for PWA
             'created_at' => now(),
             'last_used_at' => now(),
         ]);
 
-        Cookie::queue('persistent_token', $token, 60 * 24 * 30); // 30 days
-        
+        // Set cookie with proper PWA-compatible settings
+        Cookie::queue(
+            Cookie::make('persistent_token', $token, 60 * 24 * 90) // 90 days
+                ->withSameSite('none')
+                ->withSecure($request->secure())
+        );
+
         return $token;
     }
 
@@ -126,7 +145,28 @@ class PersistentAuth
         DB::table('persistent_tokens')
             ->where('user_id', $userId)
             ->delete();
-        
+
         Cookie::queue(Cookie::forget('persistent_token'));
+    }
+
+    /**
+     * Check if the request is from a PWA
+     */
+    private static function isPwaRequest(Request $request): bool
+    {
+        // Check for standalone display mode (PWA)
+        $displayMode = $request->header('Sec-Fetch-Dest');
+        $userAgent = $request->userAgent();
+
+        // Various ways to detect PWA
+        return
+            // Check for standalone mode in referrer
+            str_contains($request->header('Referer', ''), 'mode=standalone') ||
+            // Check for specific PWA user agents
+            str_contains($userAgent, 'Mobile') ||
+            // Check for display-mode media query (sent by some PWAs)
+            $request->query('pwa') === 'true' ||
+            // Check for custom PWA header
+            $request->header('X-Requested-With') === 'PWA';
     }
 }

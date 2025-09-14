@@ -20,14 +20,42 @@
             })();
         </script>
 
-        {{-- Inline style to set the HTML background color based on our theme in app.css --}}
+        {{-- Inline style to set the HTML background color based on our theme --}}
         <style>
-            html, body {
-                background-color: #F8F8F8;
+            :root {
+                --background: #F8F8F8;
+                --foreground: #5A5A5A;
             }
 
-            html.dark, html.dark body {
-                background-color: oklch(0.145 0 0);
+            html.dark {
+                --background: #1A1A1A;
+                --foreground: #E0E0E0;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html {
+                background-color: var(--background) !important;
+                color: var(--foreground);
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background-color: var(--background) !important;
+                color: var(--foreground);
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow-x: hidden;
+            }
+
+            #app {
+                min-height: 100vh;
+                background-color: var(--background);
             }
         </style>
 
@@ -39,7 +67,8 @@
         <link rel="manifest" href="/manifest.json">
         
         {{-- PWA Meta Tags --}}
-        <meta name="theme-color" content="#020817">
+        <meta name="theme-color" content="#F8F8F8">
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1A1A1A">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Costeno Sales">

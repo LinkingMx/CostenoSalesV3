@@ -19,7 +19,7 @@ Route::prefix('api')->group(function () {
     Route::post('/session/refresh', [SessionController::class, 'refresh'])
         ->middleware('auth')
         ->name('api.session.refresh');
-    
+
     Route::get('/session/status', [SessionController::class, 'status'])
         ->name('api.session.status');
 });
