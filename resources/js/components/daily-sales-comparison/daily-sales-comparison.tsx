@@ -9,11 +9,9 @@ import {
   generatePreviousDays,
   generateMockSalesData,
   validateSalesDayData,
-  validateDateRange,
   convertProcessedChartDataToSalesData
 } from './utils';
 import { useDailyChartContext } from '@/contexts/daily-chart-context';
-import { isSingleDaySelected } from '@/lib/utils/date-validation';
 
 /**
  * DailySalesComparison - Main component for displaying daily sales comparison.

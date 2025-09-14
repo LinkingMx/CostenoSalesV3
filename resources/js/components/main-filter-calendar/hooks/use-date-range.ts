@@ -102,34 +102,41 @@ export function useDateRange({
 
   /**
    * Handles day clicks on the calendar for manual date range selection.
-   * Implements a two-click selection pattern: first click sets start date,
-   * second click sets end date with automatic ordering.
-   * 
+   * Implements a smart selection pattern: single click creates same-day range,
+   * second click on different day creates multi-day range with automatic ordering.
+   *
    * @function handleDayClick
    * @param {number} day - Day of month that was clicked (1-31)
-   * 
+   *
    * @description Selection logic:
-   * 1. No existing range OR complete range exists → Start new range with clicked date
+   * 1. No existing range OR complete range exists → Create same-day range (from = to = clicked date)
    * 2. Partial range (only 'from' date) → Set 'to' date, auto-ordering if necessary
-   * 3. Always switches to 'custom' period when manually selecting dates
+   * 3. Clicking same day twice → Create same-day range
+   * 4. Always switches to 'custom' period when manually selecting dates
    */
   const handleDayClick = React.useCallback((day: number) => {
     const clickedDate = new Date(currentYear, currentMonth, day);
     // Switch to custom period since user is manually selecting
     setSelectedPeriod('custom');
-    
-    // Case 1: Start new range selection
+
+    // Case 1: Start new range selection - create same-day range
     if (!tempRange?.from || (tempRange.from && tempRange.to)) {
-      setTempRange({ from: clickedDate, to: undefined });
+      setTempRange({ from: clickedDate, to: clickedDate });
       return;
     }
-    
+
     // Case 2: Complete range selection with existing 'from' date
     if (tempRange.from && !tempRange.to) {
       const fromTime = tempRange.from.getTime();
       const clickedTime = clickedDate.getTime();
-      
-      // Ensure proper date ordering: from <= to
+
+      // If clicking the same day, keep it as same-day range
+      if (clickedTime === fromTime) {
+        setTempRange({ from: clickedDate, to: clickedDate });
+        return;
+      }
+
+      // Different day - ensure proper date ordering: from <= to
       if (clickedTime < fromTime) {
         setTempRange({ from: clickedDate, to: tempRange.from });
       } else {

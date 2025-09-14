@@ -15,6 +15,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
 import type { BranchSalesData } from '../types';
 import { fetchMainDashboardData, formatDateForApi, isValidDateRange } from '@/lib/services/main-dashboard.service';
 import { isSingleDaySelected, isSelectedDateToday } from '../utils';
+import { useTrackedApiCall } from '@/hooks/use-tracked-api-call';
 
 interface UseBranchSalesDataOptions {
   /** Whether to enable automatic data fetching */
@@ -58,6 +59,16 @@ export function useBranchSalesData(
     fallbackData = [],
     useFallbackDuringLoad = false
   } = options;
+
+  // API tracking integration
+  const { makeTrackedCall } = useTrackedApiCall({
+    componentName: 'DailySalesBranches',
+    defaultMetadata: {
+      endpoint: 'main_dashboard_data',
+      priority: 'medium',
+      description: 'Branch sales data with week-over-week comparison'
+    }
+  });
 
   // State management
   const [branches, setBranches] = useState<BranchSalesData[]>(fallbackData);
@@ -134,10 +145,19 @@ export function useBranchSalesData(
       // For single day selections, include previous week comparison for percentage calculation
       const isSingleDay = formattedDates.startDate === formattedDates.endDate;
 
-      const result = await fetchMainDashboardData(
-        formattedDates.startDate,
-        formattedDates.endDate,
-        isSingleDay // Include previous week data only for single day comparisons
+      const result = await makeTrackedCall(
+        () => fetchMainDashboardData(
+          formattedDates.startDate,
+          formattedDates.endDate,
+          isSingleDay // Include previous week data only for single day comparisons
+        ),
+        {
+          callId: `branch-sales-${formattedDates.startDate}-${isRefresh ? 'refresh' : 'auto'}`,
+          metadata: {
+            priority: 'medium',
+            description: `Branch sales for ${formattedDates.startDate}${isSingleDay ? ' with prev week comparison' : ''}`
+          }
+        }
       );
 
       // Check if request was aborted or component unmounted
@@ -155,18 +175,47 @@ export function useBranchSalesData(
           return prevBranches;
         });
       } else {
-        setBranches(result.branches);
-        setTotalSales(result.totalSales);
-        setIsFromCache(false); // Assume fresh data for now
-        setError(null);
-
         if (process.env.NODE_ENV === 'development') {
-          console.log('Branch sales data loaded successfully:', {
-            branchCount: result.branches.length,
+          console.log('🔍 API Response received:', {
+            hasError: !!result.error,
+            branchesType: typeof result.branches,
+            branchesIsArray: Array.isArray(result.branches),
+            branchesLength: result.branches?.length || 'N/A',
             totalSales: result.totalSales,
-            includedPreviousWeek: isSingleDay
+            includedPreviousWeek: isSingleDay,
+            firstBranchSample: result.branches?.[0] || 'N/A'
           });
         }
+
+        // Validate that branches is actually an array with data
+        if (!result.branches || !Array.isArray(result.branches)) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ API returned invalid branches data structure:', result.branches);
+          }
+          setBranches(fallbackData.length > 0 ? fallbackData : []);
+          setError('Estructura de datos inválida');
+        } else if (result.branches.length === 0) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ API returned empty branches array for date:', formattedDates.startDate);
+          }
+          // Use fallback data when API returns empty array
+          setBranches(fallbackData.length > 0 ? fallbackData : []);
+          setError(null);
+        } else {
+          setBranches(result.branches);
+          setTotalSales(result.totalSales);
+          setError(null);
+
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Branch sales data loaded successfully:', {
+              branchCount: result.branches.length,
+              totalSales: result.totalSales,
+              includedPreviousWeek: isSingleDay
+            });
+          }
+        }
+
+        setIsFromCache(false); // Assume fresh data for now
       }
     } catch (err) {
       // Check if request was aborted or component unmounted

@@ -17,6 +17,7 @@ export interface UseHoursChartOptions {
   enableRetry?: boolean;
   maxRetries?: number;
   debounceMs?: number;
+  onApiStart?: () => void;
   onError?: (error: string) => void;
   onSuccess?: (data: ProcessedChartData) => void;
 }
@@ -40,6 +41,7 @@ export const useHoursChart = (
     enableRetry = true,
     maxRetries = 3,
     debounceMs = 300,
+    onApiStart,
     onError,
     onSuccess,
   } = options;
@@ -97,6 +99,9 @@ export const useHoursChart = (
 
     setIsLoading(true);
     setError(null);
+
+    // Notify that API call is starting
+    onApiStart?.();
 
     try {
       const result = enableRetry

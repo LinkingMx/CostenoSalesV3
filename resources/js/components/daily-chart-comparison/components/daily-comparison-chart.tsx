@@ -6,12 +6,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  ReferenceDot
+  ResponsiveContainer
 } from 'recharts';
 import type { DailyComparisonChartProps } from '../types';
 import { formatChartAmount, getDefaultDailyChartTheme } from '../utils';
-import { formatFullDayName } from '@/lib/utils/currency-formatting';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 /**
@@ -123,12 +121,7 @@ export function DailyComparisonChart({
     cornerRadius: 4,
     maxBarSize: orientation === 'vertical' ? 80 : undefined
   }), [orientation, isMobile]);
-  
-  // Format Y-axis tick values for better readability
-  const formatYAxisTick = React.useCallback((value: number) => {
-    return formatChartAmount(value, true); // Use abbreviated format
-  }, []);
-  
+
   // Prepare chart data from comparison points
   const chartData = React.useMemo(() => {
     return data.comparisonData.map(point => ({

@@ -3,7 +3,7 @@
  * Single API call shared between daily-chart-comparison and daily-sales-comparison
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { formatDateForApi } from '@/lib/services/hours-chart.service';
 import { useHoursChart, type UseHoursChartOptions } from './use-hours-chart';
 import type { ProcessedChartData } from '@/lib/services/types';
@@ -11,7 +11,8 @@ import { isSingleDaySelected } from '@/lib/utils/date-validation';
 import type { DateRange } from '@/components/main-filter-calendar';
 
 export interface UseSharedHoursChartOptions extends UseHoursChartOptions {
-  // Additional options can be added here if needed
+  onApiStart?: () => void;
+  onApiComplete?: (success: boolean) => void;
 }
 
 export interface UseSharedHoursChartReturn {
@@ -30,6 +31,8 @@ export const useSharedHoursChart = (
   selectedDateRange: DateRange | undefined,
   options: UseSharedHoursChartOptions = {}
 ): UseSharedHoursChartReturn => {
+  const { onApiStart, onApiComplete, ...hoursChartOptions } = options;
+
   // Check if the date range is valid for daily components
   const isValidForDailyComponents = useMemo(() => {
     return isSingleDaySelected(selectedDateRange);
@@ -43,6 +46,20 @@ export const useSharedHoursChart = (
     return formatDateForApi(selectedDateRange.from);
   }, [isValidForDailyComponents, selectedDateRange?.from]);
 
+  // Enhanced options with API tracking callbacks
+  const enhancedOptions = useMemo(() => ({
+    ...hoursChartOptions,
+    onApiStart,
+    onSuccess: (data: ProcessedChartData) => {
+      onApiComplete?.(true);
+      hoursChartOptions.onSuccess?.(data);
+    },
+    onError: (error: string) => {
+      onApiComplete?.(false);
+      hoursChartOptions.onError?.(error);
+    }
+  }), [hoursChartOptions, onApiStart, onApiComplete]);
+
   // Use the existing useHoursChart hook
   const {
     data,
@@ -50,7 +67,7 @@ export const useSharedHoursChart = (
     error,
     refetch,
     clearCache
-  } = useHoursChart(apiDateString, options);
+  } = useHoursChart(apiDateString, enhancedOptions);
 
   return {
     data,

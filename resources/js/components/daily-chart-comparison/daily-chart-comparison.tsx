@@ -10,7 +10,6 @@ import {
   validateDailyChartData,
   convertApiDataToChartData
 } from './utils';
-import { isSingleDaySelected } from '@/lib/utils/date-validation';
 import { useDailyChartContext } from '@/contexts/daily-chart-context';
 
 // Performance: Pre-memoized header component to prevent unnecessary re-renders

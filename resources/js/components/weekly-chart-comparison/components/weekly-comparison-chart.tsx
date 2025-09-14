@@ -101,12 +101,7 @@ export function WeeklyComparisonChart({
     dotSize: 4,
     activeDotSize: 6
   }), []);
-  
-  // Format Y-axis tick values for better readability
-  const formatYAxisTick = React.useCallback((value: number) => {
-    return formatChartAmount(value, true); // Use abbreviated format
-  }, []);
-  
+
   // Validate data before rendering
   if (!data?.dailyData || data.dailyData.length === 0) {
     return (

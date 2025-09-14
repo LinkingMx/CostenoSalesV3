@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useSharedHoursChart } from '@/hooks/use-shared-hours-chart';
+import { useApiLoadingContext } from '@/contexts/api-loading-context';
 import type { ProcessedChartData } from '@/lib/services/types';
 import type { DateRange } from '@/components/main-filter-calendar';
 
@@ -26,15 +27,28 @@ interface DailyChartProviderProps {
 
 /**
  * Provider component that makes a single API call and shares the data
+ * Now integrated with global API loading tracking system
  */
 export const DailyChartProvider: React.FC<DailyChartProviderProps> = ({
   children,
   selectedDateRange
 }) => {
+  const { registerApiCall, completeApiCall } = useApiLoadingContext();
+
   const sharedData = useSharedHoursChart(selectedDateRange, {
     enableRetry: true,
     maxRetries: 3,
     debounceMs: 300,
+    onApiStart: () => {
+      registerApiCall('daily-chart-shared-api', 'DailyChartProvider', {
+        endpoint: 'get_hours_chart',
+        priority: 'high',
+        description: 'Shared daily chart data for multiple components'
+      });
+    },
+    onApiComplete: (success: boolean) => {
+      completeApiCall('daily-chart-shared-api', success);
+    },
     onError: (errorMessage: string) => {
       if (process.env.NODE_ENV === 'development') {
         console.error('Shared daily chart API error:', errorMessage);

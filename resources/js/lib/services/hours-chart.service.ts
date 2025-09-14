@@ -9,7 +9,6 @@ import { ApiError } from '../api/types';
 import {
   HoursChartRequest,
   HoursChartApiResponse,
-  DayData,
   ProcessedDayData,
   ProcessedChartData,
 } from './types';

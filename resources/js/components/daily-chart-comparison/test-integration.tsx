@@ -7,21 +7,15 @@
 
 import React from 'react';
 import { DailyChartComparison } from './index';
-import type { DateRange } from '@/components/main-filter-calendar';
 
 /**
  * Example 1: Basic usage with API data (default)
  */
 export function ExampleWithAPI() {
-  const [selectedDateRange, setSelectedDateRange] = React.useState<DateRange>({
-    from: new Date(),
-    to: new Date()
-  });
-
   return (
     <DailyChartComparison
-      selectedDateRange={selectedDateRange}
-      // API data will be fetched automatically
+      // API data will be fetched automatically from DailyChartProvider context
+      // selectedDateRange is provided by the parent DailyChartProvider
     />
   );
 }
@@ -30,15 +24,10 @@ export function ExampleWithAPI() {
  * Example 2: Using mock data for development/testing
  */
 export function ExampleWithMockData() {
-  const [selectedDateRange, setSelectedDateRange] = React.useState<DateRange>({
-    from: new Date(),
-    to: new Date()
-  });
-
   return (
     <DailyChartComparison
-      selectedDateRange={selectedDateRange}
       useMockData={true} // Force mock data instead of API
+      // selectedDateRange is provided by the parent DailyChartProvider
     />
   );
 }
@@ -47,11 +36,6 @@ export function ExampleWithMockData() {
  * Example 3: Custom chart data override
  */
 export function ExampleWithCustomData() {
-  const [selectedDateRange, setSelectedDateRange] = React.useState<DateRange>({
-    from: new Date(),
-    to: new Date()
-  });
-
   const customChartData = {
     selectedDay: {
       date: new Date(),
@@ -92,8 +76,8 @@ export function ExampleWithCustomData() {
 
   return (
     <DailyChartComparison
-      selectedDateRange={selectedDateRange}
       chartData={customChartData} // Override with custom data
+      // selectedDateRange is provided by the parent DailyChartProvider
     />
   );
 }
@@ -102,8 +86,6 @@ export function ExampleWithCustomData() {
  * Example 4: Full integration with MainFilterCalendar
  */
 export function ExampleFullIntegration() {
-  const [selectedDateRange, setSelectedDateRange] = React.useState<DateRange | undefined>();
-
   return (
     <div className="space-y-4">
       {/* Date selector */}
@@ -117,8 +99,8 @@ export function ExampleFullIntegration() {
 
       {/* Chart component */}
       <DailyChartComparison
-        selectedDateRange={selectedDateRange}
-        // Will automatically fetch API data based on selected date
+        // Will automatically fetch API data based on DailyChartProvider context
+        // selectedDateRange is managed by the parent DailyChartProvider
       />
     </div>
   );

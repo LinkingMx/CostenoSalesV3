@@ -78,21 +78,13 @@ MemoizedSalesCustomCard.displayName = 'MemoizedSalesCustomCard';
  * @see {@link isCustomRangeSelected} for range validation logic
  */
 export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSalesComparisonProps) {
-  // Early return: Only proceed if custom range is selected
-  if (!isCustomRangeSelected(selectedDateRange)) {
-    return null;
-  }
-  
-  // Validate date range before proceeding
-  const dateRangeValidation = validateCustomDateRange(selectedDateRange);
-  if (!dateRangeValidation.isValid) {
-    console.error('CustomSalesComparison: Custom date range validation failed:', dateRangeValidation.errors);
-    return null;
-  }
-  
   // Generate display data with proper validation
   // Priority: custom salesData prop > generated mock data
   const displayData: SalesCustomData[] = React.useMemo(() => {
+    if (!isCustomRangeSelected(selectedDateRange)) {
+      return [];
+    }
+
     if (salesData && salesData.length > 0) {
       // Validate provided sales data
       const validation = validateCustomSalesData(salesData);
@@ -103,10 +95,22 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
       }
       return salesData;
     }
-    
+
     // Generate mock data for the custom range
     return generateMockCustomSalesData(selectedDateRange!);
   }, [selectedDateRange, salesData]);
+
+  // Early return: Only proceed if custom range is selected
+  if (!isCustomRangeSelected(selectedDateRange)) {
+    return null;
+  }
+
+  // Validate date range before proceeding
+  const dateRangeValidation = validateCustomDateRange(selectedDateRange);
+  if (!dateRangeValidation.isValid) {
+    console.error('CustomSalesComparison: Custom date range validation failed:', dateRangeValidation.errors);
+    return null;
+  }
   
   // Validate final display data
   const displayDataValidation = validateCustomSalesData(displayData);

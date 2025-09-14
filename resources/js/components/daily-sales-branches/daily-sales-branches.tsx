@@ -70,6 +70,21 @@ export function DailySalesBranches({
   // Use static branches if provided, otherwise use API data
   const displayBranches = staticBranches || branches;
 
+  // Debug logging to track data flow
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && selectedDateRange) {
+      console.log('🔍 DailySalesBranches component state:', {
+        isVisible,
+        isLoading,
+        error,
+        staticBranches: !!staticBranches,
+        branchesFromAPI: branches?.length || 0,
+        displayBranches: displayBranches?.length || 0,
+        selectedDate: selectedDateRange?.from?.toISOString()?.split('T')[0]
+      });
+    }
+  }, [selectedDateRange, isVisible, isLoading, error, staticBranches, branches, displayBranches]);
+
   // Memoize validated and sorted branches to prevent unnecessary processing on each render
   // Includes data validation and sorting by total sales in descending order for better UX
   const sortedBranches = React.useMemo(() => {

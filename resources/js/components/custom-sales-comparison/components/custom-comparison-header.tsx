@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Calendar } from 'lucide-react';
 import type { CustomComparisonHeaderProps } from '../types';
-import { formatCustomDateRange } from '../utils/formatting';
 
 /**
  * CustomComparisonHeader - Header component for the custom range sales comparison section.
@@ -32,15 +31,10 @@ import { formatCustomDateRange } from '../utils/formatting';
  * />
  * ```
  */
-export function CustomComparisonHeader({ 
+export function CustomComparisonHeader({
   title = "Análisis de ventas",
-  subtitle = "Rango seleccionado",
-  dateRange
+  subtitle = "Rango seleccionado"
 }: CustomComparisonHeaderProps) {
-  // Format the date range for display if provided
-  const formattedRange = dateRange && dateRange.from && dateRange.to ? 
-    formatCustomDateRange(dateRange.from, dateRange.to) : '';
-
   return (
     <div className="flex items-center gap-3 mb-3">
       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">

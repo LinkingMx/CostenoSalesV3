@@ -16,6 +16,8 @@ import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
 import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
 import { useState } from 'react';
 import { DailyChartProvider } from '@/contexts/daily-chart-context';
+import { ApiLoadingProvider } from '@/contexts/api-loading-context';
+import { DashboardLoadingCoordinator } from '@/components/loading/dashboard-loading-coordinator';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -34,57 +36,63 @@ export default function Dashboard() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl bg-background p-4">
-                <MainFilterCalendar 
-                    value={selectedDateRange} 
-                    onChange={handleDateChange}
-                />
-                
-                <DailyChartProvider selectedDateRange={selectedDateRange}>
-                    <DailyChartComparison />
-                    <DailySalesComparison />
-                </DailyChartProvider>
-                
-                <WeeklyErrorBoundary>
-                    <WeeklySalesComparison 
-                        selectedDateRange={selectedDateRange}
-                    />
-                </WeeklyErrorBoundary>
-                
-                <WeeklyChartComparison 
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <MonthlyErrorBoundary>
-                    <MonthlySalesComparison
-                        selectedDateRange={selectedDateRange}
-                    />
-                </MonthlyErrorBoundary>
+            <ApiLoadingProvider>
+                <DashboardLoadingCoordinator
+                    dateRange={selectedDateRange}
+                >
+                    <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl bg-background p-4">
+                        <MainFilterCalendar
+                            value={selectedDateRange}
+                            onChange={handleDateChange}
+                        />
 
-                <MonthlyChartComparison
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <DailySalesBranches 
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <WeeklySalesBranches 
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <MonthlySalesBranches 
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <CustomSalesComparison 
-                    selectedDateRange={selectedDateRange}
-                />
-                
-                <CustomSalesBranches 
-                    selectedDateRange={selectedDateRange}
-                />
-            </div>
+                        <DailyChartProvider selectedDateRange={selectedDateRange}>
+                            <DailyChartComparison />
+                            <DailySalesComparison />
+                        </DailyChartProvider>
+
+                        <WeeklyErrorBoundary>
+                            <WeeklySalesComparison
+                                selectedDateRange={selectedDateRange}
+                            />
+                        </WeeklyErrorBoundary>
+
+                        <WeeklyChartComparison
+                            selectedDateRange={selectedDateRange}
+                        />
+
+                        <MonthlyErrorBoundary>
+                            <MonthlySalesComparison
+                                selectedDateRange={selectedDateRange}
+                            />
+                        </MonthlyErrorBoundary>
+
+                        <MonthlyChartComparison
+                            selectedDateRange={selectedDateRange}
+                        />
+
+                        <DailySalesBranches
+                            selectedDateRange={selectedDateRange}
+                        />
+
+                        <WeeklySalesBranches
+                            selectedDateRange={selectedDateRange}
+                        />
+
+                        <MonthlySalesBranches
+                            selectedDateRange={selectedDateRange}
+                        />
+
+                        <CustomSalesComparison
+                            selectedDateRange={selectedDateRange}
+                        />
+
+                        <CustomSalesBranches
+                            selectedDateRange={selectedDateRange}
+                        />
+                    </div>
+                </DashboardLoadingCoordinator>
+            </ApiLoadingProvider>
         </AppLayout>
     );
 }
