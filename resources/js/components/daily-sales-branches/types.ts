@@ -16,7 +16,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  *
  * @author CostenoSalesV3 Development Team
  * @since 2025-09-14
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 /**
@@ -34,6 +34,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {number} averageTicket - Average transaction amount per ticket
  * @property {number} totalTickets - Total number of transactions/tickets processed
  * @property {string} avatar - Single character identifier for branch visual display
+ * @property {number} [previousWeekSales] - Total sales from same day previous week (for comparison context)
  * 
  * @description This interface represents the core data structure for branch sales analytics.
  * All monetary values are expected to be in USD and will be formatted using Spanish
@@ -69,6 +70,7 @@ export interface BranchSalesData {
   averageTicket: number;
   totalTickets: number;
   avatar: string;
+  previousWeekSales?: number;
 }
 
 /**
@@ -113,13 +115,15 @@ export interface DailySalesBranchesProps {
 /**
  * Props interface for individual BranchCollapsibleItem components.
  * Defines the data needed to render a single branch as an independent collapsible.
- * 
+ *
  * @interface BranchCollapsibleItemProps
  * @property {BranchSalesData} branch - Complete branch sales data object
- * 
+ * @property {boolean} [isToday] - Whether the selected date is today (affects open accounts display)
+ *
  * @description This interface ensures type safety for individual branch collapsible items.
  * Unlike accordion items, collapsibles don't require a value prop since each operates independently.
- * 
+ * The isToday flag is used to conditionally show open accounts (only relevant for current day).
+ *
  * @example
  * ```tsx
  * // Typical usage within map iteration
@@ -127,13 +131,15 @@ export interface DailySalesBranchesProps {
  *   <BranchCollapsibleItem
  *     key={branch.id}
  *     branch={branch}
+ *     isToday={selectedDateIsToday}
  *   />
  * ))}
  * ```
- * 
+ *
  * @see {@link BranchSalesData} for branch data structure
  * @see {@link DailySalesBranches} for parent component usage
  */
 export interface BranchCollapsibleItemProps {
   branch: BranchSalesData;
+  isToday?: boolean;
 }

@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { BranchSalesData } from '../types';
 import { fetchMainDashboardData, formatDateForApi, isValidDateRange } from '@/lib/services/main-dashboard.service';
-import { isSingleDaySelected } from '../utils';
+import { isSingleDaySelected, isSelectedDateToday } from '../utils';
 
 interface UseBranchSalesDataOptions {
   /** Whether to enable automatic data fetching */
@@ -38,6 +38,8 @@ interface UseBranchSalesDataReturn {
   isFromCache: boolean;
   /** Whether component should be visible (single day selected) */
   isVisible: boolean;
+  /** Whether the selected date is today */
+  isToday: boolean;
   /** Manual refresh function */
   refresh: () => Promise<void>;
   /** Clear any errors */
@@ -76,6 +78,11 @@ export function useBranchSalesData(
   // Memoize visibility check to prevent unnecessary recalculations
   const isVisible = useMemo(() => {
     return isSingleDaySelected(selectedDateRange);
+  }, [selectedDateRange]);
+
+  // Memoize today check to prevent unnecessary recalculations
+  const isTodaySelected = useMemo(() => {
+    return isSelectedDateToday(selectedDateRange);
   }, [selectedDateRange]);
 
   // Memoize date formatting to prevent unnecessary recalculations
@@ -272,9 +279,10 @@ export function useBranchSalesData(
     error,
     isFromCache,
     isVisible,
+    isToday: isTodaySelected,
     refresh,
     clearError,
-  }), [memoizedBranches, memoizedTotalSales, isLoading, error, isFromCache, isVisible, refresh, clearError]);
+  }), [memoizedBranches, memoizedTotalSales, isLoading, error, isFromCache, isVisible, isTodaySelected, refresh, clearError]);
 }
 
 export default useBranchSalesData;

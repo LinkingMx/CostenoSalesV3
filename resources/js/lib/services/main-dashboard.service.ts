@@ -86,11 +86,13 @@ const processBranchData = (
   // Calculate total tickets from both open and closed accounts
   const totalTickets = branchData.open_accounts.total + branchData.closed_ticket.total;
 
-  // Calculate percentage based on week-over-week comparison
+  // Calculate percentage based on week-over-week comparison and store previous week sales
   let calculatedPercentage = 100; // Default to 100% if no previous data
+  let previousWeekSales: number | undefined;
 
   if (previousBranchData) {
     const previousTotalSales = previousBranchData.open_accounts.money + previousBranchData.closed_ticket.money;
+    previousWeekSales = previousTotalSales;
 
     if (previousTotalSales > 0) {
       calculatedPercentage = ((totalSales - previousTotalSales) / previousTotalSales) * 100;
@@ -119,6 +121,7 @@ const processBranchData = (
     averageTicket: branchData.average_ticket,
     totalTickets,
     avatar,
+    previousWeekSales,
   };
 };
 

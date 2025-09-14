@@ -58,6 +58,7 @@ export function DailySalesBranches({
     isLoading,
     error,
     isVisible,
+    isToday,
     refresh,
     clearError
   } = useBranchSalesData(selectedDateRange, {
@@ -247,6 +248,7 @@ export function DailySalesBranches({
             <BranchCollapsibleItem
               key={branch.id} // Using branch.id ensures stable React keys for proper reconciliation
               branch={branch}
+              isToday={isToday}
             />
           ))}
         </div>

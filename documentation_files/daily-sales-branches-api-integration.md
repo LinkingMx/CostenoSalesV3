@@ -4,8 +4,9 @@
 
 This document provides comprehensive documentation for the API integration between the `daily-sales-branches` component and the `main_dashboard_data` endpoint. The integration includes real-time data fetching, week-over-week comparison calculations, and advanced performance optimizations.
 
-**Component Version:** 1.2.0
+**Component Version:** 1.3.0
 **Integration Date:** September 14, 2025
+**Latest Update:** September 14, 2025
 **API Endpoint:** `http://192.168.100.20/api/main_dashboard_data`
 
 ## Architecture Overview
@@ -216,6 +217,15 @@ The component uses intelligent conditional rendering:
 - ❌ **Hidden:** When no date is selected
 - ❌ **Hidden:** During incomplete date selection
 
+### Smart Card Display
+The component includes intelligent card filtering based on date selection:
+
+- **Open Accounts Card:** Only displayed when today's date is selected
+- **Closed Tickets Card:** Always displayed for any selected date
+- **Average Ticket Card:** Always displayed for any selected date
+
+This logic prevents showing irrelevant "Open Accounts" data for historical dates where all accounts would be closed.
+
 ### State Management
 1. **Loading State:** Shows skeleton placeholders with Spanish text
 2. **Success State:** Displays real branch data with calculated percentages
@@ -223,8 +233,9 @@ The component uses intelligent conditional rendering:
 4. **Empty State:** Displays "no data available" message in Spanish
 
 ### User Interactions
-- **Collapsible Headers:** Branch name (truncated to 20 chars), total sales, percentage badge
-- **Expandable Content:** Open accounts, closed tickets, average ticket
+- **Collapsible Headers:** Branch name (truncated to 20 chars), previous week comparison, total sales, percentage badge
+- **Previous Week Display:** Shows "Hace 1 sem: $X,XXX.XX" below branch name for context
+- **Expandable Content:** Conditional card display (open accounts only for today, closed tickets and average always shown)
 - **Refresh Button:** Manual data refresh (only in API mode)
 - **Error Handling:** Retry buttons and dismissible error messages
 
@@ -423,6 +434,17 @@ console.log('Is single day:', isSingleDaySelected(selectedDateRange));
 
 **Solutions:**
 - Fixed in v1.2.0 with proper dependency management
+
+## Version History
+
+- **v1.3.0** (2025-09-14): Added previous week context display and smart card filtering
+  - Previous week sales display in header for comparison context
+  - Conditional open accounts card (only for today's date)
+  - Improved visual hierarchy with text spacing
+  - Enhanced UX with relevant data filtering
+- **v1.2.0** (2025-09-14): Complete API integration with optimizations
+- **v1.1.0**: Added week-over-week comparison functionality
+- **v1.0.0**: Initial implementation with static data support
 - Rate limiting provides automatic protection
 
 #### Performance Issues

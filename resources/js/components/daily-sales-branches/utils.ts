@@ -18,7 +18,7 @@
  *
  * @author CostenoSalesV3 Development Team
  * @since 2025-09-14
- * @version 1.2.0
+ * @version 1.3.0
  */
 
 import type { DateRange } from '@/components/main-filter-calendar';
@@ -61,6 +61,35 @@ import type { BranchSalesData } from './types';
  * isSingleDaySelected(undefined); // false
  * ```
  */
+/**
+ * Checks if a given date represents today
+ * @param date - The date to check
+ * @returns true if the date is today, false otherwise
+ */
+export function isToday(date: Date): boolean {
+  const today = new Date();
+  const checkDate = new Date(date);
+
+  // Normalize both dates to midnight for accurate comparison
+  today.setHours(0, 0, 0, 0);
+  checkDate.setHours(0, 0, 0, 0);
+
+  return today.getTime() === checkDate.getTime();
+}
+
+/**
+ * Checks if the selected date range represents today
+ * @param dateRange - Date range object with optional from/to dates
+ * @returns true if the date range is a single day and it's today
+ */
+export function isSelectedDateToday(dateRange?: DateRange): boolean {
+  if (!isSingleDaySelected(dateRange) || !dateRange?.from) {
+    return false;
+  }
+
+  return isToday(dateRange.from);
+}
+
 export function isSingleDaySelected(dateRange?: DateRange): boolean {
   // Early return for missing or incomplete date ranges
   if (!dateRange?.from || !dateRange?.to) {
