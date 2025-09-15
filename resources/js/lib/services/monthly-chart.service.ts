@@ -7,7 +7,7 @@ import { apiPost } from '../api/client';
 import { API_ENDPOINTS } from '../api/endpoints';
 import { ApiError } from '../api/types';
 import { cacheManager, generateCacheKey } from './cache';
-import type { MonthlyChartData, ChartDayData } from '@/components/monthly-chart-comparison/types';
+import type { MonthlyChartData } from '@/components/monthly-chart-comparison/types';
 
 // Track active requests to prevent duplicate calls
 const activeRequests = new Map<string, Promise<unknown>>();
@@ -109,12 +109,6 @@ const generateMonthLabels = (startDate: string): string[] => {
   return labels;
 };
 
-/**
- * Get number of days in a month
- */
-const getDaysInMonth = (year: number, month: number): number => {
-  return new Date(year, month + 1, 0).getDate();
-};
 
 /**
  * Process API response into monthly chart data format

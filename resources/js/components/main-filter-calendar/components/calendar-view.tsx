@@ -28,9 +28,9 @@ import {
  * @returns {JSX.Element} Interactive calendar grid with navigation
  * 
  * @description Visual states:
- * - Today: Dark background when not selected, ring when selected
- * - Pending start: Special styling for first click awaiting end date
- * - Range start/end: Highlighted endpoints of date ranges
+ * - Today: Orange border for clear distinction from selections
+ * - Pending start: Primary color with pulsing orange indicator for incomplete range
+ * - Range start/end: Primary color highlighting for range endpoints
  * - In range: Subtle background for dates between start and end
  * - Range connections: Visual continuity between range dates
  * 
@@ -95,16 +95,16 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                             // Base button styles with focus management
                             'focus:ring-opacity-50 relative z-10 h-9 w-9 rounded-md text-sm font-medium',
                             'transition-all hover:bg-muted focus:ring-2 focus:ring-primary focus:outline-none',
-                            // Today styling (when not selected)
-                            dayIsToday && !dayIsSelected && 'bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary/90',
+                            // Today styling with distinctive orange border (when not selected)
+                            dayIsToday && !dayIsSelected && 'ring-2 ring-orange-500 bg-background text-foreground font-semibold hover:bg-muted',
                             // Pending start date (first click, waiting for end date)
-                            dayIsPendingStart && 'ring-opacity-75 bg-primary font-semibold text-primary-foreground shadow-md ring-2 ring-border hover:bg-primary/90',
+                            dayIsPendingStart && 'bg-primary font-semibold text-primary-foreground shadow-md ring-2 ring-primary/50 hover:bg-primary/90',
                             // Range start and end dates
                             (dayIsRangeStart || dayIsRangeEnd) && !dayIsPendingStart && 'bg-primary font-semibold text-primary-foreground shadow-md hover:bg-primary/90',
                             // Dates in between range
                             dayIsInRange && 'bg-muted text-foreground hover:bg-muted/80',
-                            // Today when it's part of selection
-                            dayIsToday && (dayIsSelected || dayIsInRange) && 'ring-opacity-40 ring-2 ring-primary',
+                            // Today when it's part of selection - orange border over selection styling
+                            dayIsToday && (dayIsSelected || dayIsInRange) && 'ring-2 ring-orange-500',
                         )}
                         aria-label={ariaLabel}
                         aria-pressed={dayIsSelected || dayIsInRange}
@@ -114,7 +114,14 @@ export function CalendarView({ currentMonth, currentYear, tempRange, onPreviousM
                     </button>
 
                     {/* Range connection background for visual continuity */}
-                    {dayIsInRange && <div className="absolute inset-0 -z-10 rounded-md bg-muted/50" />}
+                    {dayIsInRange && (
+                        <div className="absolute inset-0 -z-10 bg-primary/10" />
+                    )}
+
+                    {/* Pending start indicator - visual hint for incomplete range */}
+                    {dayIsPendingStart && (
+                        <div className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                    )}
                 </div>,
             );
         }

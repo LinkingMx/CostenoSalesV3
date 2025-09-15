@@ -102,16 +102,15 @@ export function useDateRange({
 
   /**
    * Handles day clicks on the calendar for manual date range selection.
-   * Implements a smart selection pattern: single click creates same-day range,
-   * second click on different day creates multi-day range with automatic ordering.
+   * Implements an intuitive range selection pattern for better UX.
    *
    * @function handleDayClick
    * @param {number} day - Day of month that was clicked (1-31)
    *
    * @description Selection logic:
-   * 1. No existing range OR complete range exists → Create same-day range (from = to = clicked date)
-   * 2. Partial range (only 'from' date) → Set 'to' date, auto-ordering if necessary
-   * 3. Clicking same day twice → Create same-day range
+   * 1. No existing range OR complete range exists → Start new range (only 'from' date set)
+   * 2. Partial range (only 'from' date) → Complete range by setting 'to' date with auto-ordering
+   * 3. Clicking same day as 'from' when pending → Create same-day range
    * 4. Always switches to 'custom' period when manually selecting dates
    */
   const handleDayClick = React.useCallback((day: number) => {
@@ -119,9 +118,9 @@ export function useDateRange({
     // Switch to custom period since user is manually selecting
     setSelectedPeriod('custom');
 
-    // Case 1: Start new range selection - create same-day range
+    // Case 1: Start new range selection - set only 'from' date (pending state)
     if (!tempRange?.from || (tempRange.from && tempRange.to)) {
-      setTempRange({ from: clickedDate, to: clickedDate });
+      setTempRange({ from: clickedDate });
       return;
     }
 
@@ -130,7 +129,7 @@ export function useDateRange({
       const fromTime = tempRange.from.getTime();
       const clickedTime = clickedDate.getTime();
 
-      // If clicking the same day, keep it as same-day range
+      // If clicking the same day, create same-day range
       if (clickedTime === fromTime) {
         setTempRange({ from: clickedDate, to: clickedDate });
         return;

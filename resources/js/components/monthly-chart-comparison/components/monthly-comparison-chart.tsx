@@ -78,7 +78,6 @@ export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart
   data,
   height = 300,
   showLegend = false,
-  className = ''
 }: MonthlyComparisonChartProps) {
   const theme = getDefaultChartTheme();
 

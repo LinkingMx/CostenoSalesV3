@@ -4,6 +4,30 @@ import type { BranchCustomSalesData } from '../types';
 import { isCustomRangeSelected } from '../utils';
 
 /**
+ * Interface for API branch data structure
+ */
+interface ApiBranchData {
+  open_accounts: {
+    money: number;
+    total: number;
+  };
+  closed_ticket: {
+    money: number;
+    total: number;
+  };
+  average_ticket?: number;
+  brand?: string;
+  region?: string;
+}
+
+/**
+ * Interface for aggregated API cards data
+ */
+interface ApiCardsData {
+  [branchName: string]: ApiBranchData;
+}
+
+/**
  * Interface for the useCustomBranches hook return value.
  */
 export interface UseCustomBranchesReturn {
@@ -21,7 +45,7 @@ export interface UseCustomBranchesReturn {
  * @param cardsData - Raw cards data from API response
  * @returns Array of transformed branch sales data sorted by total sales
  */
-function transformApiCardsToBranchData(cardsData: Record<string, any>): BranchCustomSalesData[] {
+function transformApiCardsToBranchData(cardsData: ApiCardsData): BranchCustomSalesData[] {
   if (!cardsData || typeof cardsData !== 'object') {
     console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
     return [];
@@ -29,7 +53,7 @@ function transformApiCardsToBranchData(cardsData: Record<string, any>): BranchCu
 
   try {
     return Object.entries(cardsData)
-      .map(([branchName, apiData]: [string, any]) => {
+      .map(([branchName, apiData]: [string, ApiBranchData]) => {
         // Validate required data structure
         if (!apiData || typeof apiData !== 'object') {
           console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
@@ -131,7 +155,7 @@ export const useCustomBranches = (selectedDateRange?: DateRange): UseCustomBranc
       // Fetch each day individually to get the cards data
       const startDate = new Date(selectedDateRange.from);
       const endDate = new Date(selectedDateRange.to);
-      const allBranchesMap = new Map<string, any>();
+      const allBranchesMap = new Map<string, ApiBranchData>();
 
       // Get each day's data
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
@@ -159,7 +183,7 @@ export const useCustomBranches = (selectedDateRange?: DateRange): UseCustomBranc
 
           if (dayData.success && dayData.data?.cards) {
             // Aggregate branches data
-            Object.entries(dayData.data.cards).forEach(([branchName, branchData]: [string, any]) => {
+            Object.entries(dayData.data.cards).forEach(([branchName, branchData]: [string, ApiBranchData]) => {
               if (!allBranchesMap.has(branchName)) {
                 allBranchesMap.set(branchName, {
                   ...branchData,

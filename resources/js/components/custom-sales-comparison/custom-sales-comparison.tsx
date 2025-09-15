@@ -3,12 +3,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CustomComparisonHeader } from './components/custom-comparison-header';
 import { SalesCustomCard } from './components/sales-custom-card';
 import type { CustomSalesComparisonProps, SalesCustomData } from './types';
-import { 
+import {
   isCustomRangeSelected,
   validateCustomSalesData,
   validateCustomDateRange
 } from './utils/validation';
-import { generateMockCustomSalesData } from './utils/data-generation';
+import { fetchCustomSalesComparisonData } from '@/lib/services/custom-sales-comparison.service';
+import { formatDateForApi } from '@/lib/services/main-dashboard.service';
 
 // Performance: Pre-memoized header component to prevent unnecessary re-renders
 const MemoizedCustomComparisonHeader = React.memo(CustomComparisonHeader);
@@ -78,26 +79,72 @@ MemoizedSalesCustomCard.displayName = 'MemoizedSalesCustomCard';
  * @see {@link isCustomRangeSelected} for range validation logic
  */
 export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSalesComparisonProps) {
-  // Generate display data with proper validation
-  // Priority: custom salesData prop > generated mock data
-  const displayData: SalesCustomData[] = React.useMemo(() => {
+  const [displayData, setDisplayData] = React.useState<SalesCustomData[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | undefined>();
+
+  // Fetch real API data when selectedDateRange changes
+  React.useEffect(() => {
     if (!isCustomRangeSelected(selectedDateRange)) {
-      return [];
+      setDisplayData([]);
+      setError(undefined);
+      return;
     }
 
+    // If custom salesData is provided via props, use it instead of fetching
     if (salesData && salesData.length > 0) {
-      // Validate provided sales data
       const validation = validateCustomSalesData(salesData);
-      if (!validation.isValid) {
-        console.error('CustomSalesComparison: Custom sales data validation failed:', validation.errors);
-        // Fall back to mock data if provided data is invalid
-        return generateMockCustomSalesData(selectedDateRange!);
+      if (validation.isValid) {
+        setDisplayData(salesData);
+        setError(undefined);
+        return;
+      } else {
+        console.warn('CustomSalesComparison: Custom sales data validation failed:', validation.errors);
+        // Continue with API fetch as fallback
       }
-      return salesData;
     }
 
-    // Generate mock data for the custom range
-    return generateMockCustomSalesData(selectedDateRange!);
+    // Fetch data from API
+    const fetchData = async () => {
+      if (!selectedDateRange?.from || !selectedDateRange?.to) return;
+
+      setLoading(true);
+      setError(undefined);
+
+      try {
+        const startDate = formatDateForApi(selectedDateRange.from);
+        const endDate = formatDateForApi(selectedDateRange.to);
+
+        console.log('🚀 CustomSalesComparison: Fetching data for range:', { startDate, endDate });
+
+        const result = await fetchCustomSalesComparisonData(startDate, endDate);
+
+        if (result.error) {
+          setError(result.error);
+          setDisplayData([]);
+        } else {
+          setDisplayData(result.data);
+          setError(undefined);
+
+          // Validate the fetched data
+          const validation = validateCustomSalesData(result.data);
+          if (!validation.isValid) {
+            console.warn('CustomSalesComparison: Fetched data validation failed:', validation.errors);
+          }
+          if (validation.warnings.length > 0) {
+            console.warn('CustomSalesComparison: Data warnings:', validation.warnings);
+          }
+        }
+      } catch (fetchError) {
+        console.error('CustomSalesComparison: Failed to fetch data:', fetchError);
+        setError('Error al cargar los datos de ventas personalizadas');
+        setDisplayData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [selectedDateRange, salesData]);
 
   // Early return: Only proceed if custom range is selected
@@ -111,35 +158,54 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
     console.error('CustomSalesComparison: Custom date range validation failed:', dateRangeValidation.errors);
     return null;
   }
-  
-  // Validate final display data
-  const displayDataValidation = validateCustomSalesData(displayData);
-  if (!displayDataValidation.isValid) {
-    console.error('CustomSalesComparison: Display data validation failed:', displayDataValidation.errors);
-    return null;
-  }
-  
-  // Log warnings for development debugging
-  if (displayDataValidation.warnings.length > 0) {
-    console.warn('CustomSalesComparison: Data warnings:', displayDataValidation.warnings);
-  }
-  
+
   return (
     <Card className="w-full">
       <CardContent className="px-4 py-3">
         {/* Header with title and custom date range info */}
-        <MemoizedCustomComparisonHeader 
+        <MemoizedCustomComparisonHeader
           dateRange={selectedDateRange}
         />
-        
-        {/* Custom range sales card - single aggregated view */}
-        <div className="space-y-2">
-          <MemoizedSalesCustomCard
-            data={displayData}
-            dateRange={selectedDateRange!}
-            isHighlighted={false}
-          />
-        </div>
+
+        {/* Loading state */}
+        {loading && (
+          <div className="flex items-center justify-center py-4">
+            <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+            <span className="ml-2 text-sm text-muted-foreground">
+              Cargando datos de ventas personalizadas...
+            </span>
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && !loading && (
+          <div className="flex items-center justify-center py-4">
+            <div className="text-sm text-destructive text-center">
+              <p className="font-medium">Error al cargar datos</p>
+              <p className="text-xs mt-1">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Success state with data */}
+        {!loading && !error && displayData.length > 0 && (
+          <div className="space-y-2">
+            <MemoizedSalesCustomCard
+              data={displayData}
+              dateRange={selectedDateRange!}
+              isHighlighted={false}
+            />
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && displayData.length === 0 && (
+          <div className="flex items-center justify-center py-4">
+            <div className="text-sm text-muted-foreground text-center">
+              <p>No hay datos disponibles para el rango seleccionado</p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
