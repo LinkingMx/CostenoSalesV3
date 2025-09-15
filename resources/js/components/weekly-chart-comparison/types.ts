@@ -55,20 +55,18 @@ export interface WeeklyChartData {
  * Props for the WeeklyChartComparison component.
  * Controls the display and behavior of the weekly chart comparison.
  * The component only renders when selectedDateRange contains a valid complete week.
- * 
+ * Data is provided through the WeeklyChartProvider context.
+ *
  * @interface WeeklyChartComparisonProps
  * @property {DateRange | undefined} selectedDateRange - Current date range from calendar filter (must contain complete week)
- * @property {WeeklyChartData} [chartData] - Optional custom chart data (defaults to mock data if not provided)
- * 
+ *
  * @example
- * <WeeklyChartComparison 
- *   selectedDateRange={dateRange}
- *   chartData={customChartData}
- * />
+ * <WeeklyChartProvider selectedDateRange={dateRange}>
+ *   <WeeklyChartComparison selectedDateRange={dateRange} />
+ * </WeeklyChartProvider>
  */
 export interface WeeklyChartComparisonProps {
   selectedDateRange: DateRange | undefined;
-  chartData?: WeeklyChartData;
 }
 
 /**

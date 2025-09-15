@@ -1,5 +1,5 @@
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { SalesWeekData, ValidationResult } from './types';
+import type { SalesWeekData, ValidationResult, WeeklySummaryData } from './types';
 
 /**
  * Checks if the selected date range represents a complete week (Monday to Sunday).
@@ -456,4 +456,143 @@ export function validateWeekDateRange(dateRange: DateRange | undefined): Validat
       source: 'week-date-range-validation'
     }
   };
+}
+
+/**
+ * Transforms API weekly chart data to weekly summary data for display.
+ * Calculates the sum of all 7 days for each week and formats date ranges.
+ *
+ * @function transformApiDataToWeeklySummary
+ * @param {any} apiData - Weekly chart data from API with range.actual, range.last, range.two_last
+ * @returns {WeeklySummaryData[]} Array of 3 weekly summary objects
+ *
+ * @example
+ * const apiResponse = {
+ *   range: {
+ *     actual: { "2025-08-25": 4337259.37, "2025-08-26": 6074341.28, ... },
+ *     last: { "2025-08-18": 4313279.54, "2025-08-19": 6238484.82, ... },
+ *     two_last: { "2025-08-11": 4239247.1, "2025-08-12": 6191199.47, ... }
+ *   }
+ * };
+ * const summaryData = transformApiDataToWeeklySummary(apiResponse);
+ */
+export function transformApiDataToWeeklySummary(apiData: any): WeeklySummaryData[] {
+  if (!apiData) {
+    return [];
+  }
+
+  // Handle both processed chart data and raw API data
+  let rangeData;
+  if (apiData.data && apiData.data.range) {
+    // Full API response with nested data structure
+    rangeData = apiData.data.range;
+  } else if (apiData.range) {
+    // Direct range data format
+    rangeData = apiData.range;
+  } else if (apiData.dailyData) {
+    // Processed chart data - we need to extract the raw data
+    return [];
+  } else {
+    return [];
+  }
+
+  const { actual, last, two_last } = rangeData;
+
+  const summaries: WeeklySummaryData[] = [];
+
+  // Helper function to process a single week's data
+  const processWeekData = (weekData: Record<string, number>, weekLabel: string): WeeklySummaryData | null => {
+    if (!weekData || Object.keys(weekData).length === 0) {
+      return null;
+    }
+
+    try {
+      // Extract dates and sort them
+      const dates = Object.keys(weekData).sort();
+      if (dates.length === 0) {
+        return null;
+      }
+
+      // Use local date parsing to avoid timezone issues
+      const startDate = new Date(dates[0] + 'T12:00:00');
+      const endDate = new Date(dates[dates.length - 1] + 'T12:00:00');
+
+      // Calculate total amount
+      const totalAmount = Object.values(weekData).reduce((sum, amount) => sum + (amount || 0), 0);
+
+      // Format date range label (DD-MM al DD-MM-YY)
+      const dateRangeLabel = formatWeekDateRange(startDate, endDate);
+
+      return {
+        startDate,
+        endDate,
+        totalAmount,
+        dateRangeLabel,
+        weekLabel
+      };
+    } catch (error) {
+      console.error(`Error processing week ${weekLabel}:`, error);
+      return null;
+    }
+  };
+
+  // Process each week in order (actual, last, two_last)
+  const actualWeek = processWeekData(actual, 'actual');
+  if (actualWeek) summaries.push(actualWeek);
+
+  const lastWeek = processWeekData(last, 'last');
+  if (lastWeek) summaries.push(lastWeek);
+
+  const twoLastWeek = processWeekData(two_last, 'two_last');
+  if (twoLastWeek) summaries.push(twoLastWeek);
+
+  return summaries;
+}
+
+/**
+ * Formats a date range for weekly summary cards.
+ * Creates a Spanish-formatted date range string in DD-MM al DD-MM-YY format.
+ *
+ * @function formatWeekDateRange
+ * @param {Date} startDate - Start date of the week
+ * @param {Date} endDate - End date of the week
+ * @returns {string} Formatted date range string
+ *
+ * @example
+ * const start = new Date('2025-08-25');
+ * const end = new Date('2025-08-31');
+ * const formatted = formatWeekDateRange(start, end);
+ * // Returns: "25-08 al 31-08-25"
+ */
+export function formatWeekDateRange(startDate: Date, endDate: Date): string {
+  // Format start date as DD-MM
+  const startDD = startDate.getDate().toString().padStart(2, '0');
+  const startMM = (startDate.getMonth() + 1).toString().padStart(2, '0');
+
+  // Format end date as DD-MM-YY
+  const endDD = endDate.getDate().toString().padStart(2, '0');
+  const endMM = (endDate.getMonth() + 1).toString().padStart(2, '0');
+  const endYY = endDate.getFullYear().toString().slice(-2);
+
+  return `${startDD}-${startMM} al ${endDD}-${endMM}-${endYY}`;
+}
+
+/**
+ * Formats a sales amount as Mexican peso currency for display.
+ * Uses the same formatting as other components for consistency.
+ *
+ * @function formatWeeklySalesAmount
+ * @param {number} amount - The sales amount to format
+ * @returns {string} Formatted currency string
+ *
+ * @example
+ * formatWeeklySalesAmount(59522507.81); // "$59,522,507.81"
+ */
+export function formatWeeklySalesAmount(amount: number): string {
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount).replace('MXN', '$').trim();
 }

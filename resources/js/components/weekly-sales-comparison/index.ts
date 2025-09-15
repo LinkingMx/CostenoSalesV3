@@ -21,7 +21,9 @@ export type {
   WeeklySalesComparisonProps,
   SalesWeekCardProps,
   WeeklyComparisonHeaderProps,
-  ValidationResult
+  ValidationResult,
+  WeeklySummaryData,
+  WeeklySummaryCardProps
 } from './types';
 
 // Utility function exports
@@ -34,5 +36,8 @@ export {
   getDayName,
   generateMockWeeklySalesData,
   validateWeeklySalesData,
-  validateWeekDateRange
+  validateWeekDateRange,
+  transformApiDataToWeeklySummary,
+  formatWeekDateRange,
+  formatWeeklySalesAmount
 } from './utils';

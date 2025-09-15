@@ -16,6 +16,7 @@ import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
 import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
 import { useState } from 'react';
 import { DailyChartProvider } from '@/contexts/daily-chart-context';
+import { WeeklyChartProvider } from '@/contexts/weekly-chart-context';
 import { ApiLoadingProvider } from '@/contexts/api-loading-context';
 import { DashboardLoadingCoordinator } from '@/components/loading/dashboard-loading-coordinator';
 
@@ -51,15 +52,17 @@ export default function Dashboard() {
                             <DailySalesComparison />
                         </DailyChartProvider>
 
-                        <WeeklyErrorBoundary>
-                            <WeeklySalesComparison
+                        <WeeklyChartProvider selectedDateRange={selectedDateRange}>
+                            <WeeklyErrorBoundary>
+                                <WeeklySalesComparison
+                                    selectedDateRange={selectedDateRange}
+                                />
+                            </WeeklyErrorBoundary>
+
+                            <WeeklyChartComparison
                                 selectedDateRange={selectedDateRange}
                             />
-                        </WeeklyErrorBoundary>
-
-                        <WeeklyChartComparison
-                            selectedDateRange={selectedDateRange}
-                        />
+                        </WeeklyChartProvider>
 
                         <MonthlyErrorBoundary>
                             <MonthlySalesComparison

@@ -12,16 +12,32 @@ import {
 import type { WeeklyComparisonChartProps } from '../types';
 import { formatChartAmount, getDefaultChartTheme } from '../utils';
 
+interface TooltipPayload {
+  name: string;
+  value: number;
+  color: string;
+  payload?: {
+    fullDayName?: string;
+    [key: string]: unknown;
+  };
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}
+
 /**
  * Custom tooltip component for the weekly comparison chart.
  * Provides formatted currency values and proper Spanish localization.
  * Shows data for the specific selected day across all 3 weeks.
- * 
+ *
  * @component
- * @param {any} props - Recharts tooltip props
+ * @param {CustomTooltipProps} props - Recharts tooltip props
  * @returns {JSX.Element | null} Custom tooltip component
  */
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     // Get full day name from the data
     const fullDayName = payload[0]?.payload?.fullDayName || label;
@@ -32,7 +48,7 @@ function CustomTooltip({ active, payload, label }: any) {
           {fullDayName}
         </p>
         <div className="space-y-1">
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry: TooltipPayload, index: number) => (
             <div key={index} className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <div 
