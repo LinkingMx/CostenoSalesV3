@@ -62,6 +62,10 @@ export default function Dashboard() {
                             <WeeklyChartComparison
                                 selectedDateRange={selectedDateRange}
                             />
+
+                            <WeeklySalesBranches
+                                selectedDateRange={selectedDateRange}
+                            />
                         </WeeklyChartProvider>
 
                         <MonthlyErrorBoundary>
@@ -75,10 +79,6 @@ export default function Dashboard() {
                         />
 
                         <DailySalesBranches
-                            selectedDateRange={selectedDateRange}
-                        />
-
-                        <WeeklySalesBranches
                             selectedDateRange={selectedDateRange}
                         />
 

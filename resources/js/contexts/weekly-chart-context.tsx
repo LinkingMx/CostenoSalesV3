@@ -11,6 +11,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
 
 interface WeeklyChartContextValue {
   data: WeeklyChartData | null;
+  rawApiData: unknown | null; // Raw API response for components that need cards/range data
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -73,7 +74,6 @@ export const WeeklyChartProvider: React.FC<WeeklyChartProviderProps> = React.mem
  */
 export const useWeeklyChartContext = (): WeeklyChartContextValue => {
   const context = useContext(WeeklyChartContext);
-
 
   if (!context) {
     throw new Error('useWeeklyChartContext must be used within a WeeklyChartProvider');

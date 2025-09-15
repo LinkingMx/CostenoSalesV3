@@ -10,7 +10,8 @@ import { cacheManager, generateCacheKey } from './cache';
 import type { WeeklyChartData, ChartDayData } from '@/components/weekly-chart-comparison/types';
 
 // Track active requests to prevent duplicate calls
-const activeRequests = new Map<string, Promise<{ data: WeeklyChartData | null; error?: string }>>();
+// We use unknown type here since we track different types of promises
+const activeRequests = new Map<string, Promise<unknown>>();
 
 // Rate limiting configuration
 const RATE_LIMIT = {
@@ -39,7 +40,7 @@ interface WeeklyChartApiResponse {
       total: number;
       subtotal: number;
     };
-    cards: Record<string, any>; // Branch data not needed for chart
+    cards: Record<string, unknown>; // Branch data not needed for chart
     range: {
       actual: Record<string, number>;   // Current week data (YYYY-MM-DD: amount)
       last: Record<string, number>;     // Previous week data (YYYY-MM-DD: amount)
@@ -77,14 +78,7 @@ const isWithinRateLimit = (key: string): boolean => {
 const SPANISH_DAY_NAMES = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
 const FULL_SPANISH_DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-/**
- * Map API day numbers to chart day order
- * API uses: 1=Monday, 2=Tuesday, ..., 7=Sunday
- * Chart uses: 0=Monday, 1=Tuesday, ..., 6=Sunday
- */
-const mapApiDayToChartIndex = (apiDay: number): number => {
-  return apiDay - 1; // Convert 1-based to 0-based indexing
-};
+// Removed unused function - was used for mapping API day to chart index
 
 /**
  * Generate Spanish date range labels for weeks
@@ -196,7 +190,7 @@ export const fetchWeeklyChartData = async (
   // Check if there's already an active request for this data
   const activeRequest = activeRequests.get(cacheKey);
   if (activeRequest) {
-    return activeRequest;
+    return activeRequest as Promise<{ data: WeeklyChartData | null; error?: string }>;
   }
 
   // Check rate limiting before making request
@@ -325,22 +319,28 @@ export const fetchRawWeeklyData = async (
   // Generate cache key
   const cacheKey = generateCacheKey('weekly-raw', startDate, endDate);
 
+  // Debug logging for tracking API calls
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`📡 fetchRawWeeklyData: Called for ${startDate} to ${endDate}`);
+  }
+
   // Check cache first
   const cachedData = cacheManager.get<{ data: WeeklyChartApiResponse | null; rawData?: WeeklyChartApiResponse }>(cacheKey);
   if (cachedData) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ fetchRawWeeklyData: Returning cached data for ${startDate} to ${endDate}`);
+    }
     return cachedData;
   }
 
   // Check if there's already an active request for this data
   const activeRequest = activeRequests.get(cacheKey);
   if (activeRequest) {
-    // Convert the existing request to the raw format
-    const result = await activeRequest;
-    return {
-      data: null,
-      rawData: result.data ? null : undefined,
-      error: result.error
-    };
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`⏳ fetchRawWeeklyData: Returning active request for ${startDate} to ${endDate}`);
+    }
+    // Return the cached request result
+    return activeRequest as Promise<{ data: WeeklyChartApiResponse | null; rawData?: WeeklyChartApiResponse; error?: string }>;
   }
 
   // Check rate limiting before making request
@@ -354,39 +354,57 @@ export const fetchRawWeeklyData = async (
     };
   }
 
-  try {
-    const request: WeeklyChartRequest = {
-      start_date: startDate,
-      end_date: endDate,
-      range: 'week'
-    };
+  // Create the request promise and store it immediately to prevent duplicate calls
+  const requestPromise = (async () => {
+    try {
+      const request: WeeklyChartRequest = {
+        start_date: startDate,
+        end_date: endDate,
+        range: 'week'
+      };
 
-    // Make API call using the main dashboard endpoint
-    const response = await apiPost<WeeklyChartApiResponse>(
-      API_ENDPOINTS.MAIN_DASHBOARD,
-      request
-    );
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🚀 fetchRawWeeklyData: Making actual API call to ${API_ENDPOINTS.MAIN_DASHBOARD} for ${startDate} to ${endDate}`);
+      }
 
-    const result = {
-      data: response.data,
-      rawData: response.data
-    };
+      // Make API call using the main dashboard endpoint
+      const response = await apiPost<WeeklyChartApiResponse>(
+        API_ENDPOINTS.MAIN_DASHBOARD,
+        request
+      );
 
-    // Cache the raw data (15 minutes TTL)
-    cacheManager.set(cacheKey, result, { ttl: 15 * 60 * 1000 });
+      const result = {
+        data: response.data,
+        rawData: response.data
+      };
 
-    return result;
-  } catch (error) {
-    const apiError = error as ApiError;
+      // Cache the raw data (15 minutes TTL)
+      cacheManager.set(cacheKey, result, { ttl: 15 * 60 * 1000 });
 
-    console.error('Failed to fetch raw weekly data:', apiError);
+      // Remove from active requests
+      activeRequests.delete(cacheKey);
 
-    // Return error state
-    return {
-      data: null,
-      error: apiError.message || 'Failed to load raw weekly data'
-    };
-  }
+      return result;
+    } catch (error) {
+      const apiError = error as ApiError;
+
+      console.error('Failed to fetch raw weekly data:', apiError);
+
+      // Remove from active requests
+      activeRequests.delete(cacheKey);
+
+      // Return error state
+      return {
+        data: null,
+        error: apiError.message || 'Failed to load raw weekly data'
+      };
+    }
+  })();
+
+  // Store the promise in active requests to prevent duplicate calls
+  activeRequests.set(cacheKey, requestPromise);
+
+  return requestPromise;
 };
 
 /**
@@ -413,7 +431,11 @@ export const fetchWeeklyChartWithRetry = async (
       const rawResult = await fetchRawWeeklyData(startDate, endDate);
 
       if (rawResult.error) {
-        return rawResult;
+        return {
+          data: null,
+          rawData: rawResult.rawData,
+          error: rawResult.error
+        };
       }
 
       if (!rawResult.data) {
@@ -429,7 +451,7 @@ export const fetchWeeklyChartWithRetry = async (
 
       return {
         data: chartData,
-        rawData: rawResult.rawData
+        rawData: rawResult.rawData || rawResult.data
       };
     } catch (error) {
       lastError = error as Error;

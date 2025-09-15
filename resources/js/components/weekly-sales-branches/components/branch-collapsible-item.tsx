@@ -33,8 +33,8 @@ export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsib
                 {branch.avatar}
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium leading-tight text-foreground text-left">
-                  {branch.name}
+                <span className="text-sm font-medium leading-tight text-foreground text-left" title={branch.name}>
+                  {branch.name.length > 15 ? `${branch.name.substring(0, 15)}...` : branch.name}
                 </span>
               </div>
             </div>

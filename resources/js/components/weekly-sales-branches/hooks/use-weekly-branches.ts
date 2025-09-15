@@ -2,10 +2,7 @@ import * as React from 'react';
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { BranchSalesData } from '../types';
 import { isExactWeekSelected, transformApiCardsToBranchData, isCurrentWeek } from '../utils';
-import {
-  fetchWeeklyChartWithRetry,
-  formatDateForApi
-} from '@/lib/services/weekly-chart.service';
+import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
 
 /**
  * Custom hook for managing weekly branches data from API.
@@ -47,75 +44,36 @@ export interface UseWeeklyBranchesReturn {
 }
 
 export const useWeeklyBranches = (selectedDateRange?: DateRange): UseWeeklyBranchesReturn => {
-  const [branchesData, setBranchesData] = React.useState<BranchSalesData[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  // Get shared data from context - single API call for all weekly components
+  const { rawApiData, isLoading, error, refetch, isValidForWeeklyChart } = useWeeklyChartContext();
 
   // Validate that exactly one complete week is selected (Monday to Sunday)
   const isValidCompleteWeek = React.useMemo(() => {
-    return isExactWeekSelected(selectedDateRange);
-  }, [selectedDateRange]);
+    return isExactWeekSelected(selectedDateRange) && isValidForWeeklyChart;
+  }, [selectedDateRange, isValidForWeeklyChart]);
 
   // Check if the selected week contains today's date
   const isCurrentWeekSelected = React.useMemo(() => {
     return isCurrentWeek(selectedDateRange);
   }, [selectedDateRange]);
 
-  // Create stable fetch function for refetch capability
-  const fetchBranchesData = React.useCallback(async () => {
-    if (!isValidCompleteWeek || !selectedDateRange?.from || !selectedDateRange?.to) {
-      setBranchesData([]);
-      return;
+  // Transform raw API data to branch format
+  const branchesData = React.useMemo(() => {
+    // Type guard to check if rawApiData has the expected structure
+    const apiData = rawApiData as { data?: { cards?: unknown } } | null;
+
+    if (!apiData?.data?.cards) {
+      return [];
     }
 
-    try {
-      setIsLoading(true);
-      setError(null);
+    const transformedData = transformApiCardsToBranchData(apiData.data.cards as any);
 
-      const startDate = formatDateForApi(selectedDateRange.from);
-      const endDate = formatDateForApi(selectedDateRange.to);
-
-      // Use existing weekly chart service to get raw API data
-      const result = await fetchWeeklyChartWithRetry(startDate, endDate, 2);
-
-      if (result.error) {
-        console.error('useWeeklyBranches: API error:', result.error);
-        setError(result.error);
-        return;
-      }
-
-      // Check if we have cards data in the raw API response
-      if (result.rawData?.data?.cards) {
-        const transformedData = transformApiCardsToBranchData(result.rawData.data.cards);
-        setBranchesData(transformedData);
-
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`useWeeklyBranches: Transformed ${transformedData.length} branches`);
-        }
-      } else {
-        console.warn('useWeeklyBranches: No cards data in API response');
-        setBranchesData([]);
-      }
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch branch data';
-      console.error('useWeeklyBranches: Fetch error:', err);
-      setError(errorMessage);
-      setBranchesData([]);
-    } finally {
-      setIsLoading(false);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`useWeeklyBranches: Transformed ${transformedData.length} branches from shared context`);
     }
-  }, [isValidCompleteWeek, selectedDateRange]);
 
-  // Fetch data when dependencies change
-  React.useEffect(() => {
-    fetchBranchesData();
-  }, [fetchBranchesData]);
-
-  // Provide refetch function for error recovery
-  const refetch = React.useCallback(() => {
-    fetchBranchesData();
-  }, [fetchBranchesData]);
+    return transformedData;
+  }, [rawApiData]);
 
   return {
     branchesData,

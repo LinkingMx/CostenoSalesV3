@@ -3,11 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { WeeklyComparisonHeader } from './components/weekly-comparison-header';
 import type { WeeklySalesComparisonProps, WeeklySummaryData } from './types';
 import { isCompleteWeekSelected } from '@/components/weekly-chart-comparison/utils';
-import {
-  fetchWeeklyChartWithRetry,
-  formatDateForApi,
-  isValidWeeklyChartDateRange
-} from '@/lib/services/weekly-chart.service';
+import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
 import {
   transformApiDataToWeeklySummary,
   formatWeeklySalesAmount
@@ -46,60 +42,13 @@ const MemoizedWeeklyComparisonHeader = React.memo(WeeklyComparisonHeader);
 export function WeeklySalesComparison({
   selectedDateRange
 }: WeeklySalesComparisonProps) {
-  const [rawApiData, setRawApiData] = React.useState<any>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  // Get shared data from context - single API call for all weekly components
+  const { rawApiData, isLoading, error, isValidForWeeklyChart } = useWeeklyChartContext();
 
   // Performance: Memoize complete week validation to avoid repeated calculations
   const isValidCompleteWeek = React.useMemo(() => {
     return isCompleteWeekSelected(selectedDateRange);
   }, [selectedDateRange]);
-
-  // Fetch raw API data directly
-  React.useEffect(() => {
-    if (!isValidCompleteWeek || !selectedDateRange?.from || !selectedDateRange?.to) {
-      setRawApiData(null);
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const startDate = formatDateForApi(selectedDateRange.from);
-        const endDate = formatDateForApi(selectedDateRange.to);
-
-        if (!isValidWeeklyChartDateRange(startDate, endDate)) {
-          console.log('Invalid date range for API');
-          return;
-        }
-
-        console.log('Fetching raw API data for weekly summary:', { startDate, endDate });
-
-        // Fetch raw API data using the updated service
-        const result = await fetchWeeklyChartWithRetry(startDate, endDate, 2);
-
-        if (result.error) {
-          console.error('API error:', result.error);
-          setError(result.error);
-          return;
-        }
-
-        // Use the raw API response data structure
-        console.log('Raw API response received:', result.rawData);
-        setRawApiData(result.rawData);
-
-      } catch (err) {
-        console.error('Fetch error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [isValidCompleteWeek, selectedDateRange]);
 
 
   // Transform raw API data to weekly summary format
@@ -107,12 +56,13 @@ export function WeeklySalesComparison({
     if (!rawApiData) {
       return [];
     }
-    return transformApiDataToWeeklySummary(rawApiData);
+    // Cast rawApiData to expected type since we know the structure from API
+    return transformApiDataToWeeklySummary(rawApiData as any);
   }, [rawApiData]);
 
 
   // Early return for performance - avoid unnecessary computations if not valid complete week
-  if (!isValidCompleteWeek) {
+  if (!isValidCompleteWeek || !isValidForWeeklyChart) {
     return null;
   }
 

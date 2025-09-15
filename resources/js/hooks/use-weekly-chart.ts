@@ -26,6 +26,7 @@ interface UseWeeklyChartOptions {
 
 interface UseWeeklyChartReturn {
   data: WeeklyChartData | null;
+  rawApiData: unknown | null; // Raw API response data
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -52,6 +53,7 @@ export const useWeeklyChart = (
   } = options;
 
   const [data, setData] = useState<WeeklyChartData | null>(null);
+  const [rawApiData, setRawApiData] = useState<unknown | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +65,9 @@ export const useWeeklyChart = (
 
   // Debounce timer for API calls
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track active effect to prevent React 19 double execution
+  const activeEffectRef = useRef<string | null>(null);
 
   // Check if the selected date range is valid for weekly chart
   const isValidForWeeklyChart = isCompleteWeekSelected(selectedDateRange);
@@ -100,6 +105,12 @@ export const useWeeklyChart = (
 
     const { startDate, endDate } = apiDates;
 
+    // Debug logging to track API calls
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 useWeeklyChart: Starting fetchData for ${startDate} to ${endDate} (Request ID: ${requestId})`);
+      console.trace('Call stack trace');
+    }
+
     try {
       // Start loading and track the minimum duration
       const loadingStartTime = Date.now();
@@ -136,10 +147,12 @@ export const useWeeklyChart = (
       if (result.error) {
         setError(result.error);
         setData(null);
+        setRawApiData(null);
         onError?.(result.error);
         onApiComplete?.(false);
       } else {
         setData(result.data);
+        setRawApiData(result.rawData || null); // Store the raw API data
         setError(null);
         onApiComplete?.(true);
       }
@@ -149,6 +162,7 @@ export const useWeeklyChart = (
       if (currentRequestRef.current === requestId && isMountedRef.current) {
         setError(errorMessage);
         setData(null);
+        setRawApiData(null);
         onError?.(errorMessage);
         onApiComplete?.(false);
       }
@@ -217,12 +231,36 @@ export const useWeeklyChart = (
    * Effect to fetch data when date range changes
    */
   useEffect(() => {
+    // Generate unique effect ID to track this effect execution
+    const effectId = `effect-${Date.now()}-${Math.random()}`;
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 useWeeklyChart useEffect triggered - effectId: ${effectId}, isValidForWeeklyChart: ${isValidForWeeklyChart}, selectedDateRange:`, selectedDateRange);
+    }
+
+    // If there's already an active effect, cancel it
+    if (activeEffectRef.current && activeEffectRef.current !== effectId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⛔ Cancelling previous effect: ${activeEffectRef.current} in favor of ${effectId}`);
+      }
+      // Clear any pending debounce timers from previous effect
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+    }
+
+    // Mark this effect as active
+    activeEffectRef.current = effectId;
+
     if (!isValidForWeeklyChart || !selectedDateRange) {
       // Reset state when invalid date range
       setData(null);
+      setRawApiData(null);
       setError(null);
       setIsLoading(false);
       currentRequestRef.current = null;
+      activeEffectRef.current = null;
       return;
     }
 
@@ -231,9 +269,18 @@ export const useWeeklyChart = (
 
     // Cleanup function
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🧹 Cleaning up effect: ${effectId}`);
+      }
+
+      // Only clear if this is still the active effect
+      if (activeEffectRef.current === effectId) {
+        activeEffectRef.current = null;
+
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+          debounceTimerRef.current = null;
+        }
       }
     };
   }, [isValidForWeeklyChart, selectedDateRange, debouncedFetch]);
@@ -256,6 +303,7 @@ export const useWeeklyChart = (
 
   return {
     data,
+    rawApiData,
     isLoading,
     error,
     refetch,
