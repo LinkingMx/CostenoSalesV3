@@ -94,6 +94,16 @@ const processBranchData = (
     const previousTotalSales = previousBranchData.open_accounts.money + previousBranchData.closed_ticket.money;
     previousWeekSales = previousTotalSales;
 
+    console.log(`📊 BRANCH COMPARISON DATA for ${branchName}:`, {
+      currentSales: totalSales,
+      previousSales: previousTotalSales,
+      currentOpenAccounts: branchData.open_accounts.money,
+      currentClosedTickets: branchData.closed_ticket.money,
+      previousOpenAccounts: previousBranchData.open_accounts.money,
+      previousClosedTickets: previousBranchData.closed_ticket.money,
+      calculatedPercentage: ((totalSales - previousTotalSales) / previousTotalSales) * 100
+    });
+
     if (previousTotalSales > 0) {
       calculatedPercentage = ((totalSales - previousTotalSales) / previousTotalSales) * 100;
     } else if (totalSales > 0) {
@@ -229,8 +239,9 @@ export const fetchMainDashboardData = async (
         end_date: endDate
       };
 
+      console.log('🚀 FETCHING MAIN DASHBOARD DATA:', currentRequest);
       if (process.env.NODE_ENV === 'development') {
-        console.log('🚀 FETCHING MAIN DASHBOARD DATA:', currentRequest);
+        console.log('🚀 DEV MODE - FETCHING MAIN DASHBOARD DATA:', currentRequest);
       }
 
       // Make current period API call
@@ -244,7 +255,7 @@ export const fetchMainDashboardData = async (
       // Fetch previous week data if requested (for single day comparisons)
       if (includePreviousWeek && startDate === endDate) {
         try {
-          const currentDate = new Date(startDate);
+          const currentDate = dateFromApiString(startDate);
           const previousWeekDate = getPreviousWeekDate(currentDate);
           const previousWeekDateStr = formatDateForApi(previousWeekDate);
 
@@ -253,9 +264,11 @@ export const fetchMainDashboardData = async (
             end_date: previousWeekDateStr
           };
 
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🚀 FETCHING PREVIOUS WEEK DATA:', previousRequest);
-          }
+          console.log('🚀 FETCHING PREVIOUS WEEK DATA:', {
+            currentDate: startDate,
+            calculatedPreviousDate: previousWeekDateStr,
+            request: previousRequest
+          });
 
           previousResponse = await apiPost<MainDashboardApiResponse>(
             API_ENDPOINTS.MAIN_DASHBOARD,
@@ -270,6 +283,15 @@ export const fetchMainDashboardData = async (
       // Process response with comparison data
       const branches = processApiResponse(currentResponse.data, previousResponse?.data);
       const totalSales = currentResponse.data.data?.sales?.total || 0;
+
+      console.log('🔍 FINAL PROCESSED DATA:', {
+        dateRange: `${startDate} to ${endDate}`,
+        includePreviousWeek,
+        branchCount: branches.length,
+        totalSales,
+        sampleBranch: branches.find(b => b.name.includes('Cuerno')) || branches[0],
+        allBranchNames: branches.map(b => b.name)
+      });
 
       const result = { branches, totalSales };
 
@@ -321,12 +343,22 @@ export const isValidDateRange = (startDate: string, endDate: string): boolean =>
 
 /**
  * Format date to API format (YYYY-MM-DD)
+ * Uses local date components to avoid timezone issues
  */
 export const formatDateForApi = (date: Date): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+/**
+ * Create a Date object from API date string (YYYY-MM-DD) without timezone issues
+ * This ensures the date represents the local date, not UTC midnight
+ */
+export const dateFromApiString = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day); // Month is 0-indexed
 };
 
 /**
