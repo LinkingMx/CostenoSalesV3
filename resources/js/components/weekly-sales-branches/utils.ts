@@ -292,13 +292,16 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
           return null;
         }
 
+        const openAccountsAmount = open_accounts?.money || 0;
+        const closedAccountsAmount = closed_ticket.money || 0;
+
         const transformedBranch: BranchSalesData = {
           id: store_id.toString(),
           name: branchName,
-          totalSales: closed_ticket.money || 0,
+          totalSales: openAccountsAmount + closedAccountsAmount, // Sum of open + closed accounts
           percentage: percentage.qty || 0,
-          openAccounts: open_accounts?.money || 0,
-          closedSales: closed_ticket.money || 0,
+          openAccounts: openAccountsAmount,
+          closedSales: closedAccountsAmount,
           averageTicket: average_ticket || 0,
           totalTickets: closed_ticket.total || 0,
           avatar: brand ? brand.charAt(0).toUpperCase() : branchName.charAt(0).toUpperCase()

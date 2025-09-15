@@ -1,177 +1,195 @@
+/**
+ * Monthly Comparison Chart Component
+ * Recharts line chart for displaying 3-month sales totals
+ */
+
 import * as React from 'react';
 import {
   LineChart,
   Line,
   XAxis,
   YAxis,
+  CartesianGrid,
   ResponsiveContainer,
-  Tooltip
+  Tooltip,
+  Legend
 } from 'recharts';
 import type { MonthlyComparisonChartProps } from '../types';
-import { formatChartAmount } from '../utils';
-import { CHART_CONFIG, CHART_COLORS } from '../constants';
-import { useMonthlyChartTheme } from '../hooks/use-monthly-chart-theme';
+import { formatChartAmount, getDefaultChartTheme } from '../utils';
 
-/**
- * Props for the MonthlyChartTooltip component.
- */
-interface MonthlyChartTooltipProps {
+interface TooltipPayload {
+  name: string;
+  value: number;
+  color: string;
+  payload?: {
+    month?: string;
+    [key: string]: unknown;
+  };
+}
+
+interface CustomTooltipProps {
   active?: boolean;
-  payload?: Array<{
-    payload: {
-      fullMonthLabel: string;
-      color: string;
-      totalSales: number;
-    };
-  }>;
+  payload?: TooltipPayload[];
   label?: string;
 }
 
 /**
- * Custom tooltip component for the monthly chart.
- * Shows formatted sales amounts with month name and year information.
- *
- * @function MonthlyChartTooltip
- * @param {MonthlyChartTooltipProps} props - Recharts tooltip props
- * @returns {JSX.Element | null} Formatted tooltip content
+ * Custom tooltip component for the monthly comparison chart.
+ * Provides formatted currency values and proper Spanish localization.
+ * Shows data for the specific selected month.
  */
-function MonthlyChartTooltip({ active, payload }: MonthlyChartTooltipProps) {
-  if (!active || !payload || payload.length === 0) {
-    return null;
-  }
-
-  const data = payload[0]?.payload;
-  if (!data) return null;
-
-  return (
-    <div className="rounded-lg border border-border bg-card p-3 shadow-md">
-      <p className="font-medium text-card-foreground text-sm mb-2">
-        {data.fullMonthLabel}
-      </p>
-      <div className="flex items-center gap-2">
-        <div
-          className="h-3 w-3 rounded-full"
-          style={{ backgroundColor: data.color }}
-        />
-        <span className="text-sm text-muted-foreground">
-          Ventas totales: <span className="font-semibold text-card-foreground">
-            {formatChartAmount(data.totalSales, false)}
-          </span>
-        </span>
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-3 shadow-lg max-w-xs">
+        <p className="text-sm font-semibold text-foreground mb-3 border-b border-border pb-2">
+          {label}
+        </p>
+        <div className="space-y-1">
+          {payload.map((entry: TooltipPayload, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-sm font-medium text-foreground">
+                  Total
+                </span>
+              </div>
+              <span className="text-sm font-bold text-primary">
+                {formatChartAmount(entry.value)}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  return null;
 }
 
 /**
- * MonthlyComparisonChart - Line chart component for monthly sales comparison.
+ * MonthlyComparisonChart - Line chart component for monthly sales comparison
  *
- * Displays a simple line chart with 3 data points showing total sales for each month.
- * The chart shows the selected month plus 2 previous months for comparison.
- * Uses a clean, minimal design with just the essential elements.
- *
- * @component
- * @param {MonthlyComparisonChartProps} props - Chart configuration and data
- * @returns {JSX.Element} Interactive line chart with monthly totals
- *
- * @description Features:
- * - Simple line chart with 3 data points (months)
- * - X-axis shows abbreviated month names (Sept, Ago, Jul)
- * - Y-axis is hidden for clean appearance
- * - Hover tooltips show full month name and formatted sales total
- * - Primary color (#897053) for the line with subtle styling
- * - Responsive design that adapts to container size
- * - Theme integration for light/dark mode support
- * - Accessibility-compliant with proper ARIA labels
- *
- * @example
- * ```tsx
- * <MonthlyComparisonChart
- *   data={monthlyChartData}
- *   height={300}
- *   showGrid={true}
- * />
- * ```
+ * Displays total sales for 3 consecutive months as a line chart
  */
-export function MonthlyComparisonChart({
+export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart({
   data,
-  height = CHART_CONFIG.DEFAULT_HEIGHT
+  height = 300,
+  showLegend = false,
+  className = ''
 }: MonthlyComparisonChartProps) {
-  // Use memoized theme hook to prevent unnecessary recalculations
-  const theme = useMonthlyChartTheme();
+  const theme = getDefaultChartTheme();
+
+  // Transform data for line chart - 3 points
+  const chartData = React.useMemo(() => {
+    return data.monthLabels.map((label, index) => ({
+      month: label,
+      value: data.monthValues[index] || 0
+    }));
+  }, [data]);
+
+  // Memoize chart configuration for performance
+  const chartConfig = React.useMemo(() => ({
+    margin: { top: 20, right: 30, left: 30, bottom: 40 }, // Increased left and bottom margins
+    strokeWidth: 2,
+    dotSize: 4,
+    activeDotSize: 6
+  }), []);
 
   // Early return if no data
-  if (!data.monthlyData || data.monthlyData.length === 0) {
+  if (!data?.monthValues || data.monthValues.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-muted-foreground"
+        className="flex items-center justify-center bg-muted/50 rounded-lg"
         style={{ height }}
-        role="alert"
-        aria-label="No hay datos de gráfico disponibles"
+        role="img"
+        aria-label="Gráfico no disponible"
       >
-        <p className="text-sm">No hay datos disponibles para mostrar</p>
+        <p className="text-sm text-muted-foreground">
+          No hay datos disponibles para mostrar el gráfico
+        </p>
       </div>
     );
   }
 
-  // Prepare chart data - reverse order so most recent month appears on the right
-  const chartData = [...data.monthlyData].reverse();
-
   return (
-    <div style={{ height }} className="w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div
+      className="w-full focus:outline-none focus:ring-0 [&_svg]:focus:outline-none [&_svg]:outline-none [&_*]:focus:outline-none [&_*]:outline-none"
+      role="img"
+      aria-label="Gráfico de comparación mensual de ventas"
+      tabIndex={-1}
+      style={{ outline: 'none' }}
+    >
+      <ResponsiveContainer width="100%" height={height}>
         <LineChart
           data={chartData}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 20,
-          }}
+          margin={chartConfig.margin}
         >
-          {/* X-Axis with month labels */}
+          {/* Grid lines for better readability */}
+          <CartesianGrid
+            strokeDasharray="2 2"
+            stroke={theme.gridColor}
+            opacity={0.8}
+            horizontal={true}
+            vertical={false}
+          />
+
+          {/* X-axis with month names */}
           <XAxis
-            dataKey="monthLabel"
+            dataKey="month"
             axisLine={false}
             tickLine={false}
             tick={{
-              fontSize: 12,
+              fontSize: 13,
               fill: theme.textColor,
-              dy: 10
+              fontFamily: 'inherit',
+              fontWeight: 600
             }}
+            dy={10}
+            height={40}
             interval={0}
+            textAnchor="middle"
           />
 
-          {/* Hidden Y-Axis for clean appearance */}
+          {/* Y-axis hidden - no labels needed */}
           <YAxis hide />
 
-          {/* Custom Tooltip */}
+          {/* Custom tooltip with proper formatting */}
           <Tooltip
-            content={<MonthlyChartTooltip />}
-            cursor={{
-              stroke: theme.primaryColor,
-              strokeWidth: 1,
-              strokeDasharray: '3 3'
-            }}
+            content={<CustomTooltip />}
+            cursor={false}
           />
 
-          {/* Single line showing the monthly totals */}
+          {/* Legend showing month labels */}
+          {showLegend && (
+            <Legend
+              wrapperStyle={{
+                paddingTop: '20px',
+                fontSize: '12px',
+                fontFamily: 'inherit'
+              }}
+            />
+          )}
+
+          {/* Line for monthly data */}
           <Line
             type="monotone"
-            dataKey="totalSales"
-            stroke={theme.primaryColor}
-            strokeWidth={3}
+            dataKey="value"
+            name="Ventas Mensuales"
+            stroke={data.monthColors[0] || theme.primaryColor}
+            strokeWidth={chartConfig.strokeWidth}
             dot={{
-              fill: theme.primaryColor,
-              strokeWidth: 2,
-              stroke: CHART_COLORS.DOT_FILL,
-              r: 6
+              fill: data.monthColors[0] || theme.primaryColor,
+              strokeWidth: 0,
+              r: chartConfig.dotSize
             }}
             activeDot={{
-              r: 8,
-              stroke: theme.primaryColor,
+              r: chartConfig.activeDotSize,
+              stroke: data.monthColors[0] || theme.primaryColor,
               strokeWidth: 2,
-              fill: CHART_COLORS.DOT_FILL
+              fill: theme.backgroundColor
             }}
             connectNulls={false}
           />
@@ -179,6 +197,6 @@ export function MonthlyComparisonChart({
       </ResponsiveContainer>
     </div>
   );
-}
+});
 
 export default MonthlyComparisonChart;

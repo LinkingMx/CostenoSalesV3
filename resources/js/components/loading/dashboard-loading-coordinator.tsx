@@ -195,19 +195,6 @@ export function DashboardLoadingCoordinator({
         {children}
       </div>
 
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed bottom-4 left-4 z-40 bg-black/80 text-white text-xs p-2 rounded max-w-xs">
-          <div>Loading: {showOverlay ? 'ON' : 'OFF'}</div>
-          <div>Progress: {loadingProgress}%</div>
-          <div>Active: {activeCallsCount}/{totalCallsCount}</div>
-          <div>Errors: {failedCalls.length}</div>
-          <div>Overlay Opacity: {overlayOpacity.toFixed(2)}</div>
-          <div>Content Opacity: {contentOpacity.toFixed(2)}</div>
-          {loadingStartTime && (
-            <div>Duration: {Date.now() - loadingStartTime}ms</div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

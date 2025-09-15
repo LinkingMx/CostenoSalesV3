@@ -33,7 +33,7 @@ import type { MonthlyChartHeaderProps } from '../types';
  */
 export function MonthlyChartHeader({
   title = "Gráfica de ventas (Mensuales)",
-  subtitle = "Ventas totales de los últimos 3 meses"
+  subtitle = "Comparación diaria de 3 meses consecutivos"
 }: MonthlyChartHeaderProps) {
   return (
     <div className="flex items-center gap-3 mb-3">

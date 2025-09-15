@@ -11,7 +11,6 @@ export { MonthlySalesComparison } from './monthly-sales-comparison';
 export { default } from './monthly-sales-comparison';
 
 // Sub-component exports
-export { SalesMonthCard } from './components/sales-month-card';
 export { MonthlyComparisonHeader } from './components/monthly-comparison-header';
 export { MonthlyErrorBoundary } from './components/monthly-error-boundary';
 
@@ -19,7 +18,7 @@ export { MonthlyErrorBoundary } from './components/monthly-error-boundary';
 export type {
   SalesMonthData,
   MonthlySalesComparisonProps,
-  SalesMonthCardProps,
+  MonthlySummaryData,
   MonthlyComparisonHeaderProps,
   ValidationResult
 } from './types';
@@ -29,10 +28,13 @@ export {
   isCompleteMonthSelected,
   generateMonthDays,
   formatSalesAmount,
+  formatChartAmount,
+  formatMonthlySalesAmount,
   formatDateForMonthCard,
   getMonthLetter,
   getMonthName,
   generateMockMonthlySalesData,
   validateMonthlySalesData,
-  validateMonthDateRange
+  validateMonthDateRange,
+  transformApiDataToMonthlySummary
 } from './utils';

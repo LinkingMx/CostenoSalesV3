@@ -22,34 +22,34 @@ export function isCompleteMonthSelected(dateRange: DateRange | undefined): boole
   if (!dateRange?.from || !dateRange?.to) {
     return false;
   }
-  
+
   // Create normalized date objects to ignore time components
   const fromDate = new Date(dateRange.from);
   const toDate = new Date(dateRange.to);
-  
+
   // Normalize to midnight (00:00:00.000) to remove time influence
   fromDate.setHours(0, 0, 0, 0);
   toDate.setHours(0, 0, 0, 0);
-  
+
   // Check if from date is the first day of the month
   if (fromDate.getDate() !== 1) {
     return false;
   }
-  
+
   // Check if to date is the last day of the same month as from date
   const expectedLastDay = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
   expectedLastDay.setHours(0, 0, 0, 0);
-  
+
   // Both dates must be in the same month and year
   if (fromDate.getMonth() !== toDate.getMonth() || fromDate.getFullYear() !== toDate.getFullYear()) {
     return false;
   }
-  
+
   // To date must be the last day of the month
   if (toDate.getTime() !== expectedLastDay.getTime()) {
     return false;
   }
-  
+
   return true;
 }
 

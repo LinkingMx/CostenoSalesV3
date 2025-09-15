@@ -1,30 +1,133 @@
-import type { BranchSalesData } from './types';
-import { isCompleteMonthSelected } from '@/lib/date-validation';
-
-// Re-export the month validation function
-export { isCompleteMonthSelected };
+import type { DateRange } from '@/components/main-filter-calendar';
+import type { BranchSalesData, ApiCardData } from './types';
 
 /**
- * Formats monetary amounts with dollar symbol and standard formatting.
+ * Determines if the selected date range contains today's date.
+ * Used to show/hide open accounts data since open accounts only exist for the current month.
+ *
+ * @param {DateRange} [dateRange] - Selected date range from calendar
+ * @returns {boolean} True if the range contains today's date
+ *
+ * @example
+ * ```tsx
+ * const isCurrentMonth = isCurrentMonth(selectedDateRange);
+ * // Returns true if today falls within the selected month range
+ * ```
+ */
+export function isCurrentMonth(dateRange?: DateRange): boolean {
+  if (!dateRange?.from || !dateRange?.to) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to start of day
+
+  const rangeStart = new Date(dateRange.from);
+  rangeStart.setHours(0, 0, 0, 0);
+
+  const rangeEnd = new Date(dateRange.to);
+  rangeEnd.setHours(23, 59, 59, 999); // End of day
+
+  return today >= rangeStart && today <= rangeEnd;
+}
+
+/**
+ * Determines if the selected date range represents exactly one complete month.
+ * This function is critical for conditional rendering of the MonthlySalesBranches component,
+ * ensuring branch data is only displayed for exact month selections.
+ *
+ * @param {DateRange} [dateRange] - Date range object with optional from/to dates
+ * @returns {boolean} true if the date range spans exactly one month (first to last day), false otherwise
+ *
+ * @description Business logic:
+ * - Returns false for undefined/null date ranges (no selection)
+ * - Returns false when either from or to date is missing (incomplete selection)
+ * - Normalizes both dates to midnight (00:00:00) to ignore time components
+ * - Validates that the start date is the first day of the month
+ * - Validates that the end date is the last day of the same month
+ * - Ensures the range covers exactly one complete month
+ *
+ * This validation prevents displaying monthly branch data when:
+ * - No date is selected (undefined range)
+ * - User is in the middle of selecting a range (only from date set)
+ * - A partial month or multiple months are selected
+ * - The range doesn't start on the first day or end on the last day of the month
+ *
+ * @example
+ * ```typescript
+ * // Exact month (January 1 to January 31) - returns true
+ * const exactMonth = {
+ *   from: new Date('2025-01-01'), // First day of January
+ *   to: new Date('2025-01-31')    // Last day of January
+ * };
+ * isExactMonthSelected(exactMonth); // true
+ *
+ * // Partial month - returns false
+ * const partialMonth = {
+ *   from: new Date('2025-01-15'), // Mid-month
+ *   to: new Date('2025-01-31')    // Last day
+ * };
+ * isExactMonthSelected(partialMonth); // false
+ *
+ * // Multiple months - returns false
+ * const twoMonths = {
+ *   from: new Date('2025-01-01'), // First day of January
+ *   to: new Date('2025-02-28')    // Last day of February
+ * };
+ * isExactMonthSelected(twoMonths); // false
+ *
+ * // No selection - returns false
+ * isExactMonthSelected(undefined); // false
+ * ```
+ */
+export function isExactMonthSelected(dateRange?: DateRange): boolean {
+  // Early return for missing or incomplete date ranges
+  if (!dateRange?.from || !dateRange?.to) {
+    return false;
+  }
+
+  // Create normalized date objects to ignore time components
+  const fromDate = new Date(dateRange.from);
+  const toDate = new Date(dateRange.to);
+
+  // Normalize to midnight (00:00:00.000) to remove time influence
+  fromDate.setHours(0, 0, 0, 0);
+  toDate.setHours(0, 0, 0, 0);
+
+  // Check if from date is the first day of the month
+  if (fromDate.getDate() !== 1) {
+    return false;
+  }
+
+  // Get the last day of the same month
+  const lastDayOfMonth = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
+  lastDayOfMonth.setHours(0, 0, 0, 0);
+
+  // Check if to date is the last day of the same month
+  return toDate.getTime() === lastDayOfMonth.getTime();
+}
+
+/**
+ * Formats monetary amounts with Mexican peso symbol and standard formatting.
  * This function ensures consistent currency presentation throughout the application
- * with clean, readable formatting without currency prefix.
- * 
+ * with clean, readable formatting in Mexican pesos.
+ *
  * @param {number} amount - Raw monetary value to format
- * @returns {string} Formatted currency string with dollar symbol only
- * 
+ * @returns {string} Formatted currency string with peso symbol
+ *
  * @description Configuration choices:
- * - Uses standard US locale for number formatting (commas for thousands)
- * - Simple dollar symbol without "USD" prefix for cleaner display
+ * - Uses Mexican locale for number formatting (commas for thousands)
+ * - Mexican peso symbol without "MXN" prefix for cleaner display
  * - Fraction digits: Fixed at 2 for consistent monetary precision
- * 
+ *
  * @example
  * ```typescript
  * formatCurrency(1234.56);   // "$1,234.56"
- * formatCurrency(74326.60);  // "$74,326.60"
+ * formatCurrency(5780205.65);  // "$5,780,205.65"
  * formatCurrency(0);         // "$0.00"
  * formatCurrency(123.4);     // "$123.40" (always 2 decimal places)
  * ```
- * 
+ *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat} for Intl.NumberFormat documentation
  */
 export function formatCurrency(amount: number): string {
@@ -35,12 +138,12 @@ export function formatCurrency(amount: number): string {
   }
 
   try {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-MX', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'MXN',
       minimumFractionDigits: 2, // Always show 2 decimal places
       maximumFractionDigits: 2, // Never exceed 2 decimal places
-      currencyDisplay: 'symbol' // Show only $ symbol, not USD
+      currencyDisplay: 'symbol' // Show only $ symbol, not MXN
     }).format(amount);
   } catch (error) {
     console.error('formatCurrency: Formatting error:', error);
@@ -51,22 +154,22 @@ export function formatCurrency(amount: number): string {
 /**
  * Formats percentage values with consistent decimal precision and Spanish conventions.
  * Used for displaying growth/change indicators in branch sales data.
- * 
- * @param {number} percentage - Raw percentage value (e.g., 22.5 for 22.5%)
+ *
+ * @param {number} percentage - Raw percentage value (e.g., 53.31 for 53.31%)
  * @returns {string} Formatted percentage string with one decimal place
- * 
+ *
  * @description Formatting choices:
  * - Fixed to 1 decimal place for balance between precision and readability
  * - Handles both positive and negative percentages
  * - Does not include +/- symbols - visual indicators handled by UI components
- * 
+ *
  * The single decimal precision provides meaningful accuracy for business metrics
  * while maintaining clean, readable display in UI badges and indicators.
- * 
+ *
  * @example
  * ```typescript
- * formatPercentage(22.5);    // "22.5%"
- * formatPercentage(-15.7);   // "-15.7%" 
+ * formatPercentage(53.31);    // "53.3%"
+ * formatPercentage(-15.7);   // "-15.7%"
  * formatPercentage(0);       // "0.0%"
  * formatPercentage(100);     // "100.0%"
  * formatPercentage(5.678);   // "5.7%" (rounded to 1 decimal)
@@ -88,87 +191,178 @@ export function formatPercentage(percentage: number): string {
 }
 
 /**
- * Sample branch sales data for development and demonstration purposes.
- * 
- * This dataset represents realistic branch performance metrics derived from
- * actual business requirements and UI mockups. It includes various scenarios
+ * Transforms API cards data to branch sales data format for the monthly component.
+ * Converts the raw API response structure into the BranchSalesData interface format.
+ *
+ * @param {any} cardsData - Raw cards data from the API response (rawApiData.cards)
+ * @returns {BranchSalesData[]} Array of transformed branch sales data sorted by total sales
+ *
+ * @description This function maps the API response structure to our component interface:
+ * - Extracts branch name from the object key
+ * - Maps monetary values from closed_ticket and open_accounts
+ * - Extracts percentage growth from percentage.qty (vs previous month)
+ * - Generates avatar from brand first letter
+ * - For monthly: openAccounts is always 0, totalSales = closedSales
+ * - Sorts results by total sales in descending order
+ *
+ * @example
+ * ```typescript
+ * const apiCards = {
+ *   "Animal (Calzada)": {
+ *     "open_accounts": {"total": 0, "money": 0},
+ *     "closed_ticket": {"total": 1990, "money": 5780205.65},
+ *     "last_sales": 3770278.40,
+ *     "average_ticket": 1034.03,
+ *     "percentage": {"icon": "up", "qty": 53.31},
+ *     "brand": "ANIMAL",
+ *     "region": "AM-AF"
+ *   }
+ * };
+ *
+ * const branchData = transformApiCardsToBranchData(apiCards);
+ * // Returns BranchSalesData[] sorted by totalSales descending
+ * ```
+ */
+export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardData>): BranchSalesData[] {
+  if (!cardsData || typeof cardsData !== 'object') {
+    console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
+    return [];
+  }
+
+  try {
+    return Object.entries(cardsData)
+      .map(([branchName, apiData]: [string, ApiCardData]) => {
+        // Validate required data structure
+        if (!apiData || typeof apiData !== 'object') {
+          console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
+          return null;
+        }
+
+        const {
+          closed_ticket,
+          percentage,
+          average_ticket,
+          brand,
+          region
+        } = apiData;
+
+        // Validate required fields
+        if (!closed_ticket || !percentage) {
+          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`);
+          return null;
+        }
+
+        // For monthly: open accounts are always 0, total = closed only
+        const openAccountsAmount = 0; // Always 0 for monthly view
+        const closedAccountsAmount = closed_ticket.money || 0;
+
+        const transformedBranch: BranchSalesData = {
+          id: branchName, // Use branch name as ID for monthly
+          name: branchName,
+          totalSales: closedAccountsAmount, // Only closed sales for monthly
+          percentage: percentage.qty || 0,
+          openAccounts: openAccountsAmount, // Always 0 for monthly
+          closedSales: closedAccountsAmount,
+          averageTicket: average_ticket || 0,
+          totalTickets: closed_ticket.total || 0,
+          avatar: brand ? brand.charAt(0).toUpperCase() : branchName.charAt(0).toUpperCase()
+        };
+
+        // Add location if provided
+        if (region) {
+          transformedBranch.location = region;
+        }
+
+        return transformedBranch;
+      })
+      .filter((branch): branch is BranchSalesData => branch !== null)
+      .sort((a, b) => b.totalSales - a.totalSales); // Sort by total sales descending
+  } catch (error) {
+    console.error('transformApiCardsToBranchData: Transformation error:', error);
+    return [];
+  }
+}
+
+/**
+ * Sample monthly branch sales data for development and demonstration purposes.
+ *
+ * This dataset represents realistic monthly branch performance metrics derived from
+ * actual business requirements and API structure. It includes various scenarios
  * to test component behavior with different data patterns.
- * 
- * @constant {BranchSalesData[]} DUMMY_BRANCHES_DATA
- * 
+ *
+ * @constant {BranchSalesData[]} DUMMY_MONTHLY_BRANCHES_DATA
+ *
  * @description Data characteristics:
  * - Mixed performance scenarios (high/low sales, positive/negative growth)
- * - Realistic monetary values in USD currency
+ * - Realistic monetary values in Mexican pesos
  * - Spanish branch names reflecting target market localization
- * - Varied completion states (some branches with incomplete ticket data)
+ * - Monthly-specific: All openAccounts are 0
  * - Different location formats (some empty, some detailed)
- * 
+ * - Percentage values comparing to previous month
+ *
  * Data patterns for testing:
- * 1. "Lázaro y Diego" - Complete data set with open/closed accounts split
- * 2. "Animal" branches - High growth, closed sales only (no open accounts)
- * 3. "Mercado Reforma" - Moderate growth, empty location field
- * 
+ * 1. "Animal (Calzada)" - High sales with strong growth vs previous month
+ * 2. "Mochomos (Tijuana)" - Moderate sales with positive growth
+ * 3. "Other branches" - Various performance levels for comprehensive testing
+ *
  * @example
  * ```tsx
- * // Used as default fallback when no live data is available
- * <MonthlySalesBranches 
+ * // Used as fallback when no live data is available
+ * <MonthlySalesBranches
  *   selectedDateRange={dateRange}
- *   branches={DUMMY_BRANCHES_DATA} // Explicit usage
+ *   branches={DUMMY_MONTHLY_BRANCHES_DATA} // Explicit usage
  * />
- * 
- * // Automatic fallback (default parameter)
- * <MonthlySalesBranches selectedDateRange={dateRange} />
  * ```
- * 
+ *
  * @see {@link BranchSalesData} for interface structure
  */
-export const DUMMY_BRANCHES_DATA: BranchSalesData[] = [
+export const DUMMY_MONTHLY_BRANCHES_DATA: BranchSalesData[] = [
   {
-    id: '5',
-    name: 'Lázaro y Diego',
-    location: 'Metropolitan', // Full location example
-    totalSales: 74326.60,
-    percentage: 22.5, // Positive growth
-    openAccounts: 6490.60, // Has pending transactions
-    closedSales: 67836.00,
-    averageTicket: 369.78, // Realistic ticket average
-    totalTickets: 100, // Complete ticket data
-    avatar: 'L'
-  },
-  {
-    id: '31',
-    name: 'Animal',
-    location: 'St Regis', // Different location format
-    totalSales: 62432.00,
-    percentage: 75.6, // High positive growth
-    openAccounts: 0, // All sales completed
-    closedSales: 62432.00,
-    averageTicket: 0, // Missing average data
-    totalTickets: 0, // Missing ticket count
+    id: 'animal-calzada',
+    name: 'Animal (Calzada)',
+    location: 'AM-AF',
+    totalSales: 5780205.65,
+    percentage: 53.31, // Strong growth vs previous month
+    openAccounts: 0, // Always 0 for monthly
+    closedSales: 5780205.65,
+    averageTicket: 1034.03,
+    totalTickets: 1990,
     avatar: 'A'
   },
   {
-    id: '26',
-    name: 'Animal', // Same brand, different location
+    id: 'mochomos-tijuana',
+    name: 'Mochomos (Tijuana)',
+    location: 'AM-AF',
+    totalSales: 2433014.71,
+    percentage: 3.43, // Moderate growth
+    openAccounts: 0,
+    closedSales: 2433014.71,
+    averageTicket: 1125.35,
+    totalTickets: 966,
+    avatar: 'M'
+  },
+  {
+    id: 'palominos-plaza',
+    name: 'Palominos (Plaza)',
     location: 'CDMX',
-    totalSales: 48035.00,
-    percentage: 65.5, // High positive growth
+    totalSales: 1850000.00,
+    percentage: -12.5, // Negative growth for testing
     openAccounts: 0,
-    closedSales: 48035.00,
-    averageTicket: 0, // Incomplete data scenario
-    totalTickets: 0,
-    avatar: 'A'
+    closedSales: 1850000.00,
+    averageTicket: 987.50,
+    totalTickets: 750,
+    avatar: 'P'
   },
   {
-    id: '38',
+    id: 'mercado-reforma',
     name: 'Mercado Reforma',
-    location: '', // Empty location example
-    totalSales: 40752.30,
-    percentage: 21.6, // Moderate positive growth
+    location: '',
+    totalSales: 1200000.00,
+    percentage: 8.2, // Low growth scenario
     openAccounts: 0,
-    closedSales: 40752.30,
-    averageTicket: 0, // Testing zero values
-    totalTickets: 0,
+    closedSales: 1200000.00,
+    averageTicket: 654.32,
+    totalTickets: 450,
     avatar: 'M'
   }
 ];

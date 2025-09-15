@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { BranchSalesData } from '../types';
+import type { BranchSalesData, ApiCardData } from '../types';
 import { isExactWeekSelected, transformApiCardsToBranchData, isCurrentWeek } from '../utils';
 import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
 
@@ -66,7 +66,7 @@ export const useWeeklyBranches = (selectedDateRange?: DateRange): UseWeeklyBranc
       return [];
     }
 
-    const transformedData = transformApiCardsToBranchData(apiData.data.cards as any);
+    const transformedData = transformApiCardsToBranchData(apiData.data.cards as Record<string, ApiCardData>);
 
     if (process.env.NODE_ENV === 'development') {
       console.log(`useWeeklyBranches: Transformed ${transformedData.length} branches from shared context`);

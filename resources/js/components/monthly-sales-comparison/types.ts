@@ -4,13 +4,13 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * Represents sales data for a single month within a monthly comparison.
  * Contains the date and sales amount information for monthly comparison.
  * This is the core data structure used throughout the monthly sales component.
- * 
+ *
  * @interface SalesMonthData
  * @property {Date} date - The specific date for this sales record (must be a month)
  * @property {number} amount - Sales amount for this month in Mexican pesos
  * @property {boolean} isCurrentMonth - Whether this date falls within the current calendar month
  * @property {string} monthName - Full Spanish month name (e.g., "Enero", "Febrero", "Marzo")
- * 
+ *
  * @example
  * const salesData: SalesMonthData = {
  *   date: new Date('2025-09-01'),
@@ -27,23 +27,42 @@ export interface SalesMonthData {
 }
 
 /**
+ * Represents summary data for a single month in monthly sales comparison.
+ * Contains total amount and formatted labels for display in cards.
+ *
+ * @interface MonthlySummaryData
+ * @property {number} totalAmount - Total sales amount for the month
+ * @property {string} monthNameWithYear - Full month name with year (e.g., "Julio 2025")
+ * @property {string} monthLabel - API label identifier ('actual', 'last', 'two_last')
+ *
+ * @example
+ * const summaryData: MonthlySummaryData = {
+ *   totalAmount: 228086400.35,
+ *   monthNameWithYear: 'Julio 2025',
+ *   monthLabel: 'two_last'
+ * };
+ */
+export interface MonthlySummaryData {
+  totalAmount: number;
+  monthNameWithYear: string;
+  monthLabel: string;
+}
+
+/**
  * Props for the MonthlySalesComparison component.
  * Controls the display and behavior of the monthly sales comparison.
  * The component only renders when selectedDateRange contains a valid complete month.
- * 
+ *
  * @interface MonthlySalesComparisonProps
  * @property {DateRange | undefined} selectedDateRange - Current date range from calendar filter (must contain complete month)
- * @property {SalesMonthData[]} [salesData] - Optional array of monthly sales records
- * 
+ *
  * @example
- * <MonthlySalesComparison 
+ * <MonthlySalesComparison
  *   selectedDateRange={dateRange}
- *   salesData={mockSalesData}
  * />
  */
 export interface MonthlySalesComparisonProps {
   selectedDateRange: DateRange | undefined;
-  salesData?: SalesMonthData[];
 }
 
 /**

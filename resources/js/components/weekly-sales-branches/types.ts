@@ -8,7 +8,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {string} id - Unique branch identifier (typically numeric but stored as string)
  * @property {string} name - Human-readable branch name displayed in the UI
  * @property {string} [location] - Optional branch location/city for additional context
- * @property {number} totalSales - Total sales amount in USD currency
+ * @property {number} totalSales - Total sales amount (sum of open + closed accounts) in Mexican pesos
  * @property {number} percentage - Growth percentage (positive/negative) for period comparison
  * @property {number} openAccounts - Total amount from pending/open transactions
  * @property {number} closedSales - Total amount from completed transactions
@@ -17,7 +17,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {string} avatar - Single character identifier for branch visual display
  * 
  * @description This interface represents the core data structure for branch sales analytics.
- * All monetary values are expected to be in USD and will be formatted using Spanish
+ * All monetary values are in Mexican pesos and will be formatted using Spanish
  * locale conventions (es-MX) for consistent presentation.
  * 
  * @example

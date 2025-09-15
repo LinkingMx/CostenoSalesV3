@@ -240,6 +240,82 @@ interface ChartDayData {
 - **Lazy Rendering**: Only renders when complete week is selected
 - **Development Mode**: Additional validation and logging for debugging
 
+### Weekly Components Ecosystem (Updated September 2024)
+
+The dashboard includes three integrated weekly components that share data through an optimized architecture to prevent duplicate API calls.
+
+#### Components Overview:
+
+1. **weekly-chart-comparison** - Interactive 3-week line chart
+2. **weekly-sales-comparison** - Comparative metrics table
+3. **weekly-sales-branches** - Collapsible branch cards with detailed metrics
+
+#### Critical Performance Optimization:
+
+**Problem Solved**: Eliminated 4 duplicate API requests → 1 shared request (75% reduction)
+
+**Architecture Solution**:
+- **WeeklyChartProvider** context manages single API call to `main_dashboard_data`
+- **Shared state** distributed to all weekly components
+- **Request deduplication** in `weekly-chart.service.ts`
+- **React 19 compatibility** with proper effect management
+
+#### WeeklySalesBranches Component:
+
+**Location**: `@/components/weekly-sales-branches`
+
+**Key Features**:
+- **Branch cards** with collapsible detailed metrics
+- **Conditional logic**: Open accounts only show for current week
+- **Name truncation**: Branch names limited to 15 characters with tooltip
+- **Real API integration**: Uses `cards` section from API response
+- **Mexican peso formatting**: Consistent currency display
+- **Sorted by sales**: Descending order by total sales
+
+**Business Logic**:
+- **Current week**: Shows all metrics including open accounts
+- **Past weeks**: Hides open accounts card (business rule: no open accounts in past weeks)
+- **Data validation**: Comprehensive API response validation
+- **Error handling**: Graceful fallbacks with retry functionality
+
+**Architecture**:
+```
+weekly-sales-branches/
+├── weekly-sales-branches.tsx
+├── types.ts
+├── utils.ts (includes isCurrentWeek validation)
+├── hooks/use-weekly-branches.ts
+└── components/
+    ├── branch-collapsible-item.tsx
+    ├── weekly-branches-loading-skeleton.tsx
+    └── weekly-branches-error.tsx
+```
+
+#### Integration Pattern:
+
+```tsx
+// Dashboard usage - all components share one API call
+<WeeklyChartProvider selectedDateRange={dateRange}>
+  <WeeklyChartComparison selectedDateRange={dateRange} />
+  <WeeklySalesComparison selectedDateRange={dateRange} />
+  <WeeklySalesBranches selectedDateRange={dateRange} />
+</WeeklyChartProvider>
+```
+
+#### Data Flow:
+1. User selects complete week (Monday-Sunday)
+2. WeeklyChartProvider validates and makes single API call
+3. Raw data transformed for each component's needs:
+   - `weekly-chart-comparison`: Uses `range` data for chart visualization
+   - `weekly-sales-comparison`: Uses `range` data for metrics comparison
+   - `weekly-sales-branches`: Uses `cards` data for branch details
+4. All components render with shared loading/error states
+
+#### Performance Monitoring:
+- **Verification**: DevTools Network tab should show exactly 1 `main_dashboard_data` request
+- **Debug logging**: Available in development mode for troubleshooting
+- **Service layer**: Prevents concurrent duplicate requests with active request tracking
+
 ## Theme System
 
 ### Comprehensive Light/Dark Mode Implementation
