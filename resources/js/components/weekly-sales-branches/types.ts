@@ -55,37 +55,30 @@ export interface BranchSalesData {
 /**
  * Props interface for the WeeklySalesBranches component.
  * Provides configuration options for displaying branch sales data with conditional visibility.
- * 
+ *
  * @interface WeeklySalesBranchesProps
  * @property {DateRange} [selectedDateRange] - Current date selection from main filter calendar
- * @property {BranchSalesData[]} [branches=DUMMY_BRANCHES_DATA] - Array of branch sales data to display
- * 
+ *
  * @description This interface defines the external API for the WeeklySalesBranches component.
  * The component uses conditional rendering based on the selectedDateRange to ensure
  * data relevance - it only displays when exactly one week (Monday to Sunday) is selected.
- * 
+ * Branch data is now fetched automatically from the API using the useWeeklyBranches hook.
+ *
  * @example
  * ```tsx
- * // Controlled usage with real data
- * <WeeklySalesBranches 
- *   selectedDateRange={exactWeekRange}
- *   branches={liveBranchData}
- * />
- * 
- * // Default usage with dummy data (development)
- * <WeeklySalesBranches selectedDateRange={dateRange} />
- * 
+ * // Usage with real API data - shows for exact week selection
+ * <WeeklySalesBranches selectedDateRange={exactWeekRange} />
+ *
  * // Will not render when not exact week selected
  * <WeeklySalesBranches selectedDateRange={partialWeekRange} /> // Returns null
  * ```
- * 
+ *
  * @see {@link DateRange} for date range structure details
  * @see {@link BranchSalesData} for branch data structure
- * @see {@link isExactWeekSelected} for visibility logic
+ * @see {@link useWeeklyBranches} for API integration logic
  */
 export interface WeeklySalesBranchesProps {
   selectedDateRange?: DateRange;
-  branches?: BranchSalesData[];
 }
 
 /**
@@ -114,4 +107,48 @@ export interface WeeklySalesBranchesProps {
  */
 export interface BranchCollapsibleItemProps {
   branch: BranchSalesData;
+  isCurrentWeek: boolean;
+}
+
+/**
+ * Return type for the useWeeklyBranches hook.
+ * Provides state and methods for managing weekly branches data.
+ */
+export interface UseWeeklyBranchesReturn {
+  branchesData: BranchSalesData[];
+  isLoading: boolean;
+  error: string | null;
+  isValidCompleteWeek: boolean;
+  isCurrentWeek: boolean;
+  refetch: () => void;
+}
+
+/**
+ * Props interface for the WeeklyBranchesError component.
+ * Defines error display and retry functionality.
+ */
+export interface WeeklyBranchesErrorProps {
+  error: string;
+  onRetry?: () => void;
+}
+
+/**
+ * Interface for API card data structure from the weekly chart service.
+ * Defines the raw data format returned by the API.
+ */
+export interface ApiCardData {
+  store_id: number;
+  closed_ticket: {
+    money: number;
+    total: number;
+  };
+  open_accounts?: {
+    money: number;
+  };
+  percentage: {
+    qty: number;
+  };
+  average_ticket: number;
+  brand?: string;
+  region?: string;
 }

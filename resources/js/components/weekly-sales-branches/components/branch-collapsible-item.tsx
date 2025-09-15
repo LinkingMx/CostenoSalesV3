@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
 
-export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
+export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const isPositiveGrowth = branch.percentage > 0;
 
@@ -76,24 +76,26 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
           <div className="bg-muted rounded-lg p-2 space-y-2">
             {/* Sales Metrics - Individual Cards - Mobile optimized */}
             <div className="space-y-2">
-              {/* Abiertas Card */}
-              <div className="bg-card rounded-lg p-3 border border-border hover:border-border hover:shadow-sm transition-all duration-150">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                      <TicketMinus className="w-4 h-4" />
+              {/* Abiertas Card - Only show for current week */}
+              {isCurrentWeek && (
+                <div className="bg-card rounded-lg p-3 border border-border hover:border-border hover:shadow-sm transition-all duration-150">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                        <TicketMinus className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm text-foreground">Cuentas Abiertas</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium text-sm text-foreground">Cuentas Abiertas</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-sm text-foreground">
-                      {formatCurrency(branch.openAccounts)}
+                    <div className="text-right">
+                      <div className="font-semibold text-sm text-foreground">
+                        {formatCurrency(branch.openAccounts)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Cerradas Card */}
               <div className="bg-card rounded-lg p-3 border border-border hover:border-border hover:shadow-sm transition-all duration-150">

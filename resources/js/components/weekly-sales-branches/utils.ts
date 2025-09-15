@@ -1,5 +1,35 @@
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { BranchSalesData } from './types';
+import type { BranchSalesData, ApiCardData } from './types';
+
+/**
+ * Determines if the selected date range contains today's date.
+ * Used to show/hide open accounts data since open accounts only exist for the current week.
+ *
+ * @param {DateRange} [dateRange] - Selected date range from calendar
+ * @returns {boolean} True if the range contains today's date
+ *
+ * @example
+ * ```tsx
+ * const isCurrentWeek = isCurrentWeek(selectedDateRange);
+ * // Returns true if today falls within the selected week range
+ * ```
+ */
+export function isCurrentWeek(dateRange?: DateRange): boolean {
+  if (!dateRange?.from || !dateRange?.to) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to start of day
+
+  const rangeStart = new Date(dateRange.from);
+  rangeStart.setHours(0, 0, 0, 0);
+
+  const rangeEnd = new Date(dateRange.to);
+  rangeEnd.setHours(23, 59, 59, 999); // End of day
+
+  return today >= rangeStart && today <= rangeEnd;
+}
 
 /**
  * Determines if the selected date range represents exactly one week (Monday to Sunday).
@@ -81,18 +111,18 @@ export function isExactWeekSelected(dateRange?: DateRange): boolean {
 }
 
 /**
- * Formats monetary amounts with dollar symbol and standard formatting.
+ * Formats monetary amounts with Mexican peso symbol and standard formatting.
  * This function ensures consistent currency presentation throughout the application
- * with clean, readable formatting without currency prefix.
- * 
+ * with clean, readable formatting in Mexican pesos.
+ *
  * @param {number} amount - Raw monetary value to format
- * @returns {string} Formatted currency string with dollar symbol only
- * 
+ * @returns {string} Formatted currency string with peso symbol
+ *
  * @description Configuration choices:
- * - Uses standard US locale for number formatting (commas for thousands)
- * - Simple dollar symbol without "USD" prefix for cleaner display
+ * - Uses Mexican locale for number formatting (commas for thousands)
+ * - Mexican peso symbol without "MXN" prefix for cleaner display
  * - Fraction digits: Fixed at 2 for consistent monetary precision
- * 
+ *
  * @example
  * ```typescript
  * formatCurrency(1234.56);   // "$1,234.56"
@@ -100,7 +130,7 @@ export function isExactWeekSelected(dateRange?: DateRange): boolean {
  * formatCurrency(0);         // "$0.00"
  * formatCurrency(123.4);     // "$123.40" (always 2 decimal places)
  * ```
- * 
+ *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat} for Intl.NumberFormat documentation
  */
 export function formatCurrency(amount: number): string {
@@ -111,12 +141,12 @@ export function formatCurrency(amount: number): string {
   }
 
   try {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-MX', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'MXN',
       minimumFractionDigits: 2, // Always show 2 decimal places
       maximumFractionDigits: 2, // Never exceed 2 decimal places
-      currencyDisplay: 'symbol' // Show only $ symbol, not USD
+      currencyDisplay: 'symbol' // Show only $ symbol, not MXN
     }).format(amount);
   } catch (error) {
     console.error('formatCurrency: Formatting error:', error);
@@ -198,6 +228,97 @@ export function formatPercentage(percentage: number): string {
  * 
  * @see {@link BranchSalesData} for interface structure
  */
+/**
+ * Transforms API cards data to branch sales data format for the component.
+ * Converts the raw API response structure into the BranchSalesData interface format.
+ *
+ * @param {any} cardsData - Raw cards data from the API response (data.cards)
+ * @returns {BranchSalesData[]} Array of transformed branch sales data sorted by total sales
+ *
+ * @description This function maps the API response structure to our component interface:
+ * - Extracts branch name from the object key
+ * - Maps monetary values from closed_ticket and open_accounts
+ * - Extracts percentage growth from percentage.qty
+ * - Generates avatar from brand first letter
+ * - Sorts results by total sales in descending order
+ *
+ * @example
+ * ```typescript
+ * const apiCards = {
+ *   "Mochomos (Tijuana)": {
+ *     "closed_ticket": { "money": 2433014.71, "total": 966 },
+ *     "last_sales": 2352291.65,
+ *     "percentage": { "icon": "up", "qty": 3.43 },
+ *     "average_ticket": 1125.35,
+ *     "open_accounts": { "money": 0, "total": 0 },
+ *     "store_id": 42,
+ *     "brand": "MOCHOMOS",
+ *     "region": "AM-AF"
+ *   }
+ * };
+ *
+ * const branchData = transformApiCardsToBranchData(apiCards);
+ * // Returns BranchSalesData[] sorted by totalSales descending
+ * ```
+ */
+export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardData>): BranchSalesData[] {
+  if (!cardsData || typeof cardsData !== 'object') {
+    console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
+    return [];
+  }
+
+  try {
+    return Object.entries(cardsData)
+      .map(([branchName, apiData]: [string, ApiCardData]) => {
+        // Validate required data structure
+        if (!apiData || typeof apiData !== 'object') {
+          console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
+          return null;
+        }
+
+        const {
+          store_id,
+          closed_ticket,
+          open_accounts,
+          percentage,
+          average_ticket,
+          brand,
+          region
+        } = apiData;
+
+        // Validate required fields
+        if (!store_id || !closed_ticket || !percentage) {
+          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`);
+          return null;
+        }
+
+        const transformedBranch: BranchSalesData = {
+          id: store_id.toString(),
+          name: branchName,
+          totalSales: closed_ticket.money || 0,
+          percentage: percentage.qty || 0,
+          openAccounts: open_accounts?.money || 0,
+          closedSales: closed_ticket.money || 0,
+          averageTicket: average_ticket || 0,
+          totalTickets: closed_ticket.total || 0,
+          avatar: brand ? brand.charAt(0).toUpperCase() : branchName.charAt(0).toUpperCase()
+        };
+
+        // Add location if provided
+        if (region) {
+          transformedBranch.location = region;
+        }
+
+        return transformedBranch;
+      })
+      .filter((branch): branch is BranchSalesData => branch !== null)
+      .sort((a, b) => b.totalSales - a.totalSales); // Sort by total sales descending
+  } catch (error) {
+    console.error('transformApiCardsToBranchData: Transformation error:', error);
+    return [];
+  }
+}
+
 export const DUMMY_BRANCHES_DATA: BranchSalesData[] = [
   {
     id: '5',
