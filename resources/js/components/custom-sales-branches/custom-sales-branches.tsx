@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CustomSalesBranchesHeader } from './components/custom-sales-branches-header';
 import { BranchCustomCollapsibleItem } from './components/branch-custom-collapsible-item';
 import type { CustomSalesBranchesProps } from './types';
-import { isCustomRangeSelected, DUMMY_CUSTOM_BRANCHES_DATA } from './utils';
+import { useCustomBranches } from './hooks/use-custom-branches';
 
 /**
  * CustomSalesBranches - Component for displaying custom range branch sales data in collapsible format.
@@ -44,14 +44,64 @@ import { isCustomRangeSelected, DUMMY_CUSTOM_BRANCHES_DATA } from './utils';
  * />
  * ```
  */
-export function CustomSalesBranches({ 
-  selectedDateRange, 
-  branches = DUMMY_CUSTOM_BRANCHES_DATA 
+export function CustomSalesBranches({
+  selectedDateRange
 }: CustomSalesBranchesProps) {
-  
+
+  // Use custom hook for API integration and state management
+  const { branchesData, isLoading, error, isValidCustomRange, refetch } = useCustomBranches(selectedDateRange);
+
   // Only render if custom range is selected (not single day, complete week, or complete month)
-  if (!isCustomRangeSelected(selectedDateRange)) {
+  if (!isValidCustomRange) {
     return null;
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardContent className="px-4 py-3">
+          <CustomSalesBranchesHeader />
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-muted-foreground">Cargando datos de sucursales...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardContent className="px-4 py-3">
+          <CustomSalesBranchesHeader />
+          <div className="flex flex-col items-center justify-center py-8 space-y-2">
+            <div className="text-sm text-destructive">Error al cargar los datos</div>
+            <button
+              onClick={refetch}
+              className="text-xs text-muted-foreground hover:text-foreground underline"
+            >
+              Reintentar
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show empty state if no branches data
+  if (branchesData.length === 0) {
+    return (
+      <Card className="w-full">
+        <CardContent className="px-4 py-3">
+          <CustomSalesBranchesHeader />
+          <div className="text-center py-8 text-muted-foreground">
+            No hay datos de sucursales disponibles para este rango.
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -59,14 +109,14 @@ export function CustomSalesBranches({
       <CardContent className="px-4 py-3">
         {/* Header section */}
         <CustomSalesBranchesHeader />
-        
-        {/* Branch collapsibles */}
-        <div 
+
+        {/* Branch collapsibles with real API data */}
+        <div
           className="space-y-2"
           role="region"
           aria-label="Detalles de ventas por sucursal rango personalizado"
         >
-          {branches.map((branch) => (
+          {branchesData.map((branch) => (
             <BranchCustomCollapsibleItem
               key={branch.id}
               branch={branch}

@@ -1,15 +1,13 @@
 import * as React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ChevronDown, TicketMinus, TicketCheck, TicketPercent } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BranchCustomCollapsibleItemProps } from '../types';
-import { formatCurrency, formatPercentage } from '../utils';
+import { formatCurrency } from '../utils';
 
 export function BranchCustomCollapsibleItem({ branch }: BranchCustomCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const isPositiveGrowth = branch.percentage > 0;
 
   return (
     <Collapsible 
@@ -39,22 +37,11 @@ export function BranchCustomCollapsibleItem({ branch }: BranchCustomCollapsibleI
               </div>
             </div>
 
-            {/* Right: Amount and badge closer together */}
-            <div className="text-right flex flex-col items-end gap-0.5">
+            {/* Right: Amount only */}
+            <div className="text-right">
               <div className="text-lg font-bold tabular-nums text-foreground">
                 {formatCurrency(branch.totalSales)}
               </div>
-              <Badge 
-                variant="secondary" 
-                className={cn(
-                  "px-2 py-0.5 text-xs font-medium rounded-full",
-                  isPositiveGrowth 
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                )}
-              >
-                {formatPercentage(branch.percentage)}
-              </Badge>
             </div>
           </div>
           

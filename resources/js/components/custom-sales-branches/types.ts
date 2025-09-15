@@ -85,7 +85,6 @@ export interface BranchCustomSalesData {
  */
 export interface CustomSalesBranchesProps {
   selectedDateRange?: DateRange;
-  branches?: BranchCustomSalesData[];
 }
 
 /**
