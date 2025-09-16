@@ -1,5 +1,6 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { SalesWeekData, ValidationResult, WeeklySummaryData } from './types';
+import { logger } from './lib/logger';
 
 /**
  * Checks if the selected date range represents a complete week (Monday to Sunday).
@@ -454,11 +455,53 @@ export function validateWeekDateRange(dateRange: DateRange | undefined): Validat
 }
 
 /**
+ * Type guard to validate weekly API data structure.
+ * Ensures the API data has the expected shape for weekly chart processing.
+ *
+ * @function isValidWeeklyApiData
+ * @param {unknown} data - Unknown data from API to validate
+ * @returns {boolean} True if data has valid weekly API structure
+ */
+export function isValidWeeklyApiData(data: unknown): data is { range: { actual: Record<string, number>; last: Record<string, number>; two_last: Record<string, number> } } | { data: { range: { actual: Record<string, number>; last: Record<string, number>; two_last: Record<string, number> } } } {
+    if (!data || typeof data !== 'object') {
+        return false;
+    }
+
+    const obj = data as Record<string, unknown>;
+
+    // Check for nested data.range structure
+    if (obj.data && typeof obj.data === 'object') {
+        const nestedData = obj.data as Record<string, unknown>;
+        if (nestedData.range && typeof nestedData.range === 'object') {
+            const range = nestedData.range as Record<string, unknown>;
+            return !!(
+                range.actual && typeof range.actual === 'object' &&
+                range.last && typeof range.last === 'object' &&
+                range.two_last && typeof range.two_last === 'object'
+            );
+        }
+    }
+
+    // Check for direct range structure
+    if (obj.range && typeof obj.range === 'object') {
+        const range = obj.range as Record<string, unknown>;
+        return !!(
+            range.actual && typeof range.actual === 'object' &&
+            range.last && typeof range.last === 'object' &&
+            range.two_last && typeof range.two_last === 'object'
+        );
+    }
+
+    return false;
+}
+
+/**
  * Transforms API weekly chart data to weekly summary data for display.
  * Calculates the sum of all 7 days for each week and formats date ranges.
+ * Now includes proper type validation instead of unsafe casting.
  *
  * @function transformApiDataToWeeklySummary
- * @param {any} apiData - Weekly chart data from API with range.actual, range.last, range.two_last
+ * @param {unknown} apiData - Weekly chart data from API with range.actual, range.last, range.two_last
  * @returns {WeeklySummaryData[]} Array of 3 weekly summary objects
  *
  * @example
@@ -471,23 +514,30 @@ export function validateWeekDateRange(dateRange: DateRange | undefined): Validat
  * };
  * const summaryData = transformApiDataToWeeklySummary(apiResponse);
  */
-export function transformApiDataToWeeklySummary(apiData: any): WeeklySummaryData[] {
+export function transformApiDataToWeeklySummary(apiData: unknown): WeeklySummaryData[] {
     if (!apiData) {
+        logger.debug('transformApiDataToWeeklySummary: No API data provided');
         return [];
     }
 
-    // Handle both processed chart data and raw API data
+    // Validate API data structure using type guard
+    if (!isValidWeeklyApiData(apiData)) {
+        logger.warn('transformApiDataToWeeklySummary: Invalid API data structure', { hasData: !!apiData });
+        return [];
+    }
+
+    // Handle both processed chart data and raw API data with proper type safety
     let rangeData;
-    if (apiData.data && apiData.data.range) {
+    if ('data' in apiData && apiData.data.range) {
         // Full API response with nested data structure
         rangeData = apiData.data.range;
-    } else if (apiData.range) {
+        logger.debug('transformApiDataToWeeklySummary: Using nested data.range structure');
+    } else if ('range' in apiData) {
         // Direct range data format
         rangeData = apiData.range;
-    } else if (apiData.dailyData) {
-        // Processed chart data - we need to extract the raw data
-        return [];
+        logger.debug('transformApiDataToWeeklySummary: Using direct range structure');
     } else {
+        logger.warn('transformApiDataToWeeklySummary: No valid range data found in API response');
         return [];
     }
 
@@ -526,7 +576,7 @@ export function transformApiDataToWeeklySummary(apiData: any): WeeklySummaryData
                 weekLabel,
             };
         } catch (error) {
-            console.error(`Error processing week ${weekLabel}:`, error);
+            logger.error(`Error processing week ${weekLabel}:`, error);
             return null;
         }
     };

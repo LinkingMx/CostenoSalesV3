@@ -75,24 +75,6 @@ export interface WeeklySalesComparisonProps {
     weeklySummaryData?: WeeklySummaryData[];
 }
 
-/**
- * Props for the SalesWeekCard component.
- * Represents a single day's sales information in a weekly card format.
- *
- * @interface SalesWeekCardProps
- * @property {SalesWeekData} data - Sales data for this specific day
- * @property {boolean} [isHighlighted] - Whether this card should be visually highlighted
- *
- * @example
- * <SalesWeekCard
- *   data={salesData}
- *   isHighlighted={data.isCurrentWeek}
- * />
- */
-export interface SalesWeekCardProps {
-    data: SalesWeekData;
-    isHighlighted?: boolean;
-}
 
 /**
  * Props for the WeeklySummaryCard component.

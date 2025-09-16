@@ -10,13 +10,11 @@
 export { WeeklySalesComparison, default } from './weekly-sales-comparison';
 
 // Sub-component exports
-export { SalesWeekCard } from './components/sales-week-card';
 export { WeeklyComparisonHeader } from './components/weekly-comparison-header';
 export { WeeklyErrorBoundary } from './components/weekly-error-boundary';
 
 // Type exports
 export type {
-    SalesWeekCardProps,
     SalesWeekData,
     ValidationResult,
     WeeklyComparisonHeaderProps,
@@ -35,6 +33,7 @@ export {
     generateWeekdays,
     getDayLetter,
     getDayName,
+    isValidWeeklyApiData,
     isWorkWeekSelected,
     transformApiDataToWeeklySummary,
     validateWeekDateRange,

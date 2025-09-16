@@ -46,13 +46,13 @@ export function WeeklySalesComparison({ selectedDateRange }: WeeklySalesComparis
         return isCompleteWeekSelected(selectedDateRange);
     }, [selectedDateRange]);
 
-    // Transform raw API data to weekly summary format
+    // Transform raw API data to weekly summary format with proper type validation
     const weeklySummaryData = React.useMemo((): WeeklySummaryData[] => {
         if (!rawApiData) {
             return [];
         }
-        // Cast rawApiData to expected type since we know the structure from API
-        return transformApiDataToWeeklySummary(rawApiData as any);
+        // Use type-safe transformation that validates API data structure
+        return transformApiDataToWeeklySummary(rawApiData);
     }, [rawApiData]);
 
     // Early return for performance - avoid unnecessary computations if not valid complete week
