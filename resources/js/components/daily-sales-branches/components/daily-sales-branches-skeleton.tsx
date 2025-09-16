@@ -58,35 +58,21 @@ export const DailySalesBranchesSkeleton = React.memo(({ itemCount = 3 }: { itemC
                 <SkeletonShimmer className="h-9 w-[160px] rounded-md" />
             </div>
 
-            {/* Summary Card Skeleton */}
-            <div className="bg-gray-50 border border-gray-200 px-4 py-3">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    {/* Primary metric skeleton */}
-                    <div className="flex items-center gap-2">
-                        <SkeletonShimmer className="h-4 w-4 rounded" />
-                        <div className="min-w-0 flex-1">
-                            <SkeletonShimmer className="h-4 w-20 rounded mb-1" />
-                            <SkeletonShimmer className="h-6 w-28 rounded" />
+            {/* Summary Card Skeleton - Simplified Design */}
+            <div className="bg-card border border-border px-4 py-3 mb-3 rounded-lg">
+                <div className="flex items-center justify-between">
+                    {/* Total general skeleton */}
+                    <div className="flex items-center gap-3">
+                        <SkeletonShimmer className="h-8 w-8 rounded-lg" />
+                        <div>
+                            <SkeletonShimmer className="h-4 w-16 rounded mb-1" />
+                            <SkeletonShimmer className="h-6 w-24 rounded" />
                         </div>
                     </div>
-                    {/* Secondary metrics skeleton */}
-                    <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                            <SkeletonShimmer className="h-3 w-3 rounded" />
-                            <SkeletonShimmer className="h-4 w-16 rounded" />
-                            <SkeletonShimmer className="h-4 w-12 rounded" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <SkeletonShimmer className="h-4 w-16 rounded" />
-                            <SkeletonShimmer className="h-4 w-6 rounded" />
-                        </div>
-                    </div>
-                </div>
-                {/* Additional metrics row skeleton */}
-                <div className="mt-2 pt-2 border-t border-gray-200">
-                    <div className="flex items-center justify-between">
-                        <SkeletonShimmer className="h-3 w-32 rounded" />
-                        <SkeletonShimmer className="h-3 w-28 rounded" />
+                    {/* Sucursales counter skeleton */}
+                    <div className="text-right">
+                        <SkeletonShimmer className="h-4 w-16 rounded mb-1" />
+                        <SkeletonShimmer className="h-5 w-8 rounded" />
                     </div>
                 </div>
             </div>

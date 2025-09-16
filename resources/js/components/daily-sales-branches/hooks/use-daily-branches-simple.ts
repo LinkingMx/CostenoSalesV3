@@ -62,9 +62,20 @@ export const useDailyBranchesSimple = (selectedDateRange?: DateRange): UseDailyB
             );
 
             if (result.error) {
+                console.error('❌ API ERROR for daily-sales-branches:', {
+                    date: formattedDate,
+                    error: result.error
+                });
                 setError(result.error);
                 setBranchesData([]);
             } else {
+                console.log('✅ API SUCCESS for daily-sales-branches:', {
+                    date: formattedDate,
+                    branchCount: result.branches?.length || 0,
+                    totalSales: result.totalSales,
+                    firstBranchName: result.branches?.[0]?.name,
+                    firstBranchSales: result.branches?.[0]?.totalSales
+                });
                 logger.debug('Data received successfully', {
                     branchCount: result.branches?.length || 0,
                     totalSales: result.totalSales,

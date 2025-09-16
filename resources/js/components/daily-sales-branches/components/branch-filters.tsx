@@ -101,11 +101,11 @@ const BranchFilters: React.FC<BranchFiltersProps> = React.memo(({
     }, [onFiltersChange]);
 
     return (
-        <div className=\"flex items-center gap-2 px-4 py-3\">
+        <div className="flex items-center gap-2 px-4 py-3">
             {/* Filter icon for visual context */}
             <FilterIcon
-                className=\"h-4 w-4 text-gray-500 shrink-0\"
-                aria-hidden=\"true\"
+                className="h-4 w-4 text-gray-500 shrink-0"
+                aria-hidden="true"
             />
 
             {/* Region filter dropdown */}
@@ -115,17 +115,21 @@ const BranchFilters: React.FC<BranchFiltersProps> = React.memo(({
                 disabled={disabled}
             >
                 <SelectTrigger
-                    className=\"h-9 w-[160px] bg-gray-50 border-gray-200 text-gray-700 focus:border-gray-400 focus:ring-gray-400\"
-                    aria-label=\"Filtrar por región\"
+                    className="h-9 w-[160px] bg-background border-border text-foreground focus:border-ring focus:ring-ring"
+                    aria-label="Filtrar por región"
                 >
-                    <SelectValue placeholder=\"Región\" />
+                    <SelectValue placeholder="Región" />
                 </SelectTrigger>
-                <SelectContent className=\"bg-white border-gray-200 shadow-lg\">
+                <SelectContent
+                    className="bg-popover border-border shadow-lg z-50 max-h-[200px] overflow-y-auto"
+                    position="popper"
+                    sideOffset={4}
+                >
                     {filterOptions.regions.map((option) => (
                         <SelectItem
                             key={option.value}
                             value={option.value}
-                            className=\"text-gray-700 hover:bg-gray-50 focus:bg-gray-100\"
+                            className="text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                             {option.label}
                         </SelectItem>
@@ -140,17 +144,21 @@ const BranchFilters: React.FC<BranchFiltersProps> = React.memo(({
                 disabled={disabled}
             >
                 <SelectTrigger
-                    className=\"h-9 w-[160px] bg-gray-50 border-gray-200 text-gray-700 focus:border-gray-400 focus:ring-gray-400\"
-                    aria-label=\"Filtrar por marca\"
+                    className="h-9 w-[160px] bg-background border-border text-foreground focus:border-ring focus:ring-ring"
+                    aria-label="Filtrar por marca"
                 >
-                    <SelectValue placeholder=\"Marca\" />
+                    <SelectValue placeholder="Marca" />
                 </SelectTrigger>
-                <SelectContent className=\"bg-white border-gray-200 shadow-lg\">
+                <SelectContent
+                    className="bg-popover border-border shadow-lg z-50 max-h-[200px] overflow-y-auto"
+                    position="popper"
+                    sideOffset={4}
+                >
                     {filterOptions.brands.map((option) => (
                         <SelectItem
                             key={option.value}
                             value={option.value}
-                            className=\"text-gray-700 hover:bg-gray-50 focus:bg-gray-100\"
+                            className="text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                         >
                             {option.label}
                         </SelectItem>

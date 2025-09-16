@@ -146,3 +146,65 @@ export interface BranchCollapsibleItemProps {
     branch: BranchSalesData;
     isToday?: boolean;
 }
+
+/**
+ * State interface for branch filters (region and brand).
+ * Controls which filters are currently active in the UI.
+ *
+ * @interface BranchFiltersState
+ * @property {string} selectedRegion - Currently selected region filter ('all' for no filter)
+ * @property {string} selectedBrand - Currently selected brand filter ('all' for no filter)
+ *
+ * @description This interface manages the filter state for the branch sales components.
+ * Both filters use 'all' as the default value to indicate no filtering is applied.
+ *
+ * @example
+ * ```tsx
+ * const [filters, setFilters] = useState<BranchFiltersState>({
+ *   selectedRegion: 'all',
+ *   selectedBrand: 'all'
+ * });
+ * ```
+ */
+export interface BranchFiltersState {
+    selectedRegion: string;
+    selectedBrand: string;
+}
+
+/**
+ * Props interface for the BranchFilters component.
+ * Provides all necessary data and callbacks for filter functionality.
+ *
+ * @interface BranchFiltersProps
+ * @property {BranchSalesData[]} branches - Array of branches for extracting filter options
+ * @property {BranchFiltersState} filters - Current filter state
+ * @property {function} onFiltersChange - Callback when filters are modified
+ * @property {string[]} availableRegions - Available region options for dropdown
+ * @property {string[]} availableBrands - Available brand options for dropdown
+ *
+ * @description This interface defines the contract for the filter component,
+ * ensuring all necessary data and interaction handlers are provided.
+ */
+export interface BranchFiltersProps {
+    branches: BranchSalesData[];
+    filters: BranchFiltersState;
+    onFiltersChange: (filters: BranchFiltersState) => void;
+    availableRegions: string[];
+    availableBrands: string[];
+}
+
+/**
+ * Props interface for the BranchSummaryCard component.
+ * Displays aggregated metrics for filtered branch data.
+ *
+ * @interface BranchSummaryCardProps
+ * @property {BranchSalesData[]} filteredBranches - Array of branches after filtering
+ * @property {boolean} [isLoading] - Loading state for skeleton display
+ *
+ * @description This interface provides the filtered branch data needed to calculate
+ * and display summary metrics like total sales, average percentage, and branch count.
+ */
+export interface BranchSummaryCardProps {
+    filteredBranches: BranchSalesData[];
+    isLoading?: boolean;
+}

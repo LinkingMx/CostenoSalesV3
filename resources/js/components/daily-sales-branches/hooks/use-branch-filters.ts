@@ -101,16 +101,16 @@ const extractFilterOptions = (branches: BranchSalesData[]): FilterOptions => {
         }
     });
 
-    // Convert to sorted options arrays with 'Todas' as first option
+    // Convert to sorted options arrays with 'Región' and 'Marca' as first option
     const regions = [
-        { value: 'all', label: 'Todas las regiones' },
+        { value: 'all', label: 'Región' },
         ...Array.from(regionSet)
             .sort()
             .map((region) => ({ value: region, label: region })),
     ];
 
     const brands = [
-        { value: 'all', label: 'Todas las marcas' },
+        { value: 'all', label: 'Marca' },
         ...Array.from(brandSet)
             .sort()
             .map((brand) => ({ value: brand, label: brand })),

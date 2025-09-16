@@ -30,15 +30,25 @@
 // Main component export
 export { DailySalesBranches } from './daily-sales-branches';
 
-// API integration hook export
+// API integration hooks export
 export { useBranchSalesData } from './hooks/use-branch-sales-data';
+export { useBranchFilters } from './hooks/use-branch-filters';
+export { useDailyBranchesSimple } from './hooks/use-daily-branches-simple';
 
 // TypeScript interface exports for external usage
 export type { BranchCollapsibleItemProps, BranchSalesData, DailySalesBranchesProps } from './types';
+export type {
+    BranchFilters,
+    FilterOptions,
+    FilteredSummary,
+    UseBranchFiltersReturn
+} from './hooks/use-branch-filters';
 
 // Utility function exports
 export { DUMMY_BRANCHES_DATA, formatCurrency, formatPercentage, isSingleDaySelected } from './utils';
 
 // Re-export individual components for advanced usage
 export { BranchCollapsibleItem } from './components/branch-collapsible-item';
+export { BranchFilters } from './components/branch-filters';
+export { BranchSummaryCard } from './components/branch-summary-card';
 export { DailySalesBranchesSkeleton } from './components/daily-sales-branches-skeleton';

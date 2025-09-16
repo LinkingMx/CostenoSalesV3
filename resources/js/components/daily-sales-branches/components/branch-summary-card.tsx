@@ -18,9 +18,9 @@
  * @version 1.0.0
  */
 
-import { BarChart3Icon, TrendingUpIcon } from 'lucide-react';
+import { BarChart3Icon } from 'lucide-react';
 import * as React from 'react';
-import { formatCurrency, formatPercentage } from '../utils';
+import { formatCurrency } from '../utils';
 import type { FilteredSummary } from '../hooks/use-branch-filters';
 
 /**
@@ -34,20 +34,6 @@ export interface BranchSummaryCardProps {
     hasActiveFilters?: boolean;
 }
 
-/**
- * Format large numbers with compact notation for better readability
- * @param value - Number to format
- * @returns Formatted string with K/M suffixes for thousands/millions
- */
-const formatCompactNumber = (value: number): string => {
-    if (value >= 1000000) {
-        return `${(value / 1000000).toFixed(1)}M`;
-    }
-    if (value >= 1000) {
-        return `${(value / 1000).toFixed(0)}K`;
-    }
-    return value.toString();
-};
 
 /**
  * Branch summary card component displaying filtered metrics
@@ -88,10 +74,10 @@ const BranchSummaryCard: React.FC<BranchSummaryCardProps> = React.memo(({
     // Early return for empty data
     if (summary.branchCount === 0) {
         return (
-            <div className=\"bg-gray-50 border border-gray-200 px-4 py-3\">
-                <div className=\"flex items-center gap-2 text-gray-500\">
-                    <BarChart3Icon className=\"h-4 w-4\" aria-hidden=\"true\" />
-                    <span className=\"text-sm font-medium\">
+            <div className="bg-card border border-border px-4 py-3 mb-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <BarChart3Icon className="h-4 w-4" aria-hidden="true" />
+                    <span className="text-sm font-medium">
                         {hasActiveFilters
                             ? 'No hay sucursales que coincidan con los filtros'
                             : 'No hay datos de sucursales disponibles'
@@ -102,71 +88,34 @@ const BranchSummaryCard: React.FC<BranchSummaryCardProps> = React.memo(({
         );
     }
 
-    // Calculate percentage color and icon based on growth
-    const isPositiveGrowth = summary.averagePercentage >= 0;
-    const percentageColor = isPositiveGrowth
-        ? 'text-emerald-600'
-        : 'text-red-500';
-
     return (
-        <div className=\"bg-gray-50 border border-gray-200 px-4 py-3\">
-            <div className=\"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3\">
-                {/* Primary metric: Total sales */}
-                <div className=\"flex items-center gap-2\">
-                    <BarChart3Icon
-                        className=\"h-4 w-4 text-gray-500 shrink-0\"
-                        aria-hidden=\"true\"
-                    />
-                    <div className=\"min-w-0 flex-1\">
-                        <div className=\"text-sm font-medium text-gray-700\">
+        <div className="bg-card border border-border px-4 py-3 mb-3 rounded-lg">
+            <div className="flex items-center justify-between">
+                {/* Total general con diseño minimalista */}
+                <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                        <BarChart3Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                    </div>
+                    <div>
+                        <div className="text-sm font-medium text-muted-foreground">
                             Total {hasActiveFilters ? 'filtrado' : 'general'}
                         </div>
-                        <div className=\"text-lg font-semibold text-gray-900\">
+                        <div className="text-xl font-bold text-foreground tabular-nums">
                             {formatCurrency(summary.totalSales)}
                         </div>
                     </div>
                 </div>
 
-                {/* Secondary metrics: Growth and count */}
-                <div className=\"flex items-center gap-4 text-sm\">
-                    {/* Average percentage growth */}
-                    <div className=\"flex items-center gap-1\">
-                        <TrendingUpIcon
-                            className={`h-3 w-3 shrink-0 ${percentageColor}`}
-                            aria-hidden=\"true\"
-                        />
-                        <span className=\"text-gray-600 font-medium\">
-                            Promedio:
-                        </span>
-                        <span className={`font-semibold ${percentageColor}`}>
-                            {isPositiveGrowth ? '+' : ''}
-                            {formatPercentage(summary.averagePercentage)}
-                        </span>
+                {/* Solo contador de sucursales */}
+                <div className="text-right">
+                    <div className="text-sm font-medium text-muted-foreground">
+                        Sucursales
                     </div>
-
-                    {/* Branch count */}
-                    <div className=\"text-gray-600\">
-                        <span className=\"font-medium\">Sucursales:</span>
-                        <span className=\"ml-1 font-semibold text-gray-900\">
-                            {summary.branchCount}
-                        </span>
+                    <div className="text-lg font-semibold text-foreground">
+                        {summary.branchCount}
                     </div>
                 </div>
             </div>
-
-            {/* Additional metrics row for detailed view */}
-            {summary.branchCount > 0 && (
-                <div className=\"mt-2 pt-2 border-t border-gray-200\">
-                    <div className=\"flex items-center justify-between text-xs text-gray-500\">
-                        <span>
-                            Cuentas abiertas: {formatCurrency(summary.totalOpenAccounts)}
-                        </span>
-                        <span>
-                            Ventas cerradas: {formatCurrency(summary.totalClosedSales)}
-                        </span>
-                    </div>
-                </div>
-            )}
         </div>
     );
 });
