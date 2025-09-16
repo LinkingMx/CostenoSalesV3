@@ -6,6 +6,7 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { WeeklyChartData } from '@/components/weekly-chart-comparison/types';
 import { isCompleteWeekSelected } from '@/components/weekly-chart-comparison/utils';
+import { logger } from '@/components/weekly-chart-comparison/lib/logger';
 import { clearWeeklyChartCache, fetchWeeklyChartWithRetry, formatDateForApi, isValidWeeklyChartDateRange } from '@/lib/services/weekly-chart.service';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -86,11 +87,9 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
 
             const { startDate, endDate } = apiDates;
 
-            // Debug logging to track API calls
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🔍 useWeeklyChart: Starting fetchData for ${startDate} to ${endDate} (Request ID: ${requestId})`);
-                console.trace('Call stack trace');
-            }
+            // Debug logging to track API calls with performance optimization
+            logger.request(requestId, startDate, endDate, 'starting');
+            logger.trace('fetchData call stack');
 
             try {
                 setIsLoading(true);
@@ -107,16 +106,20 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
                 }
 
                 if (result.error) {
+                    logger.request(requestId, startDate, endDate, 'error');
                     setError(result.error);
                     setData(null);
                     setRawApiData(null);
                 } else {
+                    logger.request(requestId, startDate, endDate, 'success');
                     setData(result.data);
                     setRawApiData(result.rawData || null); // Store the raw API data
                     setError(null);
                 }
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weekly chart data';
+                logger.request(requestId, startDate, endDate, 'error');
+                logger.error('API fetch failed', { error: errorMessage, requestId });
 
                 if (currentRequestRef.current === requestId && isMountedRef.current) {
                     setError(errorMessage);
@@ -196,18 +199,11 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
         // Generate unique effect ID to track this effect execution
         const effectId = `effect-${Date.now()}-${Math.random()}`;
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(
-                `🔄 useWeeklyChart useEffect triggered - effectId: ${effectId}, isValidForWeeklyChart: ${isValidForWeeklyChart}, selectedDateRange:`,
-                selectedDateRange,
-            );
-        }
+        logger.effect(effectId, 'triggered', isValidForWeeklyChart);
 
         // If there's already an active effect, cancel it
         if (activeEffectRef.current && activeEffectRef.current !== effectId) {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`⛔ Cancelling previous effect: ${activeEffectRef.current} in favor of ${effectId}`);
-            }
+            logger.effect(activeEffectRef.current, 'cancelled');
             // Clear any pending debounce timers from previous effect
             if (debounceTimerRef.current) {
                 clearTimeout(debounceTimerRef.current);
@@ -250,9 +246,7 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
 
         // Cleanup function
         return () => {
-            if (process.env.NODE_ENV === 'development') {
-                console.log(`🧹 Cleaning up effect: ${effectId}`);
-            }
+            logger.effect(effectId, 'cleanup');
 
             // Only clear if this is still the active effect
             if (activeEffectRef.current === effectId) {

@@ -61,6 +61,9 @@ export function MainFilterCalendar({ value, onChange, placeholder = 'Seleccionar
     // Popover open/close state
     const [isOpen, setIsOpen] = React.useState(false);
 
+    // Validation state for range selection
+    const [validationError, setValidationError] = React.useState<string | null>(null);
+
     // Memoize today's date range to avoid recalculation on every render
     const defaultRange = React.useMemo(() => {
         try {
@@ -155,6 +158,7 @@ export function MainFilterCalendar({ value, onChange, placeholder = 'Seleccionar
         if (isOpen) {
             const rangeToUse = value || defaultRange;
             setTempRange(rangeToUse);
+            setValidationError(null); // Clear validation errors when opening
 
             // Detect if current range matches "today" pattern for period selector
             const isTodayRange =
@@ -183,27 +187,49 @@ export function MainFilterCalendar({ value, onChange, placeholder = 'Seleccionar
 
     /**
      * Applies the currently selected temporary range and closes the popover.
+     * Validates the range before applying and shows error messages if needed.
      * Calls the onChange callback with the selected date range.
      * Includes error handling for callback execution.
      */
     const handleApply = React.useCallback(() => {
         try {
+            // Clear any previous validation errors
+            setValidationError(null);
+
+            // Validate that we have a complete range
+            if (!tempRange?.from || !tempRange?.to) {
+                setValidationError('Por favor selecciona un rango de fechas');
+                return;
+            }
+
+            // For single-day selections, ensure it was intentional (both dates are the same)
+            // This is automatically handled by our day click logic, but we add this message
+            // to guide users who might be confused
+            if (tempRange.from.getTime() === tempRange.to.getTime()) {
+                // Allow single-day selections but provide guidance for next time
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('📅 Single-day selection applied:', tempRange.from.toISOString());
+                }
+            }
+
+            // Apply the valid range
             onChange?.(tempRange);
             setIsOpen(false);
         } catch (error) {
             console.error('MainFilterCalendar: Error in onChange callback:', error);
-            // Still close the popover even if callback fails
-            setIsOpen(false);
+            setValidationError('Error al aplicar la selección');
         }
     }, [onChange, tempRange]);
 
     /**
      * Cancels the current selection and reverts to the original value.
      * Resets temporary range to the external value or default range.
+     * Clears any validation errors.
      */
     const handleCancel = React.useCallback(() => {
         const rangeToUse = value || defaultRange;
         setTempRange(rangeToUse);
+        setValidationError(null); // Clear validation errors
         setIsOpen(false);
     }, [value, defaultRange, setTempRange]);
 
@@ -249,6 +275,21 @@ export function MainFilterCalendar({ value, onChange, placeholder = 'Seleccionar
                                 onNextMonth={handleNextMonth}
                                 onDayClick={handleDayClick}
                             />
+
+                            {/* Validation error message */}
+                            {validationError && (
+                                <div className="border-t border-border bg-red-50 px-6 py-3">
+                                    <div className="flex items-center gap-2 text-sm text-red-600">
+                                        <svg className="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>{validationError}</span>
+                                    </div>
+                                    <div className="mt-1 text-xs text-red-500">
+                                        Para seleccionar un solo día, haz clic dos veces en la misma fecha
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Action buttons */}
                             <div className="flex items-center justify-end gap-3 border-t border-border bg-muted/50 px-6 py-4">

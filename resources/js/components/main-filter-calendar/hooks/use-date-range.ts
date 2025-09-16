@@ -154,10 +154,10 @@ export function useDateRange({ value, defaultPeriod = 'today', onAutoApply }: Us
             // Switch to custom period since user is manually selecting
             setSelectedPeriod('custom');
 
-            // Case 1: No existing range OR complete range exists → Create same-day range immediately
+            // Case 1: No existing range OR complete range exists → Start new range selection
             if (!tempRange?.from || (tempRange.from && tempRange.to)) {
-                // Always create a complete same-day range for immediate use
-                setTempRange({ from: clickedDate, to: clickedDate });
+                // Start new range selection with only 'from' date (pending state)
+                setTempRange({ from: clickedDate, to: undefined });
                 return;
             }
 
