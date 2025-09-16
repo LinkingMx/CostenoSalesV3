@@ -60,18 +60,18 @@ export function WeeklySalesComparison({ selectedDateRange }: WeeklySalesComparis
         return null;
     }
 
-    // Show nothing only if there's an error or no data after loading completes
+    // Show loading skeleton while data is being fetched (matching pattern from other weekly components)
+    if (isLoading) {
+        return <WeeklySalesComparisonSkeleton />;
+    }
+
+    // Show nothing if there's an error
     if (error) {
         return null;
     }
 
-    // If still loading but no data, show loading skeleton
-    if (isLoading && weeklySummaryData.length === 0) {
-        return <WeeklySalesComparisonSkeleton />;
-    }
-
-    // If not loading but still no data, don't show the component
-    if (!isLoading && weeklySummaryData.length === 0) {
+    // If no data available after loading completes, don't show the component
+    if (weeklySummaryData.length === 0) {
         return null;
     }
 

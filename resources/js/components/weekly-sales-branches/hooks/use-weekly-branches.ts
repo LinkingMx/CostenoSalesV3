@@ -3,6 +3,7 @@ import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
 import * as React from 'react';
 import type { ApiCardData, BranchSalesData } from '../types';
 import { isCurrentWeek, isExactWeekSelected, transformApiCardsToBranchData } from '../utils';
+import { logger } from '../lib/logger';
 
 /**
  * Custom hook for managing weekly branches data from API.
@@ -68,9 +69,9 @@ export const useWeeklyBranches = (selectedDateRange?: DateRange): UseWeeklyBranc
 
         const transformedData = transformApiCardsToBranchData(apiData.data.cards as Record<string, ApiCardData>);
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`useWeeklyBranches: Transformed ${transformedData.length} branches from shared context`);
-        }
+        logger.debug('Transformed branches from shared context', {
+            count: transformedData.length,
+        });
 
         return transformedData;
     }, [rawApiData]);

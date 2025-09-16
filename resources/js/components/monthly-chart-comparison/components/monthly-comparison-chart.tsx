@@ -1,10 +1,10 @@
 /**
  * Monthly Comparison Chart Component
- * Recharts line chart for displaying 3-month sales totals
+ * Recharts bar chart for displaying 3-month sales totals
  */
 
 import * as React from 'react';
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { MonthlyComparisonChartProps } from '../types';
 import { formatChartAmount, getDefaultChartTheme } from '../utils';
 
@@ -52,9 +52,9 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 /**
- * MonthlyComparisonChart - Line chart component for monthly sales comparison
+ * MonthlyComparisonChart - Bar chart component for monthly sales comparison
  *
- * Displays total sales for 3 consecutive months as a line chart
+ * Displays total sales for 3 consecutive months as a bar chart
  */
 export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart({
     data,
@@ -63,21 +63,21 @@ export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart
 }: MonthlyComparisonChartProps) {
     const theme = getDefaultChartTheme();
 
-    // Transform data for line chart - 3 points
+    // Transform data for bar chart - 3 bars with individual colors
     const chartData = React.useMemo(() => {
         return data.monthLabels.map((label, index) => ({
             month: label,
             value: data.monthValues[index] || 0,
+            color: data.monthColors[index] || theme.primaryColor,
         }));
-    }, [data]);
+    }, [data, theme.primaryColor]);
 
     // Memoize chart configuration for performance
     const chartConfig = React.useMemo(
         () => ({
             margin: { top: 20, right: 30, left: 30, bottom: 40 }, // Increased left and bottom margins
-            strokeWidth: 2,
-            dotSize: 4,
-            activeDotSize: 6,
+            barCategoryGap: '20%',
+            radius: [4, 4, 0, 0] as [number, number, number, number], // Rounded top corners for bars
         }),
         [],
     );
@@ -100,7 +100,7 @@ export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart
             style={{ outline: 'none' }}
         >
             <ResponsiveContainer width="100%" height={height}>
-                <LineChart data={chartData} margin={chartConfig.margin}>
+                <BarChart data={chartData} margin={chartConfig.margin}>
                     {/* Grid lines for better readability */}
                     <CartesianGrid strokeDasharray="2 2" stroke={theme.gridColor} opacity={0.8} horizontal={true} vertical={false} />
 
@@ -125,7 +125,7 @@ export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart
                     <YAxis hide />
 
                     {/* Custom tooltip with proper formatting */}
-                    <Tooltip content={<CustomTooltip />} cursor={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.1)' }} />
 
                     {/* Legend showing month labels */}
                     {showLegend && (
@@ -138,27 +138,18 @@ export const MonthlyComparisonChart = React.memo(function MonthlyComparisonChart
                         />
                     )}
 
-                    {/* Line for monthly data */}
-                    <Line
-                        type="monotone"
+                    {/* Bar for monthly data with individual colors */}
+                    <Bar
                         dataKey="value"
                         name="Ventas Mensuales"
-                        stroke={data.monthColors[0] || theme.primaryColor}
-                        strokeWidth={chartConfig.strokeWidth}
-                        dot={{
-                            fill: data.monthColors[0] || theme.primaryColor,
-                            strokeWidth: 0,
-                            r: chartConfig.dotSize,
-                        }}
-                        activeDot={{
-                            r: chartConfig.activeDotSize,
-                            stroke: data.monthColors[0] || theme.primaryColor,
-                            strokeWidth: 2,
-                            fill: theme.backgroundColor,
-                        }}
-                        connectNulls={false}
-                    />
-                </LineChart>
+                        radius={chartConfig.radius}
+                        maxBarSize={120}
+                    >
+                        {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                    </Bar>
+                </BarChart>
             </ResponsiveContainer>
         </div>
     );

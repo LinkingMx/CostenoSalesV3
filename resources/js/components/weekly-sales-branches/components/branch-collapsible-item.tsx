@@ -9,6 +9,7 @@ import { ChevronDown, TicketCheck, TicketMinus, TicketPercent } from 'lucide-rea
 import * as React from 'react';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
+import { logger } from '../lib/logger';
 
 export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsibleItemProps) {
     const [isOpen, setIsOpen] = React.useState(false);
@@ -20,21 +21,14 @@ export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsib
 
     const handleViewDetails = () => {
         try {
-            // Debug logging
-            if (process.env.NODE_ENV === 'development') {
-                console.log('🔍 WeeklySalesBranches navigating to branch:', {
-                    id: branch.id,
-                    idType: typeof branch.id,
-                    name: branch.name,
-                    location: branch.location,
-                    dateRange: dateRange
-                        ? {
-                              from: dateRange.from?.toISOString(),
-                              to: dateRange.to?.toISOString(),
-                          }
-                        : null,
-                });
-            }
+            // Debug logging for branch navigation
+            logger.debug('Navigating to branch details', {
+                id: branch.id,
+                idType: typeof branch.id,
+                name: branch.name,
+                location: branch.location,
+                hasDateRange: !!dateRange,
+            });
 
             // Branch.id is already a string based on type definition
             const branchId = branch.id;
@@ -43,14 +37,12 @@ export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsib
             // This preserves the user's original selection from the dashboard
             if (!originalDateRange && dateRange) {
                 setOriginalDateRange(dateRange);
-                console.log('🔄 Setting originalDateRange for first navigation:', {
-                    from: dateRange.from?.toISOString(),
-                    to: dateRange.to?.toISOString(),
+                logger.debug('Setting originalDateRange for first navigation', {
+                    hasDateRange: !!dateRange,
                 });
             } else if (originalDateRange) {
-                console.log('✅ Preserving existing originalDateRange:', {
-                    from: originalDateRange.from?.toISOString(),
-                    to: originalDateRange.to?.toISOString(),
+                logger.debug('Preserving existing originalDateRange', {
+                    hasOriginalRange: !!originalDateRange,
                 });
             }
 
@@ -69,7 +61,7 @@ export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsib
                 // Removed preserveState and preserveScroll for clean iOS transitions
             });
         } catch (error) {
-            console.error('Error navigating to branch details:', error);
+            logger.error('Error navigating to branch details:', error);
             // Fallback to basic navigation
             router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
         }

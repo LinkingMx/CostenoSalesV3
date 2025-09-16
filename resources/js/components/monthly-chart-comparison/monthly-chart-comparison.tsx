@@ -15,14 +15,14 @@ import { isCompleteMonthSelected } from './utils';
 // Performance: Pre-memoized header component to prevent unnecessary re-renders
 const MemoizedMonthlyChartHeader = React.memo(MonthlyChartHeader);
 
-// Performance: Memoized chart component with deep comparison for chart data
+// Performance: Memoized chart component with optimized comparison for monthly totals
 const MemoizedMonthlyComparisonChart = React.memo(MonthlyComparisonChart, (prevProps, nextProps) => {
     // Custom comparison for better performance - only re-render if actual data changes
     const prevData = prevProps.data;
     const nextData = nextProps.data;
 
     // Compare chart configuration props
-    if (prevProps.height !== nextProps.height || prevProps.showLegend !== nextProps.showLegend || prevProps.showGrid !== nextProps.showGrid) {
+    if (prevProps.height !== nextProps.height || prevProps.showLegend !== nextProps.showLegend || prevProps.className !== nextProps.className) {
         return false; // Props changed, need to re-render
     }
 
@@ -30,25 +30,17 @@ const MemoizedMonthlyComparisonChart = React.memo(MonthlyComparisonChart, (prevP
     if (prevData === nextData) return true; // Same reference, no change
     if (!prevData || !nextData) return false; // One is null/undefined
 
-    // Compare daily data arrays
-    if (prevData.dailyData.length !== nextData.dailyData.length) return false;
+    // Compare monthly values arrays
+    if (prevData.monthValues.length !== nextData.monthValues.length) return false;
 
-    for (let i = 0; i < prevData.dailyData.length; i++) {
-        const prevDay = prevData.dailyData[i];
-        const nextDay = nextData.dailyData[i];
-
-        if (
-            prevDay.dayNumber !== nextDay.dayNumber ||
-            prevDay.dayLabel !== nextDay.dayLabel ||
-            prevDay.month1 !== nextDay.month1 ||
-            prevDay.month2 !== nextDay.month2 ||
-            prevDay.month3 !== nextDay.month3
-        ) {
-            return false; // Data changed
+    // Compare each monthly value
+    for (let i = 0; i < prevData.monthValues.length; i++) {
+        if (prevData.monthValues[i] !== nextData.monthValues[i]) {
+            return false; // Monthly values changed
         }
     }
 
-    // Compare month labels and colors
+    // Compare month labels and colors using efficient comparison
     if (
         JSON.stringify(prevData.monthLabels) !== JSON.stringify(nextData.monthLabels) ||
         JSON.stringify(prevData.monthColors) !== JSON.stringify(nextData.monthColors) ||
@@ -63,7 +55,7 @@ const MemoizedMonthlyComparisonChart = React.memo(MonthlyComparisonChart, (prevP
 /**
  * MonthlyChartComparison - Main component for displaying monthly sales chart comparison.
  *
- * Shows a line chart comparing daily sales data across 3 consecutive months.
+ * Shows a bar chart comparing monthly sales totals across 3 consecutive months.
  * Only renders when exactly one complete month (first to last day) is selected in the date filter.
  * Uses real API data through the MonthlyChartProvider context.
  *
@@ -76,8 +68,8 @@ const MemoizedMonthlyComparisonChart = React.memo(MonthlyComparisonChart, (prevP
  * - Elegant loading states with skeleton animation
  * - Comprehensive error handling with retry functionality
  * - Conditional rendering based on complete month selection
- * - Interactive line chart with 3-month daily sales comparison
- * - Shows up to 31 days with simulated daily patterns
+ * - Interactive bar chart with 3-month total sales comparison
+ * - Shows monthly totals with individual bar colors for visual distinction
  * - Responsive design that adapts to different screen sizes
  * - Accessibility-compliant structure with ARIA labels
  * - Mexican peso currency formatting with chart values
@@ -136,7 +128,7 @@ export const MonthlyChartComparison = React.memo(function MonthlyChartComparison
                 tabIndex={-1}
                 style={{ outline: 'none' }}
             >
-                <MemoizedMonthlyComparisonChart data={data} height={225} showLegend={true} showGrid={true} />
+                <MemoizedMonthlyComparisonChart data={data} height={225} showLegend={true} />
             </div>
         </div>
     );

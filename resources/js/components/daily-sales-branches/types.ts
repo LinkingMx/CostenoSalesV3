@@ -27,6 +27,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {string} id - Unique branch identifier (typically numeric but stored as string)
  * @property {string} name - Human-readable branch name displayed in the UI
  * @property {string} [location] - Optional branch location/city for additional context
+ * @property {string} [brand] - Optional brand name for filtering and grouping purposes
  * @property {number} totalSales - Total sales amount in USD currency
  * @property {number} percentage - Growth percentage (positive/negative) for period comparison
  * @property {number} openAccounts - Total amount from pending/open transactions
@@ -46,6 +47,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
  *   id: '5',
  *   name: 'L\u00e1zaro y Diego',
  *   location: 'Metropolitan',
+ *   brand: 'Animal',
  *   totalSales: 74326.60,
  *   percentage: 22.5,
  *   openAccounts: 6490.60,
@@ -63,6 +65,7 @@ export interface BranchSalesData {
     id: string;
     name: string;
     location?: string;
+    brand?: string;
     totalSales: number;
     percentage: number;
     openAccounts: number;

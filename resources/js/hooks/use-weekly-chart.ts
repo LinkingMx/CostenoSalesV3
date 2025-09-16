@@ -232,6 +232,10 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
                 clearTimeout(debounceTimerRef.current);
             }
 
+            // Set loading state immediately to show skeleton during debounce
+            setIsLoading(true);
+            setError(null);
+
             // Generate unique request ID
             const requestId = `weekly-chart-${Date.now()}-${Math.random()}`;
             currentRequestRef.current = requestId;

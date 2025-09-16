@@ -235,6 +235,7 @@ export const DUMMY_BRANCHES_DATA: BranchSalesData[] = [
         id: '5',
         name: 'Lázaro y Diego',
         location: 'Metropolitan', // Full location example
+        brand: 'Lázaro y Diego', // Brand for filtering
         totalSales: 74326.6,
         percentage: 22.5, // Positive growth
         openAccounts: 6490.6, // Has pending transactions
@@ -247,6 +248,7 @@ export const DUMMY_BRANCHES_DATA: BranchSalesData[] = [
         id: '31',
         name: 'Animal',
         location: 'St Regis', // Different location format
+        brand: 'Animal', // Brand for filtering
         totalSales: 62432.0,
         percentage: 75.6, // High positive growth
         openAccounts: 0, // All sales completed
@@ -259,6 +261,7 @@ export const DUMMY_BRANCHES_DATA: BranchSalesData[] = [
         id: '26',
         name: 'Animal', // Same brand, different location
         location: 'CDMX',
+        brand: 'Animal', // Same brand for filtering
         totalSales: 48035.0,
         percentage: 65.5, // High positive growth
         openAccounts: 0,
@@ -271,6 +274,7 @@ export const DUMMY_BRANCHES_DATA: BranchSalesData[] = [
         id: '38',
         name: 'Mercado Reforma',
         location: '', // Empty location example
+        brand: 'Mercado Reforma', // Brand for filtering
         totalSales: 40752.3,
         percentage: 21.6, // Moderate positive growth
         openAccounts: 0,

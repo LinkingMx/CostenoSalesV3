@@ -2,7 +2,7 @@
  * Monthly Chart Comparison Component Exports
  *
  * Provides centralized exports for the monthly chart comparison component and its related types.
- * This component displays a line chart comparing daily sales data across 3 consecutive months.
+ * This component displays a bar chart comparing monthly sales totals across 3 consecutive months.
  *
  * @module MonthlyChartComparison
  */
@@ -18,7 +18,6 @@ export { MonthlyComparisonChart } from './components/monthly-comparison-chart';
 
 // Type exports for TypeScript integration
 export type {
-    ChartDayData,
     MonthlyChartComparisonProps,
     MonthlyChartData,
     MonthlyChartErrorProps,
@@ -26,6 +25,7 @@ export type {
     MonthlyChartSkeletonProps,
     MonthlyChartValidationResult,
     MonthlyComparisonChartProps,
+    ChartConfig,
 } from './types';
 
 // Utility function exports for advanced integration

@@ -1,10 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { useMonthlyChartContext } from '@/contexts/monthly-chart-context';
-import { isCompleteMonthSelected } from '@/lib/date-validation';
 import * as React from 'react';
 import { MonthlyComparisonHeader } from './components/monthly-comparison-header';
+import { MonthlySalesComparisonSkeleton } from './components/monthly-sales-comparison-skeleton';
+import { useMonthlySalesComparison } from './hooks/use-monthly-sales-comparison';
 import type { MonthlySalesComparisonProps, MonthlySummaryData } from './types';
-import { formatMonthlySalesAmount, transformApiDataToMonthlySummary } from './utils';
+import { formatMonthlySalesAmount } from './utils';
 
 // Performance: Pre-memoized header component to prevent unnecessary re-renders
 const MemoizedMonthlyComparisonHeader = React.memo(MonthlyComparisonHeader);
@@ -37,47 +37,22 @@ const MemoizedMonthlyComparisonHeader = React.memo(MonthlyComparisonHeader);
  * ```
  */
 export function MonthlySalesComparison({ selectedDateRange }: MonthlySalesComparisonProps) {
-    // Get shared data from context - single API call for all monthly components
-    const { rawApiData, isLoading, error, isValidForMonthlyChart } = useMonthlyChartContext();
-
-    // Performance: Memoize complete month validation to avoid repeated calculations
-    const isValidCompleteMonth = React.useMemo(() => {
-        return isCompleteMonthSelected(selectedDateRange);
-    }, [selectedDateRange]);
-
-    // Transform raw API data to monthly summary format
-    const monthlySummaryData = React.useMemo((): MonthlySummaryData[] => {
-        if (!rawApiData) {
-            return [];
-        }
-        // Cast rawApiData to expected type since we know the structure from API
-        return transformApiDataToMonthlySummary(rawApiData as unknown, selectedDateRange);
-    }, [rawApiData, selectedDateRange]);
+    // Use dedicated hook for business logic abstraction
+    const { monthlySummaryData, isLoading, error, isValidCompleteMonth } = useMonthlySalesComparison(selectedDateRange);
 
     // Early return for performance - avoid unnecessary computations if not valid complete month
-    if (!isValidCompleteMonth || !isValidForMonthlyChart) {
+    if (!isValidCompleteMonth) {
         return null;
     }
 
-    // Show nothing only if there's an error or no data after loading completes
+    // Show nothing if there's an error
     if (error) {
         return null;
     }
 
-    // If still loading but no data, show loading state
+    // Show loading skeleton while data is being fetched (matching pattern from weekly components)
     if (isLoading && monthlySummaryData.length === 0) {
-        return (
-            <Card className="w-full">
-                <CardContent className="px-4 py-3">
-                    <MemoizedMonthlyComparisonHeader />
-                    <div className="space-y-2" role="region" aria-label="Cargando comparación de ventas mensuales">
-                        <div className="flex items-center justify-center py-8">
-                            <div className="text-sm text-muted-foreground">Cargando datos mensuales...</div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+        return <MonthlySalesComparisonSkeleton />;
     }
 
     // If not loading but still no data, don't show the component

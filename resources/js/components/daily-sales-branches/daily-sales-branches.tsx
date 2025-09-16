@@ -6,7 +6,10 @@ import { useMinimumLoadingDuration } from '@/hooks/use-minimum-loading-duration'
 import { AlertCircle, Building, RefreshCw } from 'lucide-react';
 import * as React from 'react';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
+import { BranchFilters } from './components/branch-filters';
+import { BranchSummaryCard } from './components/branch-summary-card';
 import { DailySalesBranchesSkeleton } from './components/daily-sales-branches-skeleton';
+import { useBranchFilters } from './hooks/use-branch-filters';
 import { useDailyBranchesSimple } from './hooks/use-daily-branches-simple';
 import { logger } from './lib/logger';
 import type { DailySalesBranchesProps } from './types';
@@ -60,6 +63,16 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
     // Use static branches if provided, otherwise use API data
     const displayBranches = staticBranches || branchesData;
 
+    // Initialize branch filters with all available data
+    const {
+        filters,
+        setFilters,
+        filteredBranches,
+        filterOptions,
+        summary,
+        hasActiveFilters,
+    } = useBranchFilters(displayBranches);
+
     // Debug logging to track data flow (reduced to prevent infinite loops)
     React.useEffect(() => {
         if (selectedDateRange) {
@@ -80,21 +93,21 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
 
-    // Memoize validated and sorted branches to prevent unnecessary processing on each render
+    // Memoize validated and sorted filtered branches to prevent unnecessary processing on each render
     // Includes data validation and sorting by total sales in descending order for better UX
     const sortedBranches = React.useMemo(() => {
-        // Validate branches data to prevent runtime errors
-        if (!Array.isArray(displayBranches) || displayBranches.length === 0) {
+        // Validate filtered branches data to prevent runtime errors
+        if (!Array.isArray(filteredBranches) || filteredBranches.length === 0) {
             // Only log if we're in a valid single day and not loading
             // This prevents spam during initial load or when date range is invalid
             if (isValidSingleDay && !isLoading) {
-                logger.debug('No branches data available yet');
+                logger.debug('No filtered branches data available yet');
             }
             return [];
         }
 
         // Filter out invalid branch objects and log warnings
-        const validBranches = displayBranches.filter((branch) => {
+        const validBranches = filteredBranches.filter((branch) => {
             if (!branch || typeof branch !== 'object') {
                 logger.warn('Invalid branch object found', { branchType: typeof branch });
                 return false;
@@ -115,7 +128,7 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
             const salesB = typeof b.totalSales === 'number' ? b.totalSales : 0;
             return salesB - salesA;
         });
-    }, [displayBranches, isValidSingleDay, isLoading]);
+    }, [filteredBranches, isValidSingleDay, isLoading]);
 
     // Conditional rendering: Only display component when a single day is selected
     // This ensures data relevance and prevents confusion with multi-day aggregates
@@ -168,8 +181,8 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
         );
     }
 
-    // Empty state
-    if (sortedBranches.length === 0) {
+    // Empty state (no data at all)
+    if (displayBranches.length === 0) {
         return (
             <Card className="w-full border-border">
                 <CardContent className="px-4 py-3">
@@ -186,6 +199,20 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
         <Card className="w-full border-border">
             <CardContent className="px-4 py-3">
                 <HeaderSection showRefreshButton={!staticBranches} />
+
+                {/* Branch filters section */}
+                <BranchFilters
+                    filters={filters}
+                    filterOptions={filterOptions}
+                    onFiltersChange={setFilters}
+                    disabled={isLoading}
+                />
+
+                {/* Summary card with filtered metrics */}
+                <BranchSummaryCard
+                    summary={summary}
+                    hasActiveFilters={hasActiveFilters}
+                />
 
                 {/* Error banner for non-critical errors */}
                 {error && sortedBranches.length > 0 && (

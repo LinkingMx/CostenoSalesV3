@@ -112,10 +112,14 @@ const processBranchData = (branchName: string, branchData: BranchApiData, previo
     // Use region from API response directly
     const location = branchData.region || '';
 
+    // Use brand from API response for filtering purposes
+    const brand = branchData.brand || '';
+
     return {
         id: branchData.store_id.toString(),
         name: branchName,
         location,
+        brand,
         totalSales,
         percentage: calculatedPercentage,
         openAccounts: branchData.open_accounts.money,

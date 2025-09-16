@@ -25,9 +25,9 @@ export const MonthlyChartError = React.memo(function MonthlyChartError({
         <div className={`w-full rounded-xl border border-border bg-card p-6 ${className}`}>
             <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error al cargar el gr�fico mensual</AlertTitle>
+                <AlertTitle>Error al cargar el gráfico mensual</AlertTitle>
                 <AlertDescription className="mt-2">
-                    <p className="mb-3">{message || 'No se pudieron cargar los datos del gr�fico mensual.'}</p>
+                    <p className="mb-3">{message || 'No se pudieron cargar los datos del gráfico mensual.'}</p>
                     {onRetry && (
                         <Button variant="outline" size="sm" onClick={onRetry} disabled={isRetrying} className="mt-2">
                             {isRetrying ? (

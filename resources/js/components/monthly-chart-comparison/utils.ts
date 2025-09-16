@@ -34,75 +34,41 @@ export const generateMockMonthlyChartData = (startDate: Date): MonthlyChartData 
     const currentMonth = startDate.getMonth();
     const currentYear = startDate.getFullYear();
 
-    // Helper to get days in month
-    const getDaysInMonth = (year: number, month: number): number => {
-        return new Date(year, month + 1, 0).getDate();
-    };
+    // Generate realistic monthly totals (not daily data)
+    // Current month total: ~600M MXN
+    const currentMonthTotal = 580000000 + Math.random() * 40000000; // 580M - 620M
 
-    // Generate daily data for up to 31 days
-    const dailyData = [];
-    const maxDays = 31;
+    // Previous month: slightly lower (~580M MXN)
+    const lastMonthTotal = 560000000 + Math.random() * 40000000; // 560M - 600M
 
-    // Get days for each month
-    const daysInCurrentMonth = getDaysInMonth(currentYear, currentMonth);
-    const daysInLastMonth = getDaysInMonth(currentMonth === 0 ? currentYear - 1 : currentYear, currentMonth === 0 ? 11 : currentMonth - 1);
-    const daysInTwoMonthsAgo = getDaysInMonth(
-        currentMonth <= 1 ? currentYear - 1 : currentYear,
-        currentMonth === 0 ? 10 : currentMonth === 1 ? 11 : currentMonth - 2,
-    );
+    // Two months ago: seasonal variation (~540M MXN)
+    const twoMonthsAgoTotal = 520000000 + Math.random() * 40000000; // 520M - 560M
 
-    // Generate realistic business patterns
-    for (let day = 1; day <= maxDays; day++) {
-        const dayOfWeek = (day - 1) % 7;
-
-        // Base daily averages
-        const currentMonthBase = 20000000; // 20M daily average
-        const lastMonthBase = 19000000; // 19M daily average
-        const twoMonthsAgoBase = 18000000; // 18M daily average
-
-        // Apply day-of-week multipliers
-        let multiplier = 1.0;
-        if (dayOfWeek === 5)
-            multiplier = 1.15; // Saturday - higher
-        else if (dayOfWeek === 6)
-            multiplier = 0.85; // Sunday - lower
-        else if (dayOfWeek === 4)
-            multiplier = 1.2; // Friday - highest
-        else if (dayOfWeek === 0) multiplier = 0.9; // Monday - slower
-
-        // Add random variation (-20% to +20%)
-        const variation = 0.8 + Math.random() * 0.4;
-
-        dailyData.push({
-            dayNumber: day,
-            dayLabel: `${day}`,
-            month1: day <= daysInCurrentMonth ? currentMonthBase * multiplier * variation : 0,
-            month2: day <= daysInLastMonth ? lastMonthBase * multiplier * variation : 0,
-            month3: day <= daysInTwoMonthsAgo ? twoMonthsAgoBase * multiplier * variation : 0,
-        });
-    }
-
-    // Generate month labels
+    // Generate month labels (chronological order for display)
     const monthLabels: string[] = [];
+    const monthValues: number[] = [];
 
-    // Current month
-    monthLabels.push(`${SPANISH_MONTHS[currentMonth]} ${currentYear}`);
+    // Two months ago
+    const twoMonthsAgoMonth = currentMonth <= 1 ? (currentMonth === 0 ? 10 : 11) : currentMonth - 2;
+    const twoMonthsAgoYear = currentMonth <= 1 ? currentYear - 1 : currentYear;
+    monthLabels.push(`${SPANISH_MONTHS[twoMonthsAgoMonth]} ${twoMonthsAgoYear}`);
+    monthValues.push(twoMonthsAgoTotal);
 
     // Previous month
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     monthLabels.push(`${SPANISH_MONTHS[prevMonth]} ${prevYear}`);
+    monthValues.push(lastMonthTotal);
 
-    // Two months ago
-    const twoMonthsAgoMonth = prevMonth === 0 ? 11 : prevMonth - 1;
-    const twoMonthsAgoYear = prevMonth === 0 ? prevYear - 1 : prevYear;
-    monthLabels.push(`${SPANISH_MONTHS[twoMonthsAgoMonth]} ${twoMonthsAgoYear}`);
+    // Current month
+    monthLabels.push(`${SPANISH_MONTHS[currentMonth]} ${currentYear}`);
+    monthValues.push(currentMonthTotal);
 
     return {
-        dailyData,
         monthLabels,
-        monthColors: ['#897053', '#6b5d4a', '#4a3d2f'],
-        legendLabels: ['Mes actual', 'Mes anterior', 'Hace 2 meses'],
+        monthValues,
+        monthColors: ['#4a3d2f', '#6b5d4a', '#897053'], // Gradient from older to current
+        legendLabels: ['Hace 2 meses', 'Mes anterior', 'Mes actual'],
     };
 };
 
@@ -119,28 +85,23 @@ export const validateMonthlyChartData = (data: MonthlyChartData): MonthlyChartVa
         return { isValid: false, errors, warnings };
     }
 
-    // Validate dailyData array
-    if (!Array.isArray(data.dailyData)) {
-        errors.push('dailyData must be an array');
-    } else if (data.dailyData.length === 0) {
-        errors.push('dailyData array is empty');
-    } else if (data.dailyData.length > 31) {
-        warnings.push('dailyData has more than 31 days');
+    // Validate monthValues array
+    if (!Array.isArray(data.monthValues)) {
+        errors.push('monthValues must be an array');
+    } else if (data.monthValues.length === 0) {
+        errors.push('monthValues array is empty');
+    } else if (data.monthValues.length !== 3) {
+        errors.push('monthValues must have exactly 3 values (for 3 months)');
     }
 
-    // Validate each day's data
-    data.dailyData?.forEach((day, index) => {
-        if (typeof day.dayNumber !== 'number') {
-            errors.push(`Day ${index}: dayNumber must be a number`);
-        }
-        if (typeof day.month1 !== 'number' || day.month1 < 0) {
-            errors.push(`Day ${index}: month1 must be a non-negative number`);
-        }
-        if (typeof day.month2 !== 'number' || day.month2 < 0) {
-            errors.push(`Day ${index}: month2 must be a non-negative number`);
-        }
-        if (typeof day.month3 !== 'number' || day.month3 < 0) {
-            errors.push(`Day ${index}: month3 must be a non-negative number`);
+    // Validate each month's value
+    data.monthValues?.forEach((value, index) => {
+        if (typeof value !== 'number') {
+            errors.push(`Month ${index}: value must be a number`);
+        } else if (value < 0) {
+            errors.push(`Month ${index}: value must be non-negative`);
+        } else if (value > 10000000000) { // 10B MXN seems unrealistic
+            warnings.push(`Month ${index}: value ${value} seems unusually high`);
         }
     });
 

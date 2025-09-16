@@ -1,5 +1,6 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { ApiCardData, BranchSalesData } from './types';
+import { logger } from './lib/logger';
 
 /**
  * Determines if the selected date range contains today's date.
@@ -136,7 +137,7 @@ export function isExactWeekSelected(dateRange?: DateRange): boolean {
 export function formatCurrency(amount: number): string {
     // Handle invalid or non-numeric inputs gracefully
     if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
-        console.warn(`formatCurrency: Invalid amount provided: ${amount}`);
+        logger.warn(`formatCurrency: Invalid amount provided: ${amount}`);
         return '$0.00'; // Fallback to zero currency format
     }
 
@@ -149,7 +150,7 @@ export function formatCurrency(amount: number): string {
             currencyDisplay: 'symbol', // Show only $ symbol, not MXN
         }).format(amount);
     } catch (error) {
-        console.error('formatCurrency: Formatting error:', error);
+        logger.error('formatCurrency: Formatting error:', error);
         return `$${amount.toFixed(2)}`; // Fallback formatting
     }
 }
@@ -181,14 +182,14 @@ export function formatCurrency(amount: number): string {
 export function formatPercentage(percentage: number): string {
     // Handle invalid or non-numeric inputs gracefully
     if (typeof percentage !== 'number' || isNaN(percentage) || !isFinite(percentage)) {
-        console.warn(`formatPercentage: Invalid percentage provided: ${percentage}`);
+        logger.warn(`formatPercentage: Invalid percentage provided: ${percentage}`);
         return '0.0%'; // Fallback to zero percentage
     }
 
     try {
         return `${percentage.toFixed(1)}%`;
     } catch (error) {
-        console.error('formatPercentage: Formatting error:', error);
+        logger.error('formatPercentage: Formatting error:', error);
         return `${percentage}%`; // Fallback without decimal precision
     }
 }
@@ -263,7 +264,7 @@ export function formatPercentage(percentage: number): string {
  */
 export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardData>): BranchSalesData[] {
     if (!cardsData || typeof cardsData !== 'object') {
-        console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
+        logger.warn('transformApiCardsToBranchData: Invalid cardsData provided');
         return [];
     }
 
@@ -272,7 +273,7 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
             .map(([branchName, apiData]: [string, ApiCardData]) => {
                 // Validate required data structure
                 if (!apiData || typeof apiData !== 'object') {
-                    console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
+                    logger.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
                     return null;
                 }
 
@@ -280,10 +281,10 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
 
                 // Validate required fields
                 if (store_id === undefined || store_id === null || !closed_ticket || !percentage) {
-                    console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
-                        store_id,
-                        closed_ticket,
-                        percentage,
+                    logger.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
+                        store_id: store_id?.toString(),
+                        hasClosedTicket: !!closed_ticket,
+                        hasPercentage: !!percentage,
                     });
                     return null;
                 }
@@ -291,15 +292,12 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
                 const openAccountsAmount = open_accounts?.money || 0;
                 const closedAccountsAmount = closed_ticket.money || 0;
 
-                // Debug log for store_id
-                if (process.env.NODE_ENV === 'development') {
-                    console.log('🔍 WeeklyBranch transforming store_id:', {
-                        store_id,
-                        type: typeof store_id,
-                        toString: store_id.toString(),
-                        branchName,
-                    });
-                }
+                // Debug log for store_id transformation
+                logger.debug('Transforming store_id', {
+                    store_id: store_id?.toString(),
+                    type: typeof store_id,
+                    branchName,
+                });
 
                 const transformedBranch: BranchSalesData = {
                     id: store_id.toString(),
@@ -323,7 +321,7 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
             .filter((branch): branch is BranchSalesData => branch !== null)
             .sort((a, b) => b.totalSales - a.totalSales); // Sort by total sales descending
     } catch (error) {
-        console.error('transformApiCardsToBranchData: Transformation error:', error);
+        logger.error('transformApiCardsToBranchData: Transformation error:', error);
         return [];
     }
 }

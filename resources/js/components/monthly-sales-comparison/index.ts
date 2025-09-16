@@ -12,6 +12,11 @@ export { MonthlySalesComparison, default } from './monthly-sales-comparison';
 // Sub-component exports
 export { MonthlyComparisonHeader } from './components/monthly-comparison-header';
 export { MonthlyErrorBoundary } from './components/monthly-error-boundary';
+export { MonthlySalesComparisonSkeleton } from './components/monthly-sales-comparison-skeleton';
+
+// Hook exports
+export { useMonthlySalesComparison } from './hooks/use-monthly-sales-comparison';
+export type { UseMonthlySalesComparisonReturn } from './hooks/use-monthly-sales-comparison';
 
 // Type exports
 export type { MonthlyComparisonHeaderProps, MonthlySalesComparisonProps, MonthlySummaryData, SalesMonthData, ValidationResult } from './types';
@@ -27,6 +32,7 @@ export {
     getMonthLetter,
     getMonthName,
     isCompleteMonthSelected,
+    isValidApiData,
     transformApiDataToMonthlySummary,
     validateMonthDateRange,
     validateMonthlySalesData,

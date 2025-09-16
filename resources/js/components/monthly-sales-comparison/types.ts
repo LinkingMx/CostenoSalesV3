@@ -65,24 +65,6 @@ export interface MonthlySalesComparisonProps {
     selectedDateRange: DateRange | undefined;
 }
 
-/**
- * Props for the SalesMonthCard component.
- * Represents a single month's sales information in a monthly card format.
- *
- * @interface SalesMonthCardProps
- * @property {SalesMonthData} data - Sales data for this specific month
- * @property {boolean} [isHighlighted] - Whether this card should be visually highlighted
- *
- * @example
- * <SalesMonthCard
- *   data={salesData}
- *   isHighlighted={data.isCurrentMonth}
- * />
- */
-export interface SalesMonthCardProps {
-    data: SalesMonthData;
-    isHighlighted?: boolean;
-}
 
 /**
  * Props for the MonthlyComparisonHeader component.
