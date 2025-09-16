@@ -3,6 +3,7 @@ import { parseLocalDate } from '@/lib/services/hours-chart.service';
 import type { ProcessedChartData } from '@/lib/services/types';
 import { formatCurrencyAmount } from '@/lib/utils/currency-formatting';
 import { validateDailyDateRange } from '@/lib/utils/date-validation';
+import { logger } from './lib/logger';
 import type { SalesDayData, ValidationResult } from './types';
 
 // isSingleDaySelected is now imported from shared utilities
@@ -256,16 +257,10 @@ export function convertProcessedChartDataToSalesData(chartData: ProcessedChartDa
     // Normalize dates for comparison
     const todayDateString = new Date().toDateString();
 
-    if (process.env.NODE_ENV === 'development') {
-        console.log('📊 convertProcessedChartDataToSalesData:', {
-            selectedDate: selectedDate.toLocaleDateString('es-ES'),
-            apiDays: chartData.days.map((d) => ({
-                label: d.label,
-                date: d.date,
-                total: d.total,
-            })),
-        });
-    }
+    logger.debug('Converting API data to sales data', {
+        selectedDate: selectedDate.toLocaleDateString('es-ES'),
+        daysCount: chartData.days.length,
+    });
 
     // Convert ProcessedDayData to SalesDayData
     // The API returns 4 days in reverse chronological order (most recent first)
@@ -274,15 +269,11 @@ export function convertProcessedChartDataToSalesData(chartData: ProcessedChartDa
         const dayDate = parseLocalDate(day.date);
         const dayDateString = dayDate.toDateString();
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log(`📅 Sales card ${index}:`, {
-                apiLabel: day.label,
-                apiDate: day.date,
-                parsedDate: dayDate.toLocaleDateString('es-ES'),
-                dayOfWeek: dayDate.toLocaleDateString('es-ES', { weekday: 'short' }),
-                amount: day.total,
-            });
-        }
+        logger.debug(`Sales card ${index} processed`, {
+            apiLabel: day.label,
+            parsedDate: dayDate.toLocaleDateString('es-ES'),
+            amount: day.total,
+        });
 
         return {
             date: dayDate,

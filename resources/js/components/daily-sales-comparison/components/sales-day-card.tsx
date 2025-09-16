@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import * as React from 'react';
+import { logger } from '../lib/logger';
 import type { SalesDayCardProps } from '../types';
 import { formatDateForCard, formatSalesAmount, getDayLetter } from '../utils';
 
@@ -39,18 +40,15 @@ export function SalesDayCard({ data, isHighlighted = false }: SalesDayCardProps)
     const formattedDate = formatDateForCard(data.date, data.isToday);
     const formattedAmount = formatSalesAmount(data.amount);
 
-    // Memoize debug log to prevent infinite re-renders
-    React.useMemo(() => {
-        if (process.env.NODE_ENV === 'development') {
-            console.log('📇 SalesDayCard rendering:', {
-                date: data.date.toISOString(),
-                dateString: data.date.toLocaleDateString('es-ES'),
-                formattedDate,
-                dayLetter,
-                amount: data.amount,
-                isToday: data.isToday,
-            });
-        }
+    // Debug logging - using proper useEffect instead of useMemo side effects
+    React.useEffect(() => {
+        logger.debug('SalesDayCard rendered', {
+            dateString: data.date.toLocaleDateString('es-ES'),
+            formattedDate,
+            dayLetter,
+            amount: data.amount,
+            isToday: data.isToday,
+        });
     }, [data.date, data.amount, data.isToday, formattedDate, dayLetter]);
 
     return (

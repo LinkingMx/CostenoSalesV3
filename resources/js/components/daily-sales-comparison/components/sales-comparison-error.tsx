@@ -1,9 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
+import * as React from 'react';
+import { logger } from '../lib/logger';
 
 interface SalesComparisonErrorProps {
-    error?: string;
+    error?: string | Error;
     onRetry?: () => void;
 }
 
@@ -37,6 +39,22 @@ interface SalesComparisonErrorProps {
  * ```
  */
 export function SalesComparisonError({ error = 'Error al cargar los datos de ventas', onRetry }: SalesComparisonErrorProps) {
+    // Improved error handling with consistent logging
+    const errorMessage = React.useMemo(() => {
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error instanceof Error) {
+            logger.error('Error object received', { message: error.message, name: error.name });
+            return error.message || 'Error desconocido';
+        }
+        return 'Error al cargar los datos de ventas';
+    }, [error]);
+
+    // Log error state rendering for debugging
+    React.useEffect(() => {
+        logger.debug('Error component rendered', { errorMessage });
+    }, [errorMessage]);
     return (
         <Card className="w-full border-border">
             <CardContent className="px-4 py-6">
@@ -49,12 +67,20 @@ export function SalesComparisonError({ error = 'Error al cargar los datos de ven
                     {/* Error message */}
                     <div className="text-center">
                         <p className="text-sm font-medium text-foreground">No se pudieron cargar los datos</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{error}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{errorMessage}</p>
                     </div>
 
-                    {/* Retry button */}
+                    {/* Retry button with enhanced error handling */}
                     {onRetry && (
-                        <Button variant="outline" size="sm" onClick={onRetry} className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                logger.debug('Retry button clicked');
+                                onRetry();
+                            }}
+                            className="flex items-center gap-2"
+                        >
                             <RefreshCw className="h-3 w-3" />
                             Reintentar
                         </Button>
