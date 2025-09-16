@@ -199,6 +199,7 @@ export function formatPercentage(percentage: number): string {
  *
  * @description This function maps the API response structure to our component interface:
  * - Extracts branch name from the object key
+ * - Uses numeric store_id as the ID for navigation
  * - Maps monetary values from closed_ticket and open_accounts
  * - Extracts percentage growth from percentage.qty (vs previous month)
  * - Generates avatar from brand first letter
@@ -239,6 +240,7 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
         }
 
         const {
+          store_id,
           closed_ticket,
           percentage,
           average_ticket,
@@ -247,8 +249,12 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
         } = apiData;
 
         // Validate required fields
-        if (!closed_ticket || !percentage) {
-          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`);
+        if (store_id === undefined || store_id === null || !closed_ticket || !percentage) {
+          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
+            store_id,
+            closed_ticket,
+            percentage
+          });
           return null;
         }
 
@@ -256,8 +262,18 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
         const openAccountsAmount = 0; // Always 0 for monthly view
         const closedAccountsAmount = closed_ticket.money || 0;
 
+        // Debug log for store_id
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 MonthlyBranch transforming store_id:', {
+            store_id,
+            type: typeof store_id,
+            toString: store_id.toString(),
+            branchName
+          });
+        }
+
         const transformedBranch: BranchSalesData = {
-          id: branchName, // Use branch name as ID for monthly
+          id: store_id.toString(),
           name: branchName,
           totalSales: closedAccountsAmount, // Only closed sales for monthly
           percentage: percentage.qty || 0,

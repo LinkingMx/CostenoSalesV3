@@ -11,6 +11,7 @@ interface DashboardLoadingCoordinatorProps {
   minLoadingDuration?: number;
   showDetailedLoading?: boolean;
   fadeTransitionDuration?: number;
+  skipInitialLoading?: boolean; // Flag to skip loading on restore scenarios
 }
 
 export function DashboardLoadingCoordinator({
@@ -19,7 +20,8 @@ export function DashboardLoadingCoordinator({
   className,
   minLoadingDuration = 800,
   showDetailedLoading = process.env.NODE_ENV === 'development',
-  fadeTransitionDuration = 400
+  fadeTransitionDuration = 400,
+  skipInitialLoading = false
 }: DashboardLoadingCoordinatorProps) {
   const {
     isGlobalLoading,
@@ -44,27 +46,73 @@ export function DashboardLoadingCoordinator({
     call => call.status === 'pending'
   ).length;
 
+  // Track if this is the first render to avoid unnecessary loading on restore
+  const isFirstRender = React.useRef(true);
+  const previousDateRange = React.useRef<DateRange | undefined>();
+
   React.useEffect(() => {
-    onDateRangeChange(dateRange);
+    // Skip date range change detection on first render for restore scenarios
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      previousDateRange.current = dateRange;
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Dashboard loading coordinator: First render, skipping reset for restore');
+      }
+      return;
+    }
+
+    // For subsequent changes, use normal flow
+    const hasActualChange = (() => {
+      if (!dateRange && !previousDateRange.current) return false;
+      if (!dateRange || !previousDateRange.current) return true;
+
+      return dateRange.from?.getTime() !== previousDateRange.current.from?.getTime() ||
+             dateRange.to?.getTime() !== previousDateRange.current.to?.getTime();
+    })();
+
+    if (hasActualChange) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔧 Dashboard loading coordinator: Actual date change detected, triggering reset');
+      }
+      onDateRangeChange(dateRange);
+      previousDateRange.current = dateRange;
+    } else if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Dashboard loading coordinator: No actual date change, preserving state');
+    }
   }, [dateRange, onDateRangeChange]);
 
   React.useEffect(() => {
     if (isGlobalLoading && !showOverlay) {
+      // Skip loading overlay if this is a restore scenario
+      if (skipInitialLoading && isFirstRender.current) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Dashboard loading coordinator: Skipping initial loading for restore scenario');
+        }
+        return;
+      }
+
       // Start loading: fade out content, fade in overlay
       setLoadingStartTime(Date.now());
-      setShowOverlay(true);
 
-      // Start with content visible
-      setContentOpacity(0.2);
+      // Add a small delay before showing overlay to avoid flash for cached data
+      const showLoadingTimeout = setTimeout(() => {
+        setShowOverlay(true);
 
-      // Small delay to ensure DOM is ready, then fade in overlay
-      setTimeout(() => {
-        setOverlayOpacity(1);
-      }, 50);
+        // Start with content visible
+        setContentOpacity(0.2);
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Dashboard loading coordinator: Starting global loading state');
-      }
+        // Small delay to ensure DOM is ready, then fade in overlay
+        setTimeout(() => {
+          setOverlayOpacity(1);
+        }, 50);
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Dashboard loading coordinator: Starting global loading state');
+        }
+      }, 200); // Wait 200ms before showing loading overlay
+
+      return () => clearTimeout(showLoadingTimeout);
     }
 
     if (!isGlobalLoading && showOverlay) {

@@ -12,6 +12,7 @@ import {
   BranchApiData,
 } from './types';
 import { cacheManager, generateCacheKey } from './cache';
+// Note: Dashboard cache integration available for future enhancement
 import type { BranchSalesData } from '@/components/daily-sales-branches';
 
 // Track active requests to prevent duplicate calls and rate limiting

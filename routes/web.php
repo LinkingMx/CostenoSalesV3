@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\SessionController;
 use App\Http\Controllers\BranchDetailsController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -10,8 +11,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+    Route::get('dashboard', function (Request $request) {
+        return Inertia::render('dashboard', [
+            'restoreDate' => $request->input('restoreDate'),
+        ]);
     })->name('dashboard');
 
     Route::get('branch/{id}', [BranchDetailsController::class, 'show'])->name('branch.details');

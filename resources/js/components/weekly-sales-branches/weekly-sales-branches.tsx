@@ -6,6 +6,7 @@ import { WeeklyBranchesLoadingSkeleton } from './components/weekly-branches-load
 import { WeeklyBranchesError } from './components/weekly-branches-error';
 import type { WeeklySalesBranchesProps } from './types';
 import { useWeeklyBranches } from './hooks/use-weekly-branches';
+import { DateRangeProvider } from '@/contexts/date-range-context';
 
 /**
  * WeeklySalesBranches - Component for displaying weekly branch sales data in collapsible format.
@@ -80,19 +81,21 @@ export function WeeklySalesBranches({ selectedDateRange }: WeeklySalesBranchesPr
         <WeeklySalesBranchesHeader />
 
         {/* Branch collapsibles with real API data */}
-        <div
-          className="space-y-2"
-          role="region"
-          aria-label="Detalles de ventas por sucursal semanales"
-        >
-          {branchesData.map((branch) => (
-            <BranchCollapsibleItem
-              key={branch.id}
-              branch={branch}
-              isCurrentWeek={isCurrentWeek}
-            />
-          ))}
-        </div>
+        <DateRangeProvider dateRange={selectedDateRange}>
+          <div
+            className="space-y-2"
+            role="region"
+            aria-label="Detalles de ventas por sucursal semanales"
+          >
+            {branchesData.map((branch) => (
+              <BranchCollapsibleItem
+                key={branch.id}
+                branch={branch}
+                isCurrentWeek={isCurrentWeek}
+              />
+            ))}
+          </div>
+        </DateRangeProvider>
       </CardContent>
     </Card>
   );

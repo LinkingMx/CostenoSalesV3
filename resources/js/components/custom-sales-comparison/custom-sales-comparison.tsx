@@ -86,8 +86,9 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
   // Fetch real API data when selectedDateRange changes
   React.useEffect(() => {
     if (!isCustomRangeSelected(selectedDateRange)) {
-      setDisplayData([]);
-      setError(undefined);
+      // Only clear data if there's actually data to clear
+      setDisplayData(prev => prev.length > 0 ? [] : prev);
+      setError(prev => prev ? undefined : prev);
       return;
     }
 

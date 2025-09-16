@@ -7,13 +7,65 @@ import { ChevronDown, TicketMinus, TicketCheck, TicketPercent } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
+import { useDateRange } from '@/contexts/date-range-context';
+import { useDashboardState } from '@/hooks/use-dashboard-state';
 
 export function BranchCollapsibleItem({ branch, isToday = false }: BranchCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const isPositiveGrowth = branch.percentage > 0;
 
+  // Access date range from context and dashboard state management
+  const { dateRange } = useDateRange();
+  const { setOriginalDateRange } = useDashboardState();
+
   const handleViewDetails = () => {
-    router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+    try {
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 DailySalesBranches navigating to branch:', {
+          id: branch.id,
+          idType: typeof branch.id,
+          name: branch.name,
+          location: branch.location,
+          dateRange: dateRange ? {
+            from: dateRange.from?.toISOString(),
+            to: dateRange.to?.toISOString()
+          } : null
+        });
+      }
+
+      // Branch.id is already a string based on type definition
+      const branchId = branch.id;
+
+      // Save current dateRange as original for return navigation
+      if (dateRange) {
+        setOriginalDateRange(dateRange);
+      }
+
+      // Navigate with iOS transition - NO preserveState to avoid refresh issues
+      // For daily navigation, ensure we pass the same date as both from and to for single day ranges
+      const navigationDateRange = dateRange ? {
+        from: dateRange.from?.toISOString(),
+        to: dateRange.to?.toISOString() || dateRange.from?.toISOString() // Use same date if to is missing
+      } : undefined;
+
+      router.visit(`/branch/${branchId}`, {
+        data: {
+          name: branch.name,
+          region: branch.location || '',
+          dateRange: navigationDateRange
+        }
+        // Removed preserveState and preserveScroll for clean iOS transitions
+      });
+    } catch (error) {
+      console.error('Error navigating to branch details:', error);
+      // Fallback to basic navigation
+      try {
+        router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+      } catch (fallbackError) {
+        console.error('Fallback navigation also failed:', fallbackError);
+      }
+    }
   };
 
   return (

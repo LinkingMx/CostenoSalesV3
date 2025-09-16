@@ -69,10 +69,19 @@ export function MainFilterCalendar({
   // Memoize today's date range to avoid recalculation on every render
   const defaultRange = React.useMemo(() => {
     try {
-      return getDateRange('today');
+      const today = new Date();
+      // Always ensure complete range with same from/to dates
+      return {
+        from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      };
     } catch (error) {
       console.error('MainFilterCalendar: Error getting default range:', error);
-      return { from: new Date(), to: new Date() };
+      const today = new Date();
+      return {
+        from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      };
     }
   }, []);
   
@@ -108,12 +117,35 @@ export function MainFilterCalendar({
     if (!value) {
       try {
         const todayRange = getDateRange('today');
-        setTempRange(todayRange);
-        onChange?.(todayRange);
+
+        // Ensure we always have both from and to dates set to the same day
+        const today = new Date();
+        const completeRange: DateRange = {
+          from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+          to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        };
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🗓️ MainFilterCalendar: Initializing with complete today range:', {
+            from: completeRange.from.toISOString(),
+            to: completeRange.to.toISOString(),
+            originalRange: {
+              from: todayRange.from?.toISOString(),
+              to: todayRange.to?.toISOString()
+            }
+          });
+        }
+
+        setTempRange(completeRange);
+        onChange?.(completeRange);
       } catch (error) {
         console.error('MainFilterCalendar: Error initializing with today\'s date:', error);
         // Provide fallback initialization
-        const fallbackRange = { from: new Date(), to: new Date() };
+        const today = new Date();
+        const fallbackRange: DateRange = {
+          from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+          to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        };
         setTempRange(fallbackRange);
         onChange?.(fallbackRange);
       }

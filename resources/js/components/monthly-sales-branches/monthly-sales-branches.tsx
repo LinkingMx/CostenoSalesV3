@@ -6,6 +6,7 @@ import { MonthlyBranchesLoadingSkeleton } from './components/monthly-branches-lo
 import { MonthlyBranchesError } from './components/monthly-branches-error';
 import type { MonthlySalesBranchesProps } from './types';
 import { useMonthlyBranches } from './hooks/use-monthly-branches';
+import { DateRangeProvider } from '@/contexts/date-range-context';
 
 /**
  * MonthlySalesBranches - Component for displaying monthly branch sales data in collapsible format.
@@ -82,19 +83,21 @@ export function MonthlySalesBranches({ selectedDateRange }: MonthlySalesBranches
         <MonthlySalesBranchesHeader />
 
         {/* Branch collapsibles with real API data */}
-        <div
-          className="space-y-2"
-          role="region"
-          aria-label="Detalles de ventas por sucursal mensuales"
-        >
-          {branchesData.map((branch) => (
-            <MonthlyBranchCollapsibleItem
-              key={branch.id}
-              branch={branch}
-              isCurrentMonth={isCurrentMonth}
-            />
-          ))}
-        </div>
+        <DateRangeProvider dateRange={selectedDateRange}>
+          <div
+            className="space-y-2"
+            role="region"
+            aria-label="Detalles de ventas por sucursal mensuales"
+          >
+            {branchesData.map((branch) => (
+              <MonthlyBranchCollapsibleItem
+                key={branch.id}
+                branch={branch}
+                isCurrentMonth={isCurrentMonth}
+              />
+            ))}
+          </div>
+        </DateRangeProvider>
       </CardContent>
     </Card>
   );

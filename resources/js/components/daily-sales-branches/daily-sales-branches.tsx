@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
 import { DUMMY_BRANCHES_DATA } from './utils';
-import { useBranchSalesData } from './hooks/use-branch-sales-data';
+import { useDailyBranchesSimple } from './hooks/use-daily-branches-simple';
 import type { DailySalesBranchesProps } from './types';
+import { DateRangeProvider } from '@/contexts/date-range-context';
 
 /**
  * DailySalesBranches - A Spanish-localized branch sales collapsible component for daily sales data.
@@ -51,39 +52,33 @@ export function DailySalesBranches({
   selectedDateRange,
   branches: staticBranches
 }: DailySalesBranchesProps) {
-  // Use the API integration hook with fallback to dummy data
+  // Use simple API hook (no complex context needed)
   const {
-    branches,
-    // totalSales, // Available for future use in summary displays
+    branchesData,
     isLoading,
     error,
-    isVisible,
+    isValidSingleDay,
     isToday,
-    refresh,
-    clearError
-  } = useBranchSalesData(selectedDateRange, {
-    enabled: !staticBranches, // Only use API if no static branches provided
-    fallbackData: DUMMY_BRANCHES_DATA,
-    useFallbackDuringLoad: true
-  });
+    refetch
+  } = useDailyBranchesSimple(selectedDateRange);
 
   // Use static branches if provided, otherwise use API data
-  const displayBranches = staticBranches || branches;
+  const displayBranches = staticBranches || branchesData;
 
-  // Debug logging to track data flow
+  // Debug logging to track data flow (reduced to prevent infinite loops)
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development' && selectedDateRange) {
       console.log('🔍 DailySalesBranches component state:', {
-        isVisible,
+        isValidSingleDay,
         isLoading,
         error,
         staticBranches: !!staticBranches,
-        branchesFromAPI: branches?.length || 0,
+        branchesFromAPI: branchesData?.length || 0,
         displayBranches: displayBranches?.length || 0,
         selectedDate: selectedDateRange?.from?.toISOString()?.split('T')[0]
       });
     }
-  }, [selectedDateRange, isVisible, isLoading, error, staticBranches, branches, displayBranches]);
+  }, [selectedDateRange?.from, selectedDateRange?.to, isValidSingleDay, isLoading, error]);
 
   // Memoize validated and sorted branches to prevent unnecessary processing on each render
   // Includes data validation and sorting by total sales in descending order for better UX
@@ -123,7 +118,7 @@ export function DailySalesBranches({
 
   // Conditional rendering: Only display component when a single day is selected
   // This ensures data relevance and prevents confusion with multi-day aggregates
-  if (!isVisible) {
+  if (!isValidSingleDay) {
     return null;
   }
 
@@ -147,7 +142,7 @@ export function DailySalesBranches({
         <Button
           variant="ghost"
           size="sm"
-          onClick={refresh}
+          onClick={refetch}
           disabled={isLoading}
           className="h-8 w-8 p-0"
           title="Actualizar datos"
@@ -202,7 +197,7 @@ export function DailySalesBranches({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={refresh}
+                onClick={refetch}
                 disabled={isLoading}
                 className="ml-2 h-7"
               >
@@ -239,11 +234,11 @@ export function DailySalesBranches({
           <Alert className="mb-3">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
-              <span className="text-sm">Mostrando datos en caché. {error}</span>
+              <span className="text-sm">Error: {error}</span>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={clearError}
+                onClick={() => {/* Error will clear on next fetch */}}
                 className="h-6 w-6 p-0 ml-2"
                 title="Cerrar"
               >
@@ -254,19 +249,21 @@ export function DailySalesBranches({
         )}
 
         {/* Collapsibles section */}
-        <div
-          className="space-y-2"
-          role="region"
-          aria-label="Detalles de ventas por sucursal"
-        >
-          {sortedBranches.map((branch) => (
-            <BranchCollapsibleItem
-              key={branch.id} // Using branch.id ensures stable React keys for proper reconciliation
-              branch={branch}
-              isToday={isToday}
-            />
-          ))}
-        </div>
+        <DateRangeProvider dateRange={selectedDateRange}>
+          <div
+            className="space-y-2"
+            role="region"
+            aria-label="Detalles de ventas por sucursal"
+          >
+            {sortedBranches.map((branch) => (
+              <BranchCollapsibleItem
+                key={branch.id} // Using branch.id ensures stable React keys for proper reconciliation
+                branch={branch}
+                isToday={isToday}
+              />
+            ))}
+          </div>
+        </DateRangeProvider>
 
         {/* Loading overlay for refresh operations */}
         {isLoading && sortedBranches.length > 0 && (

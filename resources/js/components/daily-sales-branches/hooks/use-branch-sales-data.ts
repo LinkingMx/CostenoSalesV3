@@ -26,7 +26,7 @@ interface UseBranchSalesDataOptions {
   useFallbackDuringLoad?: boolean;
 }
 
-interface UseBranchSalesDataReturn {
+export interface UseBranchSalesDataReturn {
   /** Branch sales data array */
   branches: BranchSalesData[];
   /** Total sales amount across all branches */

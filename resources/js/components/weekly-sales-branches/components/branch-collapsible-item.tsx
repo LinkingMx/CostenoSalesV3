@@ -7,13 +7,58 @@ import { ChevronDown, TicketMinus, TicketCheck, TicketPercent } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
+import { useDateRange } from '@/contexts/date-range-context';
+import { useDashboardState } from '@/hooks/use-dashboard-state';
 
 export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const isPositiveGrowth = branch.percentage > 0;
 
+  // Access date range from context and dashboard state management
+  const { dateRange } = useDateRange();
+  const { setOriginalDateRange } = useDashboardState();
+
   const handleViewDetails = () => {
-    router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+    try {
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 WeeklySalesBranches navigating to branch:', {
+          id: branch.id,
+          idType: typeof branch.id,
+          name: branch.name,
+          location: branch.location,
+          dateRange: dateRange ? {
+            from: dateRange.from?.toISOString(),
+            to: dateRange.to?.toISOString()
+          } : null
+        });
+      }
+
+      // Branch.id is already a string based on type definition
+      const branchId = branch.id;
+
+      // Save current dateRange as original for return navigation
+      if (dateRange) {
+        setOriginalDateRange(dateRange);
+      }
+
+      // Navigate with iOS transition - NO preserveState to avoid refresh issues
+      router.visit(`/branch/${branchId}`, {
+        data: {
+          name: branch.name,
+          region: branch.location || '',
+          dateRange: dateRange ? {
+            from: dateRange.from?.toISOString(),
+            to: dateRange.to?.toISOString()
+          } : undefined
+        }
+        // Removed preserveState and preserveScroll for clean iOS transitions
+      });
+    } catch (error) {
+      console.error('Error navigating to branch details:', error);
+      // Fallback to basic navigation
+      router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+    }
   };
 
   return (

@@ -34,6 +34,7 @@ interface ApiLoadingContextValue {
   onDateRangeChange: (range: DateRange | undefined) => void;
   getFailedCallsInfo: () => ApiCallInfo[];
   retryFailedCalls: () => void;
+  setRestoreMode: (isRestore: boolean) => void;
 }
 
 const ApiLoadingContext = React.createContext<ApiLoadingContextValue | undefined>(undefined);
@@ -46,6 +47,7 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
   const [activeApiCalls, setActiveApiCalls] = React.useState<Map<string, ApiCallInfo>>(new Map());
   const [currentDateRange, setCurrentDateRange] = React.useState<DateRange | undefined>();
   const [isLoadingStarted, setIsLoadingStarted] = React.useState(false);
+  const [isRestoreMode, setIsRestoreMode] = React.useState(false);
 
   const totalCallsCount = React.useMemo(() => activeApiCalls.size, [activeApiCalls]);
 
@@ -62,9 +64,15 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
   }, [activeApiCalls]);
 
   const isGlobalLoading = React.useMemo(() => {
+    // Don't show loading if we haven't started any loading process
     if (!isLoadingStarted || totalCallsCount === 0) return false;
-    return completedCallsCount < totalCallsCount;
-  }, [isLoadingStarted, totalCallsCount, completedCallsCount]);
+
+    // Check if any calls are actually pending (not using cache)
+    const hasPendingCalls = Array.from(activeApiCalls.values()).some(call => call.status === 'pending');
+
+    // Only show loading if we have pending calls that aren't using cache
+    return hasPendingCalls && completedCallsCount < totalCallsCount;
+  }, [isLoadingStarted, totalCallsCount, completedCallsCount, activeApiCalls]);
 
   const registerApiCall = React.useCallback((
     id: string,
@@ -72,7 +80,7 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
     metadata?: ApiCallMetadata
   ) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 Registering API call: ${id} (${componentName})`);
+      console.log(`🔄 Registering API call: ${id} (${componentName}) - Restore mode: ${isRestoreMode}`);
     }
 
     setActiveApiCalls(prev => {
@@ -91,10 +99,11 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
       return newMap;
     });
 
-    if (!isLoadingStarted) {
+    // Don't start loading if we're in restore mode (returning from BranchDetails)
+    if (!isLoadingStarted && !isRestoreMode) {
       setIsLoadingStarted(true);
     }
-  }, [isLoadingStarted]);
+  }, [isLoadingStarted, isRestoreMode]);
 
   const completeApiCall = React.useCallback((id: string, success = true) => {
     setActiveApiCalls(prev => {
@@ -139,20 +148,43 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
   }, [totalCallsCount, completedCallsCount]);
 
   const onDateRangeChange = React.useCallback((range: DateRange | undefined) => {
-    const hasDateChanged = !range && currentDateRange ||
-                          range && !currentDateRange ||
-                          range && currentDateRange && (
-                            range.from?.getTime() !== currentDateRange.from?.getTime() ||
-                            range.to?.getTime() !== currentDateRange.to?.getTime()
-                          );
+    // More precise date comparison to avoid false positives
+    const hasDateChanged = (() => {
+      // Both undefined - no change
+      if (!range && !currentDateRange) return false;
+
+      // One undefined, other defined - change
+      if (!range || !currentDateRange) return true;
+
+      // Both defined - compare timestamps
+      const fromTime1 = range.from?.getTime();
+      const toTime1 = range.to?.getTime();
+      const fromTime2 = currentDateRange.from?.getTime();
+      const toTime2 = currentDateRange.to?.getTime();
+
+      // If any timestamp is invalid, consider it a change
+      if (isNaN(fromTime1!) || isNaN(toTime1!) || isNaN(fromTime2!) || isNaN(toTime2!)) {
+        return true;
+      }
+
+      // Compare timestamps with tolerance for millisecond differences
+      const tolerance = 1000; // 1 second tolerance
+      return Math.abs(fromTime1! - fromTime2!) > tolerance ||
+             Math.abs(toTime1! - toTime2!) > tolerance;
+    })();
 
     if (hasDateChanged) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('📅 Date range changed - resetting loading state');
+        console.log('📅 Date range changed - resetting loading state', {
+          from: { old: currentDateRange?.from, new: range?.from },
+          to: { old: currentDateRange?.to, new: range?.to }
+        });
       }
 
       setCurrentDateRange(range);
       resetLoadingState();
+    } else if (process.env.NODE_ENV === 'development') {
+      console.log('📅 Date range unchanged - keeping loading state');
     }
   }, [currentDateRange, resetLoadingState]);
 
@@ -195,6 +227,13 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
     });
   }, [getFailedCallsInfo]);
 
+  const setRestoreMode = React.useCallback((isRestore: boolean) => {
+    setIsRestoreMode(isRestore);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔧 Restore mode set to: ${isRestore}`);
+    }
+  }, []);
+
   const contextValue: ApiLoadingContextValue = React.useMemo(() => ({
     isGlobalLoading,
     activeApiCalls,
@@ -209,7 +248,8 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
     getLoadingProgress,
     onDateRangeChange,
     getFailedCallsInfo,
-    retryFailedCalls
+    retryFailedCalls,
+    setRestoreMode
   }), [
     isGlobalLoading,
     activeApiCalls,
@@ -224,7 +264,8 @@ export const ApiLoadingProvider: React.FC<ApiLoadingProviderProps> = ({ children
     getLoadingProgress,
     onDateRangeChange,
     getFailedCallsInfo,
-    retryFailedCalls
+    retryFailedCalls,
+    setRestoreMode
   ]);
 
   return (

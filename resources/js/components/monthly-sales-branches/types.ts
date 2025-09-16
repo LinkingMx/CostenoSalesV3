@@ -145,6 +145,7 @@ export interface MonthlyBranchesErrorProps {
  * Defines the raw data format returned by the API.
  */
 export interface ApiCardData {
+  store_id: number;
   open_accounts: {
     total: number;
     money: number;

@@ -287,13 +287,27 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
         } = apiData;
 
         // Validate required fields
-        if (!store_id || !closed_ticket || !percentage) {
-          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`);
+        if (store_id === undefined || store_id === null || !closed_ticket || !percentage) {
+          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
+            store_id,
+            closed_ticket,
+            percentage
+          });
           return null;
         }
 
         const openAccountsAmount = open_accounts?.money || 0;
         const closedAccountsAmount = closed_ticket.money || 0;
+
+        // Debug log for store_id
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 WeeklyBranch transforming store_id:', {
+            store_id,
+            type: typeof store_id,
+            toString: store_id.toString(),
+            branchName
+          });
+        }
 
         const transformedBranch: BranchSalesData = {
           id: store_id.toString(),

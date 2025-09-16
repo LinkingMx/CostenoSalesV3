@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { router } from '@inertiajs/react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +7,8 @@ import { ChevronDown, TicketCheck, TicketPercent } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
+import { useDateRange } from '@/contexts/date-range-context';
+import { useDashboardState } from '@/hooks/use-dashboard-state';
 
 /**
  * Monthly Branch Collapsible Item Component
@@ -19,6 +22,53 @@ import { formatCurrency, formatPercentage } from '../utils';
 export function MonthlyBranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const isPositiveGrowth = branch.percentage > 0;
+
+  // Access date range from context and dashboard state management
+  const { dateRange } = useDateRange();
+  const { setOriginalDateRange } = useDashboardState();
+
+  const handleViewDetails = () => {
+    try {
+      // Debug logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 MonthlySalesBranches navigating to branch:', {
+          id: branch.id,
+          idType: typeof branch.id,
+          name: branch.name,
+          location: branch.location,
+          dateRange: dateRange ? {
+            from: dateRange.from?.toISOString(),
+            to: dateRange.to?.toISOString()
+          } : null
+        });
+      }
+
+      // Branch.id is already a string based on type definition
+      const branchId = branch.id;
+
+      // Save current dateRange as original for return navigation
+      if (dateRange) {
+        setOriginalDateRange(dateRange);
+      }
+
+      // Navigate with iOS transition - NO preserveState to avoid refresh issues
+      router.visit(`/branch/${branchId}`, {
+        data: {
+          name: branch.name,
+          region: branch.location || '',
+          dateRange: dateRange ? {
+            from: dateRange.from?.toISOString(),
+            to: dateRange.to?.toISOString()
+          } : undefined
+        }
+        // Removed preserveState and preserveScroll for clean iOS transitions
+      });
+    } catch (error) {
+      console.error('Error navigating to branch details:', error);
+      // Fallback to basic navigation
+      router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+    }
+  };
 
   return (
     <Collapsible 
@@ -134,9 +184,10 @@ export function MonthlyBranchCollapsibleItem({ branch }: BranchCollapsibleItemPr
               <div className="text-xs text-muted-foreground">
                 Total de tickets: {branch.totalTickets}
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
+                onClick={handleViewDetails}
                 className={cn(
                   "bg-primary text-primary-foreground border-primary text-xs px-2 py-1",
                   "transition-all duration-200 ease-out",

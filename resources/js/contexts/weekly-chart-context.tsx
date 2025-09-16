@@ -24,6 +24,7 @@ const WeeklyChartContext = createContext<WeeklyChartContextValue | null>(null);
 interface WeeklyChartProviderProps {
   children: ReactNode;
   selectedDateRange: DateRange | undefined;
+  skipLoading?: boolean;
 }
 
 /**
@@ -32,21 +33,26 @@ interface WeeklyChartProviderProps {
  */
 export const WeeklyChartProvider: React.FC<WeeklyChartProviderProps> = React.memo(({
   children,
-  selectedDateRange
+  selectedDateRange,
+  skipLoading = false
 }) => {
   const { registerApiCall, completeApiCall } = useApiLoadingContext();
 
   const onApiStart = React.useCallback(() => {
-    registerApiCall('weekly-chart-shared-api', 'WeeklyChartProvider', {
-      endpoint: 'main_dashboard_data',
-      priority: 'medium',
-      description: 'Weekly chart comparison data for 3-week analysis'
-    });
-  }, [registerApiCall]);
+    if (!skipLoading) {
+      registerApiCall('weekly-chart-shared-api', 'WeeklyChartProvider', {
+        endpoint: 'main_dashboard_data',
+        priority: 'medium',
+        description: 'Weekly chart comparison data for 3-week analysis'
+      });
+    }
+  }, [registerApiCall, skipLoading]);
 
   const onApiComplete = React.useCallback((success: boolean) => {
-    completeApiCall('weekly-chart-shared-api', success);
-  }, [completeApiCall]);
+    if (!skipLoading) {
+      completeApiCall('weekly-chart-shared-api', success);
+    }
+  }, [completeApiCall, skipLoading]);
 
   const onError = React.useCallback(() => {
     // Silently handle errors

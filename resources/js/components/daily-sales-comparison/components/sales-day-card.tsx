@@ -42,16 +42,19 @@ export function SalesDayCard({
   const formattedDate = formatDateForCard(data.date, data.isToday);
   const formattedAmount = formatSalesAmount(data.amount);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('📇 SalesDayCard rendering:', {
-      date: data.date.toISOString(),
-      dateString: data.date.toLocaleDateString('es-ES'),
-      formattedDate,
-      dayLetter,
-      amount: data.amount,
-      isToday: data.isToday
-    });
-  }
+  // Memoize debug log to prevent infinite re-renders
+  React.useMemo(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📇 SalesDayCard rendering:', {
+        date: data.date.toISOString(),
+        dateString: data.date.toLocaleDateString('es-ES'),
+        formattedDate,
+        dayLetter,
+        amount: data.amount,
+        isToday: data.isToday
+      });
+    }
+  }, [data.date, data.amount, data.isToday, formattedDate, dayLetter]);
 
   return (
     <div

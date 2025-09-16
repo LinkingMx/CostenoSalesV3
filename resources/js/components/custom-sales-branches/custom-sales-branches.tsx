@@ -4,6 +4,7 @@ import { CustomSalesBranchesHeader } from './components/custom-sales-branches-he
 import { BranchCustomCollapsibleItem } from './components/branch-custom-collapsible-item';
 import type { CustomSalesBranchesProps } from './types';
 import { useCustomBranches } from './hooks/use-custom-branches';
+import { DateRangeProvider } from '@/contexts/date-range-context';
 
 /**
  * CustomSalesBranches - Component for displaying custom range branch sales data in collapsible format.
@@ -111,18 +112,20 @@ export function CustomSalesBranches({
         <CustomSalesBranchesHeader />
 
         {/* Branch collapsibles with real API data */}
-        <div
-          className="space-y-2"
-          role="region"
-          aria-label="Detalles de ventas por sucursal rango personalizado"
-        >
-          {branchesData.map((branch) => (
-            <BranchCustomCollapsibleItem
-              key={branch.id}
-              branch={branch}
-            />
-          ))}
-        </div>
+        <DateRangeProvider dateRange={selectedDateRange}>
+          <div
+            className="space-y-2"
+            role="region"
+            aria-label="Detalles de ventas por sucursal rango personalizado"
+          >
+            {branchesData.map((branch) => (
+              <BranchCustomCollapsibleItem
+                key={branch.id}
+                branch={branch}
+              />
+            ))}
+          </div>
+        </DateRangeProvider>
       </CardContent>
     </Card>
   );

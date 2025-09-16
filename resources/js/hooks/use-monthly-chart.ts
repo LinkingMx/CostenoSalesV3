@@ -180,7 +180,7 @@ export const useMonthlyChart = (
         setIsLoading(false);
       }
     }
-  }, [getApiDateStrings, enableRetry, maxRetries, minLoadingDuration, onApiStart, onApiComplete, onError]);
+  }, [getApiDateStrings, enableRetry, maxRetries, minLoadingDuration]);
 
   /**
    * Debounced data fetching
@@ -201,7 +201,7 @@ export const useMonthlyChart = (
         fetchData(dateRange, requestId);
       }
     }, debounceMs);
-  }, [fetchData, debounceMs]);
+  }, [debounceMs]);
 
   /**
    * Manual refetch function
@@ -274,7 +274,23 @@ export const useMonthlyChart = (
     }
 
     // Fetch data with debouncing
-    debouncedFetch(selectedDateRange);
+    if (selectedDateRange) {
+      // Clear existing debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Generate unique request ID
+      const requestId = `monthly-chart-${Date.now()}-${Math.random()}`;
+      currentRequestRef.current = requestId;
+
+      // Set up debounced fetch
+      debounceTimerRef.current = setTimeout(() => {
+        if (currentRequestRef.current === requestId && isMountedRef.current) {
+          fetchData(selectedDateRange, requestId);
+        }
+      }, debounceMs);
+    }
 
     // Cleanup function
     return () => {
@@ -292,7 +308,7 @@ export const useMonthlyChart = (
         }
       }
     };
-  }, [isValidForMonthlyChart, selectedDateRange, debouncedFetch]);
+  }, [isValidForMonthlyChart, selectedDateRange, debounceMs]);
 
   /**
    * Cleanup effect on unmount

@@ -61,10 +61,43 @@ export function useDateRange({
   const [selectedPeriod, setSelectedPeriod] = React.useState<string>(defaultPeriod);
   
   // Memoize default range calculation to avoid unnecessary recalculations
-  const defaultRange = React.useMemo(() => getDateRange(defaultPeriod), [defaultPeriod]);
-  
+  const defaultRange = React.useMemo(() => {
+    try {
+      const range = getDateRange(defaultPeriod);
+      // Ensure both from and to are always set
+      if (range.from && range.to) {
+        return range;
+      }
+      // Fallback to today if getDateRange fails
+      const today = new Date();
+      return {
+        from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      };
+    } catch (error) {
+      console.error('useDateRange: Error getting default range:', error);
+      const today = new Date();
+      return {
+        from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+      };
+    }
+  }, [defaultPeriod]);
+
   // Temporary range during selection process - initialize with value or default
-  const [tempRange, setTempRange] = React.useState<DateRange | undefined>(() => value || defaultRange);
+  const [tempRange, setTempRange] = React.useState<DateRange | undefined>(() => {
+    const initialRange = value || defaultRange;
+    // Ensure the initial range always has both from and to
+    if (initialRange && initialRange.from && initialRange.to) {
+      return initialRange;
+    }
+    // Fallback
+    const today = new Date();
+    return {
+      from: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+      to: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    };
+  });
 
   /**
    * Handles period selection changes from the dropdown.
@@ -101,8 +134,8 @@ export function useDateRange({
   }, [onAutoApply, setCurrentMonth, setCurrentYear]);
 
   /**
-   * Handles day clicks on the calendar for manual date range selection.
-   * Implements an intuitive range selection pattern for better UX.
+   * Handles day clicks on the calendar for range selection.
+   * Always creates proper date ranges, never single-day selections.
    *
    * @function handleDayClick
    * @param {number} day - Day of month that was clicked (1-31)
@@ -110,8 +143,9 @@ export function useDateRange({
    * @description Selection logic:
    * 1. No existing range OR complete range exists → Start new range (only 'from' date set)
    * 2. Partial range (only 'from' date) → Complete range by setting 'to' date with auto-ordering
-   * 3. Clicking same day as 'from' when pending → Create same-day range
+   * 3. Clicking same day as 'from' when pending → Create same-day range (from === to)
    * 4. Always switches to 'custom' period when manually selecting dates
+   * 5. ALWAYS ensures both from and to are set (no single-day selections allowed)
    */
   const handleDayClick = React.useCallback((day: number) => {
     const clickedDate = new Date(currentYear, currentMonth, day);
@@ -129,7 +163,7 @@ export function useDateRange({
       const fromTime = tempRange.from.getTime();
       const clickedTime = clickedDate.getTime();
 
-      // If clicking the same day, create same-day range
+      // If clicking the same day, create same-day range (from === to)
       if (clickedTime === fromTime) {
         setTempRange({ from: clickedDate, to: clickedDate });
         return;

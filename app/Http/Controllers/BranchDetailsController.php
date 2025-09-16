@@ -10,20 +10,19 @@ class BranchDetailsController extends Controller
 {
     /**
      * Display the branch details page.
-     *
-     * @param Request $request
-     * @param string $id
-     * @return Response
      */
     public function show(Request $request, string $id): Response
     {
-        $name = $request->query('name', 'Sucursal');
-        $region = $request->query('region', 'Sin región');
+        // Handle both old query parameter format and new data format
+        $name = $request->input('name') ?? $request->query('name', 'Sucursal');
+        $region = $request->input('region') ?? $request->query('region', 'Sin región');
+        $dateRange = $request->input('dateRange');
 
         return Inertia::render('BranchDetails', [
             'id' => $id,
             'name' => $name,
             'region' => $region,
+            'dateRange' => $dateRange,
         ]);
     }
 }

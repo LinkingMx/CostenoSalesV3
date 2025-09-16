@@ -171,7 +171,7 @@ export const useWeeklyChart = (
         setIsLoading(false);
       }
     }
-  }, [getApiDateStrings, enableRetry, maxRetries, minLoadingDuration, onApiStart, onApiComplete, onError]);
+  }, [getApiDateStrings, enableRetry, maxRetries, minLoadingDuration]);
 
   /**
    * Debounced data fetching
@@ -192,7 +192,7 @@ export const useWeeklyChart = (
         fetchData(dateRange, requestId);
       }
     }, debounceMs);
-  }, [fetchData, debounceMs]);
+  }, [debounceMs]);
 
   /**
    * Manual refetch function
@@ -265,7 +265,23 @@ export const useWeeklyChart = (
     }
 
     // Fetch data with debouncing
-    debouncedFetch(selectedDateRange);
+    if (selectedDateRange) {
+      // Clear existing debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Generate unique request ID
+      const requestId = `weekly-chart-${Date.now()}-${Math.random()}`;
+      currentRequestRef.current = requestId;
+
+      // Set up debounced fetch
+      debounceTimerRef.current = setTimeout(() => {
+        if (currentRequestRef.current === requestId && isMountedRef.current) {
+          fetchData(selectedDateRange, requestId);
+        }
+      }, debounceMs);
+    }
 
     // Cleanup function
     return () => {
@@ -283,7 +299,7 @@ export const useWeeklyChart = (
         }
       }
     };
-  }, [isValidForWeeklyChart, selectedDateRange, debouncedFetch]);
+  }, [isValidForWeeklyChart, selectedDateRange, debounceMs]);
 
   /**
    * Cleanup effect on unmount
