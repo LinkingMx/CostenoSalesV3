@@ -1,5 +1,32 @@
 import type { DateRange } from '@/components/main-filter-calendar';
+import { logger } from './lib/logger';
 import type { ApiCardData, BranchSalesData } from './types';
+
+/**
+ * Memoization cache for expensive transformation operations
+ * Helps avoid recalculating the same API data transformations
+ */
+const transformationCache = new Map<string, BranchSalesData[]>();
+
+/**
+ * Creates a cache key for API data transformation memoization
+ * @param cardsData - Raw cards data to create key from
+ * @returns String cache key based on data structure
+ */
+function createCacheKey(cardsData: Record<string, ApiCardData>): string {
+    try {
+        // Create a hash-like key based on the data structure
+        const keys = Object.keys(cardsData).sort();
+        const values = keys.map(key => {
+            const card = cardsData[key];
+            return `${card.store_id}-${card.closed_ticket?.money || 0}-${card.percentage?.qty || 0}`;
+        });
+        return `${keys.length}-${values.join('|')}`;
+    } catch {
+        // Fallback to timestamp for unique key if hashing fails
+        return `fallback-${Date.now()}-${Math.random()}`;
+    }
+}
 
 /**
  * Determines if the selected date range contains today's date.
@@ -133,7 +160,7 @@ export function isExactMonthSelected(dateRange?: DateRange): boolean {
 export function formatCurrency(amount: number): string {
     // Handle invalid or non-numeric inputs gracefully
     if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
-        console.warn(`formatCurrency: Invalid amount provided: ${amount}`);
+        logger.warn('Invalid amount provided for currency formatting', { amount });
         return '$0.00'; // Fallback to zero currency format
     }
 
@@ -146,7 +173,7 @@ export function formatCurrency(amount: number): string {
             currencyDisplay: 'symbol', // Show only $ symbol, not MXN
         }).format(amount);
     } catch (error) {
-        console.error('formatCurrency: Formatting error:', error);
+        logger.error('Currency formatting error', error);
         return `$${amount.toFixed(2)}`; // Fallback formatting
     }
 }
@@ -178,14 +205,14 @@ export function formatCurrency(amount: number): string {
 export function formatPercentage(percentage: number): string {
     // Handle invalid or non-numeric inputs gracefully
     if (typeof percentage !== 'number' || isNaN(percentage) || !isFinite(percentage)) {
-        console.warn(`formatPercentage: Invalid percentage provided: ${percentage}`);
+        logger.warn('Invalid percentage provided for formatting', { percentage });
         return '0.0%'; // Fallback to zero percentage
     }
 
     try {
         return `${percentage.toFixed(1)}%`;
     } catch (error) {
-        console.error('formatPercentage: Formatting error:', error);
+        logger.error('Percentage formatting error', error);
         return `${percentage}%`; // Fallback without decimal precision
     }
 }
@@ -226,16 +253,24 @@ export function formatPercentage(percentage: number): string {
  */
 export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardData>): BranchSalesData[] {
     if (!cardsData || typeof cardsData !== 'object') {
-        console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
+        logger.warn('Invalid cardsData provided for transformation');
         return [];
     }
 
+    // Check cache first for performance optimization
+    const cacheKey = createCacheKey(cardsData);
+    const cachedResult = transformationCache.get(cacheKey);
+    if (cachedResult) {
+        logger.debug('Using cached transformation result', { cacheKey, branchCount: cachedResult.length });
+        return cachedResult;
+    }
+
     try {
-        return Object.entries(cardsData)
+        const result = Object.entries(cardsData)
             .map(([branchName, apiData]: [string, ApiCardData]) => {
                 // Validate required data structure
                 if (!apiData || typeof apiData !== 'object') {
-                    console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
+                    logger.warn('Invalid branch data structure', { branchName });
                     return null;
                 }
 
@@ -243,10 +278,11 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
 
                 // Validate required fields
                 if (store_id === undefined || store_id === null || !closed_ticket || !percentage) {
-                    console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
+                    logger.warn('Missing required fields for branch transformation', {
+                        branchName,
                         store_id,
-                        closed_ticket,
-                        percentage,
+                        hasClosed: !!closed_ticket,
+                        hasPercentage: !!percentage,
                     });
                     return null;
                 }
@@ -255,15 +291,13 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
                 const openAccountsAmount = 0; // Always 0 for monthly view
                 const closedAccountsAmount = closed_ticket.money || 0;
 
-                // Debug log for store_id
-                if (process.env.NODE_ENV === 'development') {
-                    console.log('🔍 MonthlyBranch transforming store_id:', {
-                        store_id,
-                        type: typeof store_id,
-                        toString: store_id.toString(),
-                        branchName,
-                    });
-                }
+                // Debug log for store_id transformation
+                logger.debug('Transforming store_id for branch', {
+                    store_id,
+                    type: typeof store_id,
+                    toString: store_id.toString(),
+                    branchName,
+                });
 
                 const transformedBranch: BranchSalesData = {
                     id: store_id.toString(),
@@ -286,8 +320,22 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
             })
             .filter((branch): branch is BranchSalesData => branch !== null)
             .sort((a, b) => b.totalSales - a.totalSales); // Sort by total sales descending
+
+        // Cache the result for future use
+        transformationCache.set(cacheKey, result);
+
+        // Limit cache size to prevent memory leaks (keep last 10 results)
+        if (transformationCache.size > 10) {
+            const firstKey = transformationCache.keys().next().value;
+            if (firstKey !== undefined) {
+                transformationCache.delete(firstKey);
+            }
+        }
+
+        logger.debug('Cached new transformation result', { cacheKey, branchCount: result.length });
+        return result;
     } catch (error) {
-        console.error('transformApiCardsToBranchData: Transformation error:', error);
+        logger.error('API cards transformation error', error);
         return [];
     }
 }

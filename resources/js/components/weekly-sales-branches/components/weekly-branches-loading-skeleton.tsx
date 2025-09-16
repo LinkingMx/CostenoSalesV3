@@ -2,16 +2,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { WeeklySalesBranchesHeader } from './weekly-sales-branches-header';
 
 /**
- * Loading skeleton component for weekly branches data.
+ * Loading skeleton component for weekly branches data with filters.
  * Displays placeholder content while API data is being fetched.
  *
  * @component
- * @returns {JSX.Element} Loading skeleton matching the structure of WeeklySalesBranches
+ * @returns {JSX.Element} Loading skeleton matching the structure of WeeklySalesBranches with filters
  *
  * @description This skeleton:
  * - Shows the same header as the actual component
+ * - Includes filter controls skeleton (region and brand dropdowns)
+ * - Shows summary card skeleton with minimalist design
  * - Displays shimmer placeholders for ~6 branches (visible area)
- * - Matches the exact spacing and structure of BranchCollapsibleItem
+ * - Matches the exact spacing and structure of filtered component
  * - Uses consistent styling with other loading states in the app
  *
  * @example
@@ -29,6 +31,35 @@ export function WeeklyBranchesLoadingSkeleton() {
             <CardContent className="px-4 py-3">
                 {/* Header section - same as actual component */}
                 <WeeklySalesBranchesHeader />
+
+                {/* Filters Section Skeleton */}
+                <div className="flex items-center gap-2 px-4 py-3">
+                    {/* Filter icon */}
+                    <div className="h-4 w-4 rounded bg-muted animate-pulse" />
+                    {/* Region filter dropdown skeleton */}
+                    <div className="h-9 w-[160px] rounded-md bg-muted animate-pulse" />
+                    {/* Brand filter dropdown skeleton */}
+                    <div className="h-9 w-[160px] rounded-md bg-muted animate-pulse" />
+                </div>
+
+                {/* Summary Card Skeleton - Minimalist Design */}
+                <div className="bg-card border border-border px-4 py-3 mb-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                        {/* Total general skeleton */}
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-muted animate-pulse" />
+                            <div>
+                                <div className="h-4 w-16 rounded mb-1 bg-muted animate-pulse" />
+                                <div className="h-6 w-24 rounded bg-muted animate-pulse" />
+                            </div>
+                        </div>
+                        {/* Sucursales counter skeleton */}
+                        <div className="text-right">
+                            <div className="h-4 w-16 rounded mb-1 bg-muted animate-pulse" />
+                            <div className="h-5 w-8 rounded bg-muted animate-pulse" />
+                        </div>
+                    </div>
+                </div>
 
                 {/* Loading skeleton branches */}
                 <div className="space-y-2" role="region" aria-label="Cargando datos de sucursales semanales">

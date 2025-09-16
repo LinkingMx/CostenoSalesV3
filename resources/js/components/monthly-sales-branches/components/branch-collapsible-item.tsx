@@ -1,19 +1,86 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useDateRange } from '@/contexts/date-range-context';
+import { useDashboardState } from '@/hooks/use-dashboard-state';
 import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
-import { ChevronDown, TicketCheck, TicketMinus, TicketPercent } from 'lucide-react';
+import { ChevronDown, TicketCheck, TicketPercent } from 'lucide-react';
 import * as React from 'react';
+import { logger } from '../lib/logger';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
 
+/**
+ * Branch Collapsible Item Component (Monthly Version)
+ *
+ * Key differences from weekly version:
+ * - NO "Abiertas" (open accounts) card shown (always 0 for monthly)
+ * - Only shows "Cerradas" (closed accounts) card
+ * - isCurrentMonth parameter used but open accounts never shown
+ * - Same structure otherwise
+ */
 export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const isPositiveGrowth = branch.percentage > 0;
 
+    // Access date range from context and dashboard state management
+    const { dateRange } = useDateRange();
+    const { originalDateRange, setOriginalDateRange } = useDashboardState();
+
     const handleViewDetails = () => {
-        router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+        try {
+            // Debug logging with proper logger
+            logger.debug('Navigating to branch details', {
+                id: branch.id,
+                idType: typeof branch.id,
+                name: branch.name,
+                location: branch.location,
+                dateRange: dateRange
+                    ? {
+                          from: dateRange.from?.toISOString(),
+                          to: dateRange.to?.toISOString(),
+                      }
+                    : null,
+            });
+
+            // Branch.id is already a string based on type definition
+            const branchId = branch.id;
+
+            // Only set originalDateRange if it doesn't exist yet
+            // This preserves the user's original selection from the dashboard
+            if (!originalDateRange && dateRange) {
+                setOriginalDateRange(dateRange);
+                logger.debug('Setting originalDateRange for first navigation', {
+                    from: dateRange.from?.toISOString(),
+                    to: dateRange.to?.toISOString(),
+                });
+            } else if (originalDateRange) {
+                logger.debug('Preserving existing originalDateRange', {
+                    from: originalDateRange.from?.toISOString(),
+                    to: originalDateRange.to?.toISOString(),
+                });
+            }
+
+            // Navigate with iOS transition - NO preserveState to avoid refresh issues
+            router.visit(`/branch/${branchId}`, {
+                data: {
+                    name: branch.name,
+                    region: branch.location || '',
+                    dateRange: dateRange
+                        ? {
+                              from: dateRange.from?.toISOString(),
+                              to: dateRange.to?.toISOString(),
+                          }
+                        : undefined,
+                },
+                // Removed preserveState and preserveScroll for clean iOS transitions
+            });
+        } catch (error) {
+            logger.error('Error navigating to branch details', error);
+            // Fallback to basic navigation
+            router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+        }
     };
 
     return (
@@ -26,7 +93,7 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
             )}
         >
             <CollapsibleTrigger className="group w-full">
-                {/* Container matching SalesMonthCard exact dimensions */}
+                {/* Container matching SalesDayCard exact dimensions */}
                 <div className="flex items-center justify-between px-3 py-3 transition-all duration-200">
                     {/* Main section - Branch info with single row layout */}
                     <div className="flex min-w-0 flex-1 items-center justify-between">
@@ -36,7 +103,9 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
                                 {branch.avatar}
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-left text-sm leading-tight font-medium text-foreground">{branch.name}</span>
+                                <span className="text-left text-sm leading-tight font-medium text-foreground" title={branch.name}>
+                                    {branch.name.length > 15 ? `${branch.name.substring(0, 15)}...` : branch.name}
+                                </span>
                             </div>
                         </div>
 
@@ -73,24 +142,12 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
                     <div className="space-y-2 rounded-lg bg-muted p-2">
                         {/* Sales Metrics - Individual Cards - Mobile optimized */}
                         <div className="space-y-2">
-                            {/* Abiertas Card */}
-                            <div className="rounded-lg border border-border bg-card p-3 transition-all duration-150 hover:border-border hover:shadow-sm">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                                            <TicketMinus className="h-4 w-4" />
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-medium text-foreground">Cuentas Abiertas</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-sm font-semibold text-foreground">{formatCurrency(branch.openAccounts)}</div>
-                                    </div>
-                                </div>
-                            </div>
+                            {/* 
+                NO Abiertas Card for monthly view - openAccounts is always 0
+                This is the key difference from weekly version
+              */}
 
-                            {/* Cerradas Card */}
+                            {/* Cerradas Card - Only card shown for monthly */}
                             <div className="rounded-lg border border-border bg-card p-3 transition-all duration-150 hover:border-border hover:shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
@@ -98,7 +155,7 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
                                             <TicketCheck className="h-4 w-4" />
                                         </div>
                                         <div>
-                                            <div className="text-sm font-medium text-foreground">Cuentas Cerradas</div>
+                                            <div className="text-sm font-medium text-foreground">Cerradas</div>
                                         </div>
                                     </div>
                                     <div className="text-right">

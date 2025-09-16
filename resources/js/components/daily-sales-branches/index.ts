@@ -38,7 +38,6 @@ export { useDailyBranchesSimple } from './hooks/use-daily-branches-simple';
 // TypeScript interface exports for external usage
 export type { BranchCollapsibleItemProps, BranchSalesData, DailySalesBranchesProps } from './types';
 export type {
-    BranchFilters,
     FilterOptions,
     FilteredSummary,
     UseBranchFiltersReturn

@@ -50,8 +50,8 @@ export function MonthlySalesComparison({ selectedDateRange }: MonthlySalesCompar
         return null;
     }
 
-    // Show loading skeleton while data is being fetched (matching pattern from weekly components)
-    if (isLoading && monthlySummaryData.length === 0) {
+    // Show loading skeleton while data is being fetched (always show skeleton when loading)
+    if (isLoading) {
         return <MonthlySalesComparisonSkeleton />;
     }
 

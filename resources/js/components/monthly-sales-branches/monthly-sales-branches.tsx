@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { DateRangeProvider } from '@/contexts/date-range-context';
-import { MonthlyBranchCollapsibleItem } from './components/monthly-branch-collapsible-item';
+import { BranchCollapsibleItem } from './components/branch-collapsible-item';
 import { MonthlyBranchesError } from './components/monthly-branches-error';
 import { MonthlyBranchesLoadingSkeleton } from './components/monthly-branches-loading-skeleton';
 import { MonthlySalesBranchesHeader } from './components/monthly-sales-branches-header';
@@ -83,7 +83,7 @@ export function MonthlySalesBranches({ selectedDateRange }: MonthlySalesBranches
                 <DateRangeProvider dateRange={selectedDateRange}>
                     <div className="space-y-2" role="region" aria-label="Detalles de ventas por sucursal mensuales">
                         {branchesData.map((branch) => (
-                            <MonthlyBranchCollapsibleItem key={branch.id} branch={branch} isCurrentMonth={isCurrentMonth} />
+                            <BranchCollapsibleItem key={branch.id} branch={branch} isCurrentMonth={isCurrentMonth} />
                         ))}
                     </div>
                 </DateRangeProvider>

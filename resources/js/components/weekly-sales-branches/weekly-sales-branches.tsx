@@ -1,9 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { DateRangeProvider } from '@/contexts/date-range-context';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
+import { BranchFilters } from './components/branch-filters';
+import { BranchSummaryCard } from './components/branch-summary-card';
 import { WeeklyBranchesError } from './components/weekly-branches-error';
 import { WeeklyBranchesLoadingSkeleton } from './components/weekly-branches-loading-skeleton';
 import { WeeklySalesBranchesHeader } from './components/weekly-sales-branches-header';
+import { useBranchFilters } from './hooks/use-branch-filters';
 import { useWeeklyBranches } from './hooks/use-weekly-branches';
 import type { WeeklySalesBranchesProps } from './types';
 
@@ -44,6 +47,16 @@ export function WeeklySalesBranches({ selectedDateRange }: WeeklySalesBranchesPr
     // Use custom hook for API integration and state management
     const { branchesData, isLoading, error, isValidCompleteWeek, isCurrentWeek, refetch } = useWeeklyBranches(selectedDateRange);
 
+    // Use filtering hook for client-side filtering
+    const {
+        filters,
+        setFilters,
+        filteredBranches,
+        filterOptions,
+        summary,
+        hasActiveFilters
+    } = useBranchFilters(branchesData);
+
     // Only render if exactly one week is selected (Monday to Sunday)
     if (!isValidCompleteWeek) {
         return null;
@@ -77,10 +90,24 @@ export function WeeklySalesBranches({ selectedDateRange }: WeeklySalesBranchesPr
                 {/* Header section */}
                 <WeeklySalesBranchesHeader />
 
-                {/* Branch collapsibles with real API data */}
+                {/* Filter controls */}
+                <BranchFilters
+                    filters={filters}
+                    filterOptions={filterOptions}
+                    onFiltersChange={setFilters}
+                    disabled={isLoading}
+                />
+
+                {/* Summary card with filtered metrics */}
+                <BranchSummaryCard
+                    summary={summary}
+                    hasActiveFilters={hasActiveFilters}
+                />
+
+                {/* Branch collapsibles with filtered data */}
                 <DateRangeProvider dateRange={selectedDateRange}>
                     <div className="space-y-2" role="region" aria-label="Detalles de ventas por sucursal semanales">
-                        {branchesData.map((branch) => (
+                        {filteredBranches.map((branch) => (
                             <BranchCollapsibleItem key={branch.id} branch={branch} isCurrentWeek={isCurrentWeek} />
                         ))}
                     </div>

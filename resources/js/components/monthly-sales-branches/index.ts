@@ -1,4 +1,4 @@
-export { MonthlyBranchCollapsibleItem } from './components/monthly-branch-collapsible-item';
+export { BranchCollapsibleItem } from './components/branch-collapsible-item';
 export { MonthlyBranchesError } from './components/monthly-branches-error';
 export { MonthlyBranchesLoadingSkeleton } from './components/monthly-branches-loading-skeleton';
 export { useMonthlyBranches } from './hooks/use-monthly-branches';
