@@ -1,9 +1,10 @@
 import { cn } from '@/lib/utils';
-import { Percent, TicketCheck, TicketMinus, Users } from 'lucide-react';
+import { Percent, TicketCheck, TicketMinus, TicketPercent, Users } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { calculatePercentage, formatCurrency } from '../utils';
 
 interface SalesBreakdownCardProps {
-    type: 'open' | 'closed' | 'discounts' | 'diners';
+    type: 'open' | 'closed' | 'discounts' | 'diners' | 'totalDiners';
     amount: number;
     totalAmount?: number;
     isLoading?: boolean;
@@ -30,12 +31,24 @@ export function SalesBreakdownCard({ type, amount, totalAmount, isLoading = fals
             icon: Percent,
         },
         diners: {
-            label: 'Ticket Promedio',
+            label: '',
+            icon: TicketPercent,
+        },
+        totalDiners: {
+            label: '',
             icon: Users,
         },
     };
 
     const { label, icon: Icon } = config[type];
+
+    // Función para formatear números (para comensales)
+    const formatNumber = (num: number): string => {
+        return new Intl.NumberFormat('es-MX').format(num);
+    };
+
+    // Determinar si mostrar como currency o número
+    const displayValue = type === 'totalDiners' ? formatNumber(amount) : formatCurrency(amount);
 
     if (isLoading) {
         return (
@@ -58,15 +71,30 @@ export function SalesBreakdownCard({ type, amount, totalAmount, isLoading = fals
         <div className="rounded-lg border border-border bg-card p-3 transition-all duration-150 hover:border-border hover:shadow-sm">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Icon className="h-4 w-4" />
-                    </div>
+                    {type === 'diners' || type === 'totalDiners' ? (
+                        <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground cursor-pointer">
+                                        <Icon className="h-4 w-4" />
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-popover border border-border text-popover-foreground">
+                                    <p className="text-sm">{type === 'diners' ? 'Ticket Promedio' : 'Comensales'}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                            <Icon className="h-4 w-4" />
+                        </div>
+                    )}
                     <div>
-                        <div className="text-sm font-medium text-foreground">{label}</div>
+                        {label && <div className="text-sm font-medium text-foreground">{label}</div>}
                     </div>
                 </div>
                 <div className="text-right">
-                    <div className="text-sm font-semibold text-foreground">{formatCurrency(amount)}</div>
+                    <div className="text-sm font-semibold text-foreground">{displayValue}</div>
                     {showPercentage && (
                         <div
                             className={cn(

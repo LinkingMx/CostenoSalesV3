@@ -9,11 +9,19 @@ import type { TotalSalesData } from './types';
  * Transform StoreData to TotalSalesData format
  */
 export function transformToTotalSalesData(data: StoreData): TotalSalesData {
-    const openMoney = data.ticket?.open_money || 0;
-    const closedMoney = data.ticket?.closed_money || 0;
+    const openMoneyBeforeIVA = data.ticket?.open_money || 0;
+    const closedMoneyBeforeIVA = data.ticket?.closed_money || 0;
+
+    // Agregar 16% de IVA a los valores (multiplicar por 1.16)
+    const openMoney = openMoneyBeforeIVA * 1.16;
+    const closedMoney = closedMoneyBeforeIVA * 1.16;
     const totalSales = openMoney + closedMoney;
+
     const discounts = data.discounts || 0;
-    const diners = data.diners || 0; // Este será el ticket promedio
+    const totalDiners = data.total_diners || 0; // Total de comensales
+
+    // Calcular ticket promedio: Venta Total / Comensales
+    const diners = totalDiners > 0 ? totalSales / totalDiners : 0;
 
     return {
         openMoney,
@@ -21,6 +29,7 @@ export function transformToTotalSalesData(data: StoreData): TotalSalesData {
         totalSales,
         discounts,
         diners,
+        totalDiners,
     };
 }
 

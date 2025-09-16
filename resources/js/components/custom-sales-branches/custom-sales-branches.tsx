@@ -1,9 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { DateRangeProvider } from '@/contexts/date-range-context';
+import { useCustomBranchesContext } from '@/contexts/custom-branches-context';
+import * as React from 'react';
 import { BranchCustomCollapsibleItem } from './components/branch-custom-collapsible-item';
 import { CustomSalesBranchesHeader } from './components/custom-sales-branches-header';
 import { CustomSalesBranchesSkeleton } from './components/custom-sales-branches-skeleton';
-import { useCustomBranches } from './hooks/use-custom-branches';
 import type { CustomSalesBranchesProps } from './types';
 
 /**
@@ -45,9 +46,17 @@ import type { CustomSalesBranchesProps } from './types';
  * />
  * ```
  */
-export function CustomSalesBranches({ selectedDateRange }: CustomSalesBranchesProps) {
-    // Use custom hook for API integration and state management
-    const { branchesData, isLoading, error, isValidCustomRange, refetch } = useCustomBranches(selectedDateRange);
+// Performance: Memoized header component to prevent unnecessary re-renders
+const MemoizedCustomSalesBranchesHeader = React.memo(CustomSalesBranchesHeader);
+MemoizedCustomSalesBranchesHeader.displayName = 'MemoizedCustomSalesBranchesHeader';
+
+// Performance: Memoized collapsible item component
+const MemoizedBranchCustomCollapsibleItem = React.memo(BranchCustomCollapsibleItem);
+MemoizedBranchCustomCollapsibleItem.displayName = 'MemoizedBranchCustomCollapsibleItem';
+
+export const CustomSalesBranches = React.memo<CustomSalesBranchesProps>(({ selectedDateRange }) => {
+    // Use context for shared state management and avoid duplicate API calls
+    const { branchesData, isLoading, error, isValidCustomRange, refetch } = useCustomBranchesContext();
 
     // Only render if custom range is selected (not single day, complete week, or complete month)
     if (!isValidCustomRange) {
@@ -64,7 +73,7 @@ export function CustomSalesBranches({ selectedDateRange }: CustomSalesBranchesPr
         return (
             <Card className="w-full">
                 <CardContent className="px-4 py-3">
-                    <CustomSalesBranchesHeader />
+                    <MemoizedCustomSalesBranchesHeader />
                     <div className="flex flex-col items-center justify-center space-y-2 py-8">
                         <div className="text-sm text-destructive">Error al cargar los datos</div>
                         <button onClick={refetch} className="text-xs text-muted-foreground underline hover:text-foreground">
@@ -81,7 +90,7 @@ export function CustomSalesBranches({ selectedDateRange }: CustomSalesBranchesPr
         return (
             <Card className="w-full">
                 <CardContent className="px-4 py-3">
-                    <CustomSalesBranchesHeader />
+                    <MemoizedCustomSalesBranchesHeader />
                     <div className="py-8 text-center text-muted-foreground">No hay datos de sucursales disponibles para este rango.</div>
                 </CardContent>
             </Card>
@@ -92,19 +101,21 @@ export function CustomSalesBranches({ selectedDateRange }: CustomSalesBranchesPr
         <Card className="w-full">
             <CardContent className="px-4 py-3">
                 {/* Header section */}
-                <CustomSalesBranchesHeader />
+                <MemoizedCustomSalesBranchesHeader />
 
                 {/* Branch collapsibles with real API data */}
                 <DateRangeProvider dateRange={selectedDateRange}>
                     <div className="space-y-2" role="region" aria-label="Detalles de ventas por sucursal rango personalizado">
                         {branchesData.map((branch) => (
-                            <BranchCustomCollapsibleItem key={branch.id} branch={branch} />
+                            <MemoizedBranchCustomCollapsibleItem key={branch.id} branch={branch} />
                         ))}
                     </div>
                 </DateRangeProvider>
             </CardContent>
         </Card>
     );
-}
+});
+
+CustomSalesBranches.displayName = 'CustomSalesBranches';
 
 export default CustomSalesBranches;

@@ -56,7 +56,11 @@ export function BranchTotalSales({ data, isLoading = false, error = null, classN
                                 <SalesBreakdownCard type="open" amount={0} totalAmount={0} isLoading={true} />
                                 <SalesBreakdownCard type="closed" amount={0} totalAmount={0} isLoading={true} />
                                 <SalesBreakdownCard type="discounts" amount={0} totalAmount={0} isLoading={true} />
-                                <SalesBreakdownCard type="diners" amount={0} isLoading={true} />
+                                {/* Fila con 2 columnas para ticket promedio y comensales */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <SalesBreakdownCard type="diners" amount={0} isLoading={true} />
+                                    <SalesBreakdownCard type="totalDiners" amount={0} isLoading={true} />
+                                </div>
                             </div>
                         </>
                     ) : data && !error ? (
@@ -75,7 +79,11 @@ export function BranchTotalSales({ data, isLoading = false, error = null, classN
                                 <SalesBreakdownCard type="open" amount={data.openMoney} totalAmount={data.totalSales} isLoading={false} />
                                 <SalesBreakdownCard type="closed" amount={data.closedMoney} totalAmount={data.totalSales} isLoading={false} />
                                 <SalesBreakdownCard type="discounts" amount={data.discounts} totalAmount={data.totalSales} isLoading={false} />
-                                <SalesBreakdownCard type="diners" amount={data.diners} isLoading={false} />
+                                {/* Fila con 2 columnas para ticket promedio y comensales */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <SalesBreakdownCard type="diners" amount={data.diners} isLoading={false} />
+                                    <SalesBreakdownCard type="totalDiners" amount={data.totalDiners} isLoading={false} />
+                                </div>
                             </div>
                         </>
                     ) : !error ? (

@@ -7,7 +7,8 @@ export interface TotalSalesData {
     closedMoney: number; // Dinero en cuentas cerradas
     totalSales: number; // Total de ventas (open + closed)
     discounts: number; // Total de descuentos
-    diners: number; // Ticket promedio (usando diners del API)
+    diners: number; // Ticket promedio calculado (totalSales / totalDiners)
+    totalDiners: number; // Total de comensales
 }
 
 export interface BranchTotalSalesProps {

@@ -10,6 +10,7 @@ import { MonthlyErrorBoundary, MonthlySalesComparison } from '@/components/month
 import { WeeklyChartComparison } from '@/components/weekly-chart-comparison';
 import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
 import { WeeklyErrorBoundary, WeeklySalesComparison } from '@/components/weekly-sales-comparison';
+import { CustomBranchesProvider } from '@/contexts/custom-branches-context';
 import { DailyChartProvider } from '@/contexts/daily-chart-context';
 import { MonthlyChartProvider } from '@/contexts/monthly-chart-context';
 import { WeeklyChartProvider } from '@/contexts/weekly-chart-context';
@@ -182,7 +183,9 @@ function DashboardContent({ restoreDate }: DashboardProps = {}) {
 
             <CustomSalesComparison selectedDateRange={selectedDateRange} />
 
-            <CustomSalesBranches selectedDateRange={selectedDateRange} />
+            <CustomBranchesProvider selectedDateRange={selectedDateRange}>
+                <CustomSalesBranches selectedDateRange={selectedDateRange} />
+            </CustomBranchesProvider>
         </div>
     );
 }
