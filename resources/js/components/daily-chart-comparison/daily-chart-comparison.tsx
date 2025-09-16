@@ -8,54 +8,11 @@ import { DailyChartSkeleton } from './components/daily-chart-skeleton';
 import { DailyComparisonChart } from './components/daily-comparison-chart';
 import type { DailyChartComparisonProps, DailyChartData } from './types';
 import { convertApiDataToChartData, generateMockDailyChartData, validateDailyChartData } from './utils';
+import { logger } from './lib/logger';
 
-// Performance: Pre-memoized header component to prevent unnecessary re-renders
+// Performance: Memoized components using standard React.memo patterns
 const MemoizedDailyChartHeader = React.memo(DailyChartHeader);
-
-// Performance: Memoized chart component with deep comparison for chart data
-const MemoizedDailyComparisonChart = React.memo(DailyComparisonChart, (prevProps, nextProps) => {
-    // Custom comparison for better performance - only re-render if actual data changes
-    const prevData = prevProps.data;
-    const nextData = nextProps.data;
-
-    // Compare chart configuration props
-    if (prevProps.height !== nextProps.height || prevProps.showGrid !== nextProps.showGrid || prevProps.orientation !== nextProps.orientation) {
-        return false; // Props changed, need to re-render
-    }
-
-    // Deep comparison of chart data
-    if (prevData === nextData) return true; // Same reference, no change
-    if (!prevData || !nextData) return false; // One is null/undefined
-
-    // Compare selectedDay data
-    if (
-        prevData.selectedDay.date.getTime() !== nextData.selectedDay.date.getTime() ||
-        prevData.selectedDay.fullDayName !== nextData.selectedDay.fullDayName ||
-        prevData.selectedDay.amount !== nextData.selectedDay.amount
-    ) {
-        return false; // Selected day data changed
-    }
-
-    // Compare comparison data arrays
-    if (prevData.comparisonData.length !== nextData.comparisonData.length) return false;
-
-    for (let i = 0; i < prevData.comparisonData.length; i++) {
-        const prevPoint = prevData.comparisonData[i];
-        const nextPoint = nextData.comparisonData[i];
-
-        if (
-            prevPoint.period !== nextPoint.period ||
-            prevPoint.amount !== nextPoint.amount ||
-            prevPoint.color !== nextPoint.color ||
-            prevPoint.date.getTime() !== nextPoint.date.getTime() ||
-            prevPoint.isSelected !== nextPoint.isSelected
-        ) {
-            return false; // Comparison data changed
-        }
-    }
-
-    return true; // No changes detected
-});
+const MemoizedDailyComparisonChart = React.memo(DailyComparisonChart);
 
 /**
  * DailyChartComparison - Main component for displaying daily sales chart comparison.
@@ -107,42 +64,39 @@ export function DailyChartComparison({
     const { data: apiData, isLoading: actualIsLoading, error, refetch, isValidForDailyComponents: isValidSingleDay } = useDailyChartContext();
 
     // Enhanced loading state with minimum duration for better UX
-    const isLoading = useMinimumLoadingDuration(actualIsLoading, 3000);
+    const isLoading = useMinimumLoadingDuration(actualIsLoading, 1500);
 
-    // Get the selected date from context data
+    // Extract selected date with simplified dependency
     const selectedDate = React.useMemo(() => {
-        if (apiData?.days?.[0]?.date) {
-            // Use the first day's date from API data
-            return new Date(apiData.days[0].date + 'T00:00:00');
-        }
-        return new Date();
+        const firstDayDate = apiData?.days?.[0]?.date;
+        return firstDayDate ? new Date(firstDayDate + 'T00:00:00') : new Date();
     }, [apiData?.days]);
 
-    // Convert API data to chart format or use mock/provided data
+    // Process chart data with optimized memoization
     const displayData = React.useMemo((): DailyChartData | null => {
-        // If explicit chart data is provided, use it
+        // Priority 1: Use explicit chart data if provided
         if (chartData) {
             return chartData;
         }
 
-        // If using mock data or API failed, generate mock data
+        // Priority 2: Generate mock data when needed
         if (useMockData || (!apiData && !isLoading)) {
             return generateMockDailyChartData(selectedDate);
         }
 
-        // Convert API data to chart format
+        // Priority 3: Convert API data
         if (apiData && !apiData.hasError) {
             const converted = convertApiDataToChartData(apiData, selectedDate);
-            if (converted) {
-                // Validate the converted data in development
-                if (process.env.NODE_ENV === 'development') {
-                    const validation = validateDailyChartData(converted);
-                    if (!validation.isValid) {
-                        console.error('Daily chart data validation failed:', validation.errors);
-                    }
+
+            // Development validation (simplified)
+            if (converted && process.env.NODE_ENV === 'development') {
+                const validation = validateDailyChartData(converted);
+                if (!validation.isValid) {
+                    logger.error('Daily chart data validation failed:', validation.errors);
                 }
-                return converted;
             }
+
+            return converted;
         }
 
         return null;

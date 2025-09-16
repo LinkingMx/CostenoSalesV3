@@ -1,6 +1,7 @@
 import { useIsMobile } from '@/hooks/use-mobile';
 import * as React from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
 import type { DailyComparisonChartProps } from '../types';
 import { formatChartAmount, getDefaultDailyChartTheme } from '../utils';
 
@@ -11,10 +12,10 @@ import { formatChartAmount, getDefaultDailyChartTheme } from '../utils';
  * Only renders when actively hovering over a data point.
  *
  * @component
- * @param {any} props - Recharts tooltip props
+ * @param {TooltipContentProps<number, string>} props - Recharts tooltip props
  * @returns {JSX.Element | null} Custom tooltip component
  */
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label }: TooltipContentProps<number, string>) {
     // Only show tooltip when actively hovering over a data point
     if (!active || !payload || !payload.length || payload.length === 0) {
         return null;
@@ -99,28 +100,24 @@ export function DailyComparisonChart({
     const theme = getDefaultDailyChartTheme();
     const isMobile = useIsMobile();
 
-    // Memoize chart configuration for performance - with mobile optimizations
-    const chartConfig = React.useMemo(
-        () => ({
-            margin: isMobile
-                ? { top: 20, right: 35, left: 35, bottom: 25 } // Extra margins for mobile
-                : { top: 20, right: 30, left: 30, bottom: 20 }, // Standard margins for desktop
-            cornerRadius: 4,
-            maxBarSize: orientation === 'vertical' ? 80 : undefined,
-        }),
-        [orientation, isMobile],
-    );
+    // Optimized chart configuration memoization
+    const chartConfig = React.useMemo(() => ({
+        margin: isMobile
+            ? { top: 20, right: 35, left: 35, bottom: 25 }
+            : { top: 20, right: 30, left: 30, bottom: 20 },
+        cornerRadius: 4,
+        maxBarSize: orientation === 'vertical' ? 80 : undefined,
+    }), [orientation, isMobile]);
 
-    // Prepare chart data from comparison points
-    const chartData = React.useMemo(() => {
-        return data.comparisonData.map((point) => ({
+    // Streamlined chart data transformation
+    const chartData = React.useMemo(() =>
+        data.comparisonData.map((point) => ({
             period: point.period,
-            amount: Number(point.amount), // Ensure it's a number
+            amount: Number(point.amount),
             fill: point.color,
             date: point.date,
             isSelected: point.isSelected,
-        }));
-    }, [data.comparisonData]);
+        })), [data.comparisonData]);
 
     // Validate data before rendering
     if (!data?.comparisonData || data.comparisonData.length === 0) {
@@ -169,7 +166,7 @@ export function DailyComparisonChart({
 
                     {/* Custom tooltip with proper hover behavior */}
                     <Tooltip
-                        content={<CustomTooltip />}
+                        content={CustomTooltip}
                         cursor={{ stroke: theme.primaryColor, strokeWidth: 1, strokeDasharray: '3 3' }}
                         allowEscapeViewBox={{ x: false, y: false }}
                         wrapperStyle={{ outline: 'none' }}

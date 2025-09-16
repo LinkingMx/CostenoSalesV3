@@ -6,6 +6,7 @@
 import { apiPost } from '../api/client';
 import { API_ENDPOINTS } from '../api/endpoints';
 import { ApiError } from '../api/types';
+import { logger } from '../../components/daily-chart-comparison/lib/logger';
 import { cacheManager, generateCacheKey } from './cache';
 import { HoursChartApiResponse, HoursChartRequest, ProcessedChartData, ProcessedDayData } from './types';
 
@@ -105,7 +106,7 @@ export const fetchHoursChartData = async (date: string): Promise<ProcessedChartD
         // Prepare request
         const request: HoursChartRequest = { date };
 
-        console.log('🚀 FETCHING API DATA FOR DATE:', date, request);
+        logger.debug('🚀 FETCHING API DATA FOR DATE:', { date, request });
 
         // Make API call
         const response = await apiPost<HoursChartApiResponse>(API_ENDPOINTS.HOURS_CHART, request);
@@ -120,7 +121,7 @@ export const fetchHoursChartData = async (date: string): Promise<ProcessedChartD
     } catch (error) {
         const apiError = error as ApiError;
 
-        console.error('Failed to fetch hours chart data:', apiError);
+        logger.error('Failed to fetch hours chart data:', apiError);
 
         // Return error state
         return {
@@ -184,7 +185,7 @@ export const fetchWithRetry = async (date: string, maxRetries: number = 3, initi
                 delay *= 2; // Exponential backoff
 
                 if (process.env.NODE_ENV === 'development') {
-                    console.log(`Retry attempt ${attempt} for date: ${date}`);
+                    logger.debug(`Retry attempt ${attempt} for date: ${date}`);
                 }
             }
 
@@ -193,7 +194,7 @@ export const fetchWithRetry = async (date: string, maxRetries: number = 3, initi
             lastError = error as Error;
 
             if (attempt === maxRetries) {
-                console.error('All retry attempts failed:', lastError);
+                logger.error('All retry attempts failed:', lastError);
                 break;
             }
         }
