@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { router } from '@inertiajs/react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,10 @@ import { formatCurrency, formatPercentage } from '../utils';
 export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const isPositiveGrowth = branch.percentage > 0;
+
+  const handleViewDetails = () => {
+    router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+  };
 
   return (
     <Collapsible 
@@ -139,9 +144,10 @@ export function BranchCollapsibleItem({ branch }: BranchCollapsibleItemProps) {
               <div className="text-xs text-muted-foreground">
                 Total de tickets: {branch.totalTickets}
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
+                onClick={handleViewDetails}
                 className={cn(
                   "bg-primary text-primary-foreground border-primary text-xs px-2 py-1",
                   "transition-all duration-200 ease-out",

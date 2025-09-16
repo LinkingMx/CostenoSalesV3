@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\SessionController;
+use App\Http\Controllers\BranchDetailsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -12,6 +13,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    Route::get('branch/{id}', [BranchDetailsController::class, 'show'])->name('branch.details');
 });
 
 // API routes for PWA session management

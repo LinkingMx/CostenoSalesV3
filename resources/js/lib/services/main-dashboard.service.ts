@@ -116,9 +116,8 @@ const processBranchData = (
   // Generate avatar from first letter of branch name
   const avatar = branchName.charAt(0).toUpperCase();
 
-  // Extract location from branch name if present (e.g., "Animal (CDMX)" -> "CDMX")
-  const locationMatch = branchName.match(/\(([^)]+)\)/);
-  const location = locationMatch ? locationMatch[1] : '';
+  // Use region from API response directly
+  const location = branchData.region || '';
 
   return {
     id: branchData.store_id.toString(),

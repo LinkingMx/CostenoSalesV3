@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { router } from '@inertiajs/react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, TicketMinus, TicketCheck, TicketPercent } from 'lucide-react';
@@ -8,6 +9,10 @@ import { formatCurrency } from '../utils';
 
 export function BranchCustomCollapsibleItem({ branch }: BranchCustomCollapsibleItemProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const handleViewDetails = () => {
+    router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
+  };
 
   return (
     <Collapsible 
@@ -126,9 +131,10 @@ export function BranchCustomCollapsibleItem({ branch }: BranchCustomCollapsibleI
               <div className="text-xs text-muted-foreground">
                 Total de tickets: {branch.totalTickets}
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
+                onClick={handleViewDetails}
                 className={cn(
                   "bg-primary text-primary-foreground border-primary text-xs px-2 py-1",
                   "transition-all duration-200 ease-out",
