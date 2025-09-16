@@ -11,10 +11,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                         {item.onClick ? (
-                            <SidebarMenuButton
-                                onClick={item.onClick}
-                                tooltip={{ children: item.title }}
-                            >
+                            <SidebarMenuButton onClick={item.onClick} tooltip={{ children: item.title }}>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
                             </SidebarMenuButton>

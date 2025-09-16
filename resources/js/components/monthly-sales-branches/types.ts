@@ -45,16 +45,16 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @see {@link formatPercentage} for percentage display formatting
  */
 export interface BranchSalesData {
-  id: string;
-  name: string;
-  location?: string;
-  totalSales: number;
-  percentage: number;
-  openAccounts: number;
-  closedSales: number;
-  averageTicket: number;
-  totalTickets: number;
-  avatar: string;
+    id: string;
+    name: string;
+    location?: string;
+    totalSales: number;
+    percentage: number;
+    openAccounts: number;
+    closedSales: number;
+    averageTicket: number;
+    totalTickets: number;
+    avatar: string;
 }
 
 /**
@@ -83,7 +83,7 @@ export interface BranchSalesData {
  * @see {@link useMonthlyBranches} for API integration logic
  */
 export interface MonthlySalesBranchesProps {
-  selectedDateRange?: DateRange;
+    selectedDateRange?: DateRange;
 }
 
 /**
@@ -114,8 +114,8 @@ export interface MonthlySalesBranchesProps {
  * @see {@link MonthlySalesBranches} for parent component usage
  */
 export interface BranchCollapsibleItemProps {
-  branch: BranchSalesData;
-  isCurrentMonth: boolean;
+    branch: BranchSalesData;
+    isCurrentMonth: boolean;
 }
 
 /**
@@ -123,12 +123,12 @@ export interface BranchCollapsibleItemProps {
  * Provides state and methods for managing monthly branches data.
  */
 export interface UseMonthlyBranchesReturn {
-  branchesData: BranchSalesData[];
-  isLoading: boolean;
-  error: string | null;
-  isValidCompleteMonth: boolean;
-  isCurrentMonth: boolean;
-  refetch: () => void;
+    branchesData: BranchSalesData[];
+    isLoading: boolean;
+    error: string | null;
+    isValidCompleteMonth: boolean;
+    isCurrentMonth: boolean;
+    refetch: () => void;
 }
 
 /**
@@ -136,8 +136,8 @@ export interface UseMonthlyBranchesReturn {
  * Defines error display and retry functionality.
  */
 export interface MonthlyBranchesErrorProps {
-  error: string;
-  onRetry?: () => void;
+    error: string;
+    onRetry?: () => void;
 }
 
 /**
@@ -145,21 +145,21 @@ export interface MonthlyBranchesErrorProps {
  * Defines the raw data format returned by the API.
  */
 export interface ApiCardData {
-  store_id: number;
-  open_accounts: {
-    total: number;
-    money: number;
-  };
-  closed_ticket: {
-    total: number;
-    money: number;
-  };
-  last_sales: number;
-  average_ticket: number;
-  percentage: {
-    icon: string;
-    qty: number;
-  };
-  brand: string;
-  region: string;
+    store_id: number;
+    open_accounts: {
+        total: number;
+        money: number;
+    };
+    closed_ticket: {
+        total: number;
+        money: number;
+    };
+    last_sales: number;
+    average_ticket: number;
+    percentage: {
+        icon: string;
+        qty: number;
+    };
+    brand: string;
+    region: string;
 }

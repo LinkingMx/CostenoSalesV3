@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { TrendingUp } from 'lucide-react';
 import type { MonthlyChartHeaderProps } from '../types';
 
@@ -32,24 +31,24 @@ import type { MonthlyChartHeaderProps } from '../types';
  * ```
  */
 export function MonthlyChartHeader({
-  title = "Gráfica de ventas (Mensuales)",
-  subtitle = "Comparación diaria de 3 meses consecutivos"
+    title = 'Gráfica de ventas (Mensuales)',
+    subtitle = 'Comparación diaria de 3 meses consecutivos',
 }: MonthlyChartHeaderProps) {
-  return (
-    <div className="flex items-center gap-3 mb-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-        <TrendingUp className="h-4 w-4 text-primary-foreground" />
-      </div>
-      <div className="flex flex-col">
-        <h2 className="text-base font-semibold leading-none tracking-tight text-foreground">
-          {title} {/* Default: "Gráfica de ventas (Mensuales)" (Monthly Sales Chart) */}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {subtitle} {/* Default: "Mes filtrado + 2 meses anteriores" (Filtered month + 2 previous months) */}
-        </p>
-      </div>
-    </div>
-  ); // End MonthlyChartHeader
+    return (
+        <div className="mb-3 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <TrendingUp className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <div className="flex flex-col">
+                <h2 className="text-base leading-none font-semibold tracking-tight text-foreground">
+                    {title} {/* Default: "Gráfica de ventas (Mensuales)" (Monthly Sales Chart) */}
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                    {subtitle} {/* Default: "Mes filtrado + 2 meses anteriores" (Filtered month + 2 previous months) */}
+                </p>
+            </div>
+        </div>
+    ); // End MonthlyChartHeader
 }
 
 export default MonthlyChartHeader;

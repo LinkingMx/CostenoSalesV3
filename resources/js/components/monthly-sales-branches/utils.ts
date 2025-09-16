@@ -1,5 +1,5 @@
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { BranchSalesData, ApiCardData } from './types';
+import type { ApiCardData, BranchSalesData } from './types';
 
 /**
  * Determines if the selected date range contains today's date.
@@ -15,20 +15,20 @@ import type { BranchSalesData, ApiCardData } from './types';
  * ```
  */
 export function isCurrentMonth(dateRange?: DateRange): boolean {
-  if (!dateRange?.from || !dateRange?.to) {
-    return false;
-  }
+    if (!dateRange?.from || !dateRange?.to) {
+        return false;
+    }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize to start of day
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
 
-  const rangeStart = new Date(dateRange.from);
-  rangeStart.setHours(0, 0, 0, 0);
+    const rangeStart = new Date(dateRange.from);
+    rangeStart.setHours(0, 0, 0, 0);
 
-  const rangeEnd = new Date(dateRange.to);
-  rangeEnd.setHours(23, 59, 59, 999); // End of day
+    const rangeEnd = new Date(dateRange.to);
+    rangeEnd.setHours(23, 59, 59, 999); // End of day
 
-  return today >= rangeStart && today <= rangeEnd;
+    return today >= rangeStart && today <= rangeEnd;
 }
 
 /**
@@ -81,30 +81,30 @@ export function isCurrentMonth(dateRange?: DateRange): boolean {
  * ```
  */
 export function isExactMonthSelected(dateRange?: DateRange): boolean {
-  // Early return for missing or incomplete date ranges
-  if (!dateRange?.from || !dateRange?.to) {
-    return false;
-  }
+    // Early return for missing or incomplete date ranges
+    if (!dateRange?.from || !dateRange?.to) {
+        return false;
+    }
 
-  // Create normalized date objects to ignore time components
-  const fromDate = new Date(dateRange.from);
-  const toDate = new Date(dateRange.to);
+    // Create normalized date objects to ignore time components
+    const fromDate = new Date(dateRange.from);
+    const toDate = new Date(dateRange.to);
 
-  // Normalize to midnight (00:00:00.000) to remove time influence
-  fromDate.setHours(0, 0, 0, 0);
-  toDate.setHours(0, 0, 0, 0);
+    // Normalize to midnight (00:00:00.000) to remove time influence
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(0, 0, 0, 0);
 
-  // Check if from date is the first day of the month
-  if (fromDate.getDate() !== 1) {
-    return false;
-  }
+    // Check if from date is the first day of the month
+    if (fromDate.getDate() !== 1) {
+        return false;
+    }
 
-  // Get the last day of the same month
-  const lastDayOfMonth = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
-  lastDayOfMonth.setHours(0, 0, 0, 0);
+    // Get the last day of the same month
+    const lastDayOfMonth = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
+    lastDayOfMonth.setHours(0, 0, 0, 0);
 
-  // Check if to date is the last day of the same month
-  return toDate.getTime() === lastDayOfMonth.getTime();
+    // Check if to date is the last day of the same month
+    return toDate.getTime() === lastDayOfMonth.getTime();
 }
 
 /**
@@ -131,24 +131,24 @@ export function isExactMonthSelected(dateRange?: DateRange): boolean {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat} for Intl.NumberFormat documentation
  */
 export function formatCurrency(amount: number): string {
-  // Handle invalid or non-numeric inputs gracefully
-  if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
-    console.warn(`formatCurrency: Invalid amount provided: ${amount}`);
-    return '$0.00'; // Fallback to zero currency format
-  }
+    // Handle invalid or non-numeric inputs gracefully
+    if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
+        console.warn(`formatCurrency: Invalid amount provided: ${amount}`);
+        return '$0.00'; // Fallback to zero currency format
+    }
 
-  try {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      minimumFractionDigits: 2, // Always show 2 decimal places
-      maximumFractionDigits: 2, // Never exceed 2 decimal places
-      currencyDisplay: 'symbol' // Show only $ symbol, not MXN
-    }).format(amount);
-  } catch (error) {
-    console.error('formatCurrency: Formatting error:', error);
-    return `$${amount.toFixed(2)}`; // Fallback formatting
-  }
+    try {
+        return new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            minimumFractionDigits: 2, // Always show 2 decimal places
+            maximumFractionDigits: 2, // Never exceed 2 decimal places
+            currencyDisplay: 'symbol', // Show only $ symbol, not MXN
+        }).format(amount);
+    } catch (error) {
+        console.error('formatCurrency: Formatting error:', error);
+        return `$${amount.toFixed(2)}`; // Fallback formatting
+    }
 }
 
 /**
@@ -176,18 +176,18 @@ export function formatCurrency(amount: number): string {
  * ```
  */
 export function formatPercentage(percentage: number): string {
-  // Handle invalid or non-numeric inputs gracefully
-  if (typeof percentage !== 'number' || isNaN(percentage) || !isFinite(percentage)) {
-    console.warn(`formatPercentage: Invalid percentage provided: ${percentage}`);
-    return '0.0%'; // Fallback to zero percentage
-  }
+    // Handle invalid or non-numeric inputs gracefully
+    if (typeof percentage !== 'number' || isNaN(percentage) || !isFinite(percentage)) {
+        console.warn(`formatPercentage: Invalid percentage provided: ${percentage}`);
+        return '0.0%'; // Fallback to zero percentage
+    }
 
-  try {
-    return `${percentage.toFixed(1)}%`;
-  } catch (error) {
-    console.error('formatPercentage: Formatting error:', error);
-    return `${percentage}%`; // Fallback without decimal precision
-  }
+    try {
+        return `${percentage.toFixed(1)}%`;
+    } catch (error) {
+        console.error('formatPercentage: Formatting error:', error);
+        return `${percentage}%`; // Fallback without decimal precision
+    }
 }
 
 /**
@@ -225,78 +225,71 @@ export function formatPercentage(percentage: number): string {
  * ```
  */
 export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardData>): BranchSalesData[] {
-  if (!cardsData || typeof cardsData !== 'object') {
-    console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
-    return [];
-  }
+    if (!cardsData || typeof cardsData !== 'object') {
+        console.warn('transformApiCardsToBranchData: Invalid cardsData provided');
+        return [];
+    }
 
-  try {
-    return Object.entries(cardsData)
-      .map(([branchName, apiData]: [string, ApiCardData]) => {
-        // Validate required data structure
-        if (!apiData || typeof apiData !== 'object') {
-          console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
-          return null;
-        }
+    try {
+        return Object.entries(cardsData)
+            .map(([branchName, apiData]: [string, ApiCardData]) => {
+                // Validate required data structure
+                if (!apiData || typeof apiData !== 'object') {
+                    console.warn(`transformApiCardsToBranchData: Invalid branch data for ${branchName}`);
+                    return null;
+                }
 
-        const {
-          store_id,
-          closed_ticket,
-          percentage,
-          average_ticket,
-          brand,
-          region
-        } = apiData;
+                const { store_id, closed_ticket, percentage, average_ticket, brand, region } = apiData;
 
-        // Validate required fields
-        if (store_id === undefined || store_id === null || !closed_ticket || !percentage) {
-          console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
-            store_id,
-            closed_ticket,
-            percentage
-          });
-          return null;
-        }
+                // Validate required fields
+                if (store_id === undefined || store_id === null || !closed_ticket || !percentage) {
+                    console.warn(`transformApiCardsToBranchData: Missing required fields for ${branchName}`, {
+                        store_id,
+                        closed_ticket,
+                        percentage,
+                    });
+                    return null;
+                }
 
-        // For monthly: open accounts are always 0, total = closed only
-        const openAccountsAmount = 0; // Always 0 for monthly view
-        const closedAccountsAmount = closed_ticket.money || 0;
+                // For monthly: open accounts are always 0, total = closed only
+                const openAccountsAmount = 0; // Always 0 for monthly view
+                const closedAccountsAmount = closed_ticket.money || 0;
 
-        // Debug log for store_id
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔍 MonthlyBranch transforming store_id:', {
-            store_id,
-            type: typeof store_id,
-            toString: store_id.toString(),
-            branchName
-          });
-        }
+                // Debug log for store_id
+                if (process.env.NODE_ENV === 'development') {
+                    console.log('🔍 MonthlyBranch transforming store_id:', {
+                        store_id,
+                        type: typeof store_id,
+                        toString: store_id.toString(),
+                        branchName,
+                    });
+                }
 
-        const transformedBranch: BranchSalesData = {
-          id: store_id.toString(),
-          name: branchName,
-          totalSales: closedAccountsAmount, // Only closed sales for monthly
-          percentage: percentage.qty || 0,
-          openAccounts: openAccountsAmount, // Always 0 for monthly
-          closedSales: closedAccountsAmount,
-          averageTicket: average_ticket || 0,
-          totalTickets: closed_ticket.total || 0,
-          avatar: brand ? brand.charAt(0).toUpperCase() : branchName.charAt(0).toUpperCase()
-        };
+                const transformedBranch: BranchSalesData = {
+                    id: store_id.toString(),
+                    name: branchName,
+                    totalSales: closedAccountsAmount, // Only closed sales for monthly
+                    percentage: percentage.qty || 0,
+                    openAccounts: openAccountsAmount, // Always 0 for monthly
+                    closedSales: closedAccountsAmount,
+                    averageTicket: average_ticket || 0,
+                    totalTickets: closed_ticket.total || 0,
+                    avatar: brand ? brand.charAt(0).toUpperCase() : branchName.charAt(0).toUpperCase(),
+                };
 
-        // Add location if provided
-        if (region) {
-          transformedBranch.location = region;
-        }
+                // Add location if provided
+                if (region) {
+                    transformedBranch.location = region;
+                }
 
-        return transformedBranch;
-      })
-      .filter((branch): branch is BranchSalesData => branch !== null)
-      .sort((a, b) => b.totalSales - a.totalSales); // Sort by total sales descending
-  } catch (error) {
-    console.error('transformApiCardsToBranchData: Transformation error:', error);
-    return [];
-  }
+                return transformedBranch;
+            })
+            .filter((branch): branch is BranchSalesData => branch !== null)
+            .sort((a, b) => b.totalSales - a.totalSales); // Sort by total sales descending
+    } catch (error) {
+        console.error('transformApiCardsToBranchData: Transformation error:', error);
+        return [];
+    }
 }
 
 /**
@@ -333,52 +326,52 @@ export function transformApiCardsToBranchData(cardsData: Record<string, ApiCardD
  * @see {@link BranchSalesData} for interface structure
  */
 export const DUMMY_MONTHLY_BRANCHES_DATA: BranchSalesData[] = [
-  {
-    id: 'animal-calzada',
-    name: 'Animal (Calzada)',
-    location: 'AM-AF',
-    totalSales: 5780205.65,
-    percentage: 53.31, // Strong growth vs previous month
-    openAccounts: 0, // Always 0 for monthly
-    closedSales: 5780205.65,
-    averageTicket: 1034.03,
-    totalTickets: 1990,
-    avatar: 'A'
-  },
-  {
-    id: 'mochomos-tijuana',
-    name: 'Mochomos (Tijuana)',
-    location: 'AM-AF',
-    totalSales: 2433014.71,
-    percentage: 3.43, // Moderate growth
-    openAccounts: 0,
-    closedSales: 2433014.71,
-    averageTicket: 1125.35,
-    totalTickets: 966,
-    avatar: 'M'
-  },
-  {
-    id: 'palominos-plaza',
-    name: 'Palominos (Plaza)',
-    location: 'CDMX',
-    totalSales: 1850000.00,
-    percentage: -12.5, // Negative growth for testing
-    openAccounts: 0,
-    closedSales: 1850000.00,
-    averageTicket: 987.50,
-    totalTickets: 750,
-    avatar: 'P'
-  },
-  {
-    id: 'mercado-reforma',
-    name: 'Mercado Reforma',
-    location: '',
-    totalSales: 1200000.00,
-    percentage: 8.2, // Low growth scenario
-    openAccounts: 0,
-    closedSales: 1200000.00,
-    averageTicket: 654.32,
-    totalTickets: 450,
-    avatar: 'M'
-  }
+    {
+        id: 'animal-calzada',
+        name: 'Animal (Calzada)',
+        location: 'AM-AF',
+        totalSales: 5780205.65,
+        percentage: 53.31, // Strong growth vs previous month
+        openAccounts: 0, // Always 0 for monthly
+        closedSales: 5780205.65,
+        averageTicket: 1034.03,
+        totalTickets: 1990,
+        avatar: 'A',
+    },
+    {
+        id: 'mochomos-tijuana',
+        name: 'Mochomos (Tijuana)',
+        location: 'AM-AF',
+        totalSales: 2433014.71,
+        percentage: 3.43, // Moderate growth
+        openAccounts: 0,
+        closedSales: 2433014.71,
+        averageTicket: 1125.35,
+        totalTickets: 966,
+        avatar: 'M',
+    },
+    {
+        id: 'palominos-plaza',
+        name: 'Palominos (Plaza)',
+        location: 'CDMX',
+        totalSales: 1850000.0,
+        percentage: -12.5, // Negative growth for testing
+        openAccounts: 0,
+        closedSales: 1850000.0,
+        averageTicket: 987.5,
+        totalTickets: 750,
+        avatar: 'P',
+    },
+    {
+        id: 'mercado-reforma',
+        name: 'Mercado Reforma',
+        location: '',
+        totalSales: 1200000.0,
+        percentage: 8.2, // Low growth scenario
+        openAccounts: 0,
+        closedSales: 1200000.0,
+        averageTicket: 654.32,
+        totalTickets: 450,
+        avatar: 'M',
+    },
 ];

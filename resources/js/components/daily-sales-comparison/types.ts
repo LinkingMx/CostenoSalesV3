@@ -3,12 +3,12 @@ import type { DateRange } from '@/components/main-filter-calendar';
 /**
  * Represents sales data for a single day.
  * Contains the date and sales amount information.
- * 
+ *
  * @interface SalesDayData
  * @property {Date} date - The date for this sales record
  * @property {number} amount - Sales amount for this day
  * @property {boolean} isToday - Whether this date is today
- * 
+ *
  * @example
  * const salesData: SalesDayData = {
  *   date: new Date('2025-09-11'),
@@ -17,9 +17,9 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * };
  */
 export interface SalesDayData {
-  date: Date;
-  amount: number;
-  isToday: boolean;
+    date: Date;
+    amount: number;
+    isToday: boolean;
 }
 
 /**
@@ -39,59 +39,59 @@ export interface SalesDayData {
  * />
  */
 export interface DailySalesComparisonProps {
-  selectedDateRange: DateRange | undefined;
-  salesData?: SalesDayData[];
-  useMockData?: boolean;
+    selectedDateRange: DateRange | undefined;
+    salesData?: SalesDayData[];
+    useMockData?: boolean;
 }
 
 /**
  * Props for the SalesDayCard component.
  * Represents a single day's sales information in a card format.
- * 
+ *
  * @interface SalesDayCardProps
  * @property {SalesDayData} data - Sales data for this specific day
  * @property {boolean} [isHighlighted] - Whether this card should be visually highlighted
- * 
+ *
  * @example
- * <SalesDayCard 
+ * <SalesDayCard
  *   data={salesData}
  *   isHighlighted={data.isToday}
  * />
  */
 export interface SalesDayCardProps {
-  data: SalesDayData;
-  isHighlighted?: boolean;
+    data: SalesDayData;
+    isHighlighted?: boolean;
 }
 
 /**
  * Props for the SalesComparisonHeader component.
  * Contains the title and subtitle information for the comparison section.
- * 
+ *
  * @interface SalesComparisonHeaderProps
  * @property {string} [title] - Main title text
  * @property {string} [subtitle] - Subtitle description text
- * 
+ *
  * @example
- * <SalesComparisonHeader 
+ * <SalesComparisonHeader
  *   title="Análisis de ventas (Diarias)"
  *   subtitle="Día filtrado + 3 días anteriores"
  * />
  */
 export interface SalesComparisonHeaderProps {
-  title?: string;
-  subtitle?: string;
+    title?: string;
+    subtitle?: string;
 }
 
 /**
  * Validation result interface for runtime data validation.
  * Provides detailed feedback on data integrity and validation errors.
- * 
+ *
  * @interface ValidationResult
  * @property {boolean} isValid - Whether the data passed all validation checks
  * @property {string[]} errors - Array of validation error messages
  * @property {string[]} warnings - Array of non-critical validation warnings
  * @property {object} metadata - Additional validation metadata
- * 
+ *
  * @example
  * ```tsx
  * const result: ValidationResult = {
@@ -103,12 +103,12 @@ export interface SalesComparisonHeaderProps {
  * ```
  */
 export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  metadata: {
-    validatedAt: Date;
-    source: string;
-    itemCount?: number;
-  };
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+    metadata: {
+        validatedAt: Date;
+        source: string;
+        itemCount?: number;
+    };
 }

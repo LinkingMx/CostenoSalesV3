@@ -3,78 +3,75 @@
  * Single API call shared between daily-chart-comparison and daily-sales-comparison
  */
 
-import { useMemo } from 'react';
+import type { DateRange } from '@/components/main-filter-calendar';
 import { formatDateForApi } from '@/lib/services/hours-chart.service';
-import { useHoursChart, type UseHoursChartOptions } from './use-hours-chart';
 import type { ProcessedChartData } from '@/lib/services/types';
 import { isSingleDaySelected } from '@/lib/utils/date-validation';
-import type { DateRange } from '@/components/main-filter-calendar';
+import { useMemo } from 'react';
+import { useHoursChart, type UseHoursChartOptions } from './use-hours-chart';
 
 export interface UseSharedHoursChartOptions extends UseHoursChartOptions {
-  onApiStart?: () => void;
-  onApiComplete?: (success: boolean) => void;
+    onApiStart?: () => void;
+    onApiComplete?: (success: boolean) => void;
 }
 
 export interface UseSharedHoursChartReturn {
-  data: ProcessedChartData | null;
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-  clearCache: () => void;
-  isValidForDailyComponents: boolean;
+    data: ProcessedChartData | null;
+    isLoading: boolean;
+    error: string | null;
+    refetch: () => Promise<void>;
+    clearCache: () => void;
+    isValidForDailyComponents: boolean;
 }
 
 /**
  * Shared hook that makes a single API call for both daily components
  */
 export const useSharedHoursChart = (
-  selectedDateRange: DateRange | undefined,
-  options: UseSharedHoursChartOptions = {}
+    selectedDateRange: DateRange | undefined,
+    options: UseSharedHoursChartOptions = {},
 ): UseSharedHoursChartReturn => {
-  const { onApiStart, onApiComplete, ...hoursChartOptions } = options;
+    const { onApiStart, onApiComplete, ...hoursChartOptions } = options;
 
-  // Check if the date range is valid for daily components
-  const isValidForDailyComponents = useMemo(() => {
-    return isSingleDaySelected(selectedDateRange);
-  }, [selectedDateRange]);
+    // Check if the date range is valid for daily components
+    const isValidForDailyComponents = useMemo(() => {
+        return isSingleDaySelected(selectedDateRange);
+    }, [selectedDateRange]);
 
-  // Format date for API only if valid
-  const apiDateString = useMemo(() => {
-    if (!isValidForDailyComponents || !selectedDateRange?.from) {
-      return null;
-    }
-    return formatDateForApi(selectedDateRange.from);
-  }, [isValidForDailyComponents, selectedDateRange?.from]);
+    // Format date for API only if valid
+    const apiDateString = useMemo(() => {
+        if (!isValidForDailyComponents || !selectedDateRange?.from) {
+            return null;
+        }
+        return formatDateForApi(selectedDateRange.from);
+    }, [isValidForDailyComponents, selectedDateRange?.from]);
 
-  // Enhanced options with API tracking callbacks
-  const enhancedOptions = useMemo(() => ({
-    ...hoursChartOptions,
-    onApiStart,
-    onSuccess: (data: ProcessedChartData) => {
-      onApiComplete?.(true);
-      hoursChartOptions.onSuccess?.(data);
-    },
-    onError: (error: string) => {
-      onApiComplete?.(false);
-      hoursChartOptions.onError?.(error);
-    }
-  }), [hoursChartOptions, onApiStart, onApiComplete]);
+    // Enhanced options with API tracking callbacks
+    const enhancedOptions = useMemo(
+        () => ({
+            ...hoursChartOptions,
+            onApiStart,
+            onSuccess: (data: ProcessedChartData) => {
+                onApiComplete?.(true);
+                hoursChartOptions.onSuccess?.(data);
+            },
+            onError: (error: string) => {
+                onApiComplete?.(false);
+                hoursChartOptions.onError?.(error);
+            },
+        }),
+        [hoursChartOptions, onApiStart, onApiComplete],
+    );
 
-  // Use the existing useHoursChart hook
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-    clearCache
-  } = useHoursChart(apiDateString, enhancedOptions);
+    // Use the existing useHoursChart hook
+    const { data, isLoading, error, refetch, clearCache } = useHoursChart(apiDateString, enhancedOptions);
 
-  return {
-    data,
-    isLoading,
-    error,
-    refetch,
-    clearCache,
-    isValidForDailyComponents
-  };
+    return {
+        data,
+        isLoading,
+        error,
+        refetch,
+        clearCache,
+        isValidForDailyComponents,
+    };
 };

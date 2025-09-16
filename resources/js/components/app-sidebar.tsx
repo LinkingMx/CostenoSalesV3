@@ -2,12 +2,12 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { usePWA } from '@/hooks/use-pwa';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Smartphone } from 'lucide-react';
 import AppLogo from './app-logo';
-import { usePWA } from '@/hooks/use-pwa';
 
 const footerNavItems: NavItem[] = [
     {
@@ -31,14 +31,18 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
-        ...(isInstallable && !isInstalled ? [{
-            title: 'Instalar App',
-            href: '#',
-            icon: Smartphone,
-            onClick: async () => {
-                await install();
-            },
-        }] : []),
+        ...(isInstallable && !isInstalled
+            ? [
+                  {
+                      title: 'Instalar App',
+                      href: '#',
+                      icon: Smartphone,
+                      onClick: async () => {
+                          await install();
+                      },
+                  },
+              ]
+            : []),
     ];
     return (
         <Sidebar collapsible="icon" variant="inset">

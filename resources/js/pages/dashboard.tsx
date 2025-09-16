@@ -1,26 +1,26 @@
+import { CustomSalesBranches } from '@/components/custom-sales-branches';
+import { CustomSalesComparison } from '@/components/custom-sales-comparison';
+import { DailyChartComparison } from '@/components/daily-chart-comparison';
+import { DailySalesBranches } from '@/components/daily-sales-branches';
+import { DailySalesComparison } from '@/components/daily-sales-comparison';
+import { DashboardLoadingCoordinator } from '@/components/loading/dashboard-loading-coordinator';
+import { MainFilterCalendar, type DateRange } from '@/components/main-filter-calendar';
+import { MonthlyChartComparison } from '@/components/monthly-chart-comparison';
+import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
+import { MonthlyErrorBoundary, MonthlySalesComparison } from '@/components/monthly-sales-comparison';
+import { WeeklyChartComparison } from '@/components/weekly-chart-comparison';
+import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
+import { WeeklyErrorBoundary, WeeklySalesComparison } from '@/components/weekly-sales-comparison';
+import { ApiLoadingProvider } from '@/contexts/api-loading-context';
+import { DailyChartProvider } from '@/contexts/daily-chart-context';
+import { MonthlyChartProvider } from '@/contexts/monthly-chart-context';
+import { WeeklyChartProvider } from '@/contexts/weekly-chart-context';
+import { useDashboardState } from '@/hooks/use-dashboard-state';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { MainFilterCalendar, type DateRange } from '@/components/main-filter-calendar';
-import { DailySalesComparison } from '@/components/daily-sales-comparison';
-import { DailyChartComparison } from '@/components/daily-chart-comparison';
-import { WeeklySalesComparison, WeeklyErrorBoundary } from '@/components/weekly-sales-comparison';
-import { WeeklyChartComparison } from '@/components/weekly-chart-comparison';
-import { MonthlySalesComparison, MonthlyErrorBoundary } from '@/components/monthly-sales-comparison';
-import { MonthlyChartComparison } from '@/components/monthly-chart-comparison';
-import { CustomSalesComparison } from '@/components/custom-sales-comparison';
-import { CustomSalesBranches } from '@/components/custom-sales-branches';
-import { DailySalesBranches } from '@/components/daily-sales-branches';
-import { WeeklySalesBranches } from '@/components/weekly-sales-branches';
-import { MonthlySalesBranches } from '@/components/monthly-sales-branches';
-import React, { useState, useEffect, useRef } from 'react';
-import { DailyChartProvider } from '@/contexts/daily-chart-context';
-import { WeeklyChartProvider } from '@/contexts/weekly-chart-context';
-import { MonthlyChartProvider } from '@/contexts/monthly-chart-context';
-import { ApiLoadingProvider, useApiLoadingContext } from '@/contexts/api-loading-context';
-import { DashboardLoadingCoordinator } from '@/components/loading/dashboard-loading-coordinator';
-import { useDashboardState } from '@/hooks/use-dashboard-state';
+import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -51,7 +51,7 @@ function DashboardContent({ restoreDate }: DashboardProps = {}) {
             if (restoreDate) {
                 const restoredRange: DateRange = {
                     from: new Date(restoreDate.from),
-                    to: new Date(restoreDate.to)
+                    to: new Date(restoreDate.to),
                 };
 
                 // Validate restored dates
@@ -67,9 +67,13 @@ function DashboardContent({ restoreDate }: DashboardProps = {}) {
             // Priority 2: Use dashboard state if no restore date and no current selection
             if (currentDateRange && !selectedDateRange) {
                 // Validate the date range before setting it
-                const isValidRange = currentDateRange.from && currentDateRange.to &&
-                    currentDateRange.from instanceof Date && currentDateRange.to instanceof Date &&
-                    !isNaN(currentDateRange.from.getTime()) && !isNaN(currentDateRange.to.getTime());
+                const isValidRange =
+                    currentDateRange.from &&
+                    currentDateRange.to &&
+                    currentDateRange.from instanceof Date &&
+                    currentDateRange.to instanceof Date &&
+                    !isNaN(currentDateRange.from.getTime()) &&
+                    !isNaN(currentDateRange.to.getTime());
 
                 if (isValidRange) {
                     setSelectedDateRange(currentDateRange);
@@ -90,71 +94,41 @@ function DashboardContent({ restoreDate }: DashboardProps = {}) {
     };
 
     return (
-        <DashboardLoadingCoordinator
-            dateRange={selectedDateRange}
-            skipInitialLoading={!!restoreDate}
-        >
-                    <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl bg-background p-4">
-                        <MainFilterCalendar
-                            value={selectedDateRange}
-                            onChange={handleDateChange}
-                        />
+        <DashboardLoadingCoordinator dateRange={selectedDateRange} skipInitialLoading={!!restoreDate}>
+            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl bg-background p-4">
+                <MainFilterCalendar value={selectedDateRange} onChange={handleDateChange} />
 
-                        <DailyChartProvider selectedDateRange={selectedDateRange}>
-                            <DailySalesComparison />
-                            <DailyChartComparison />
-                        </DailyChartProvider>
+                <DailyChartProvider selectedDateRange={selectedDateRange}>
+                    <DailySalesComparison />
+                    <DailyChartComparison />
+                </DailyChartProvider>
 
-                        <WeeklyChartProvider
-                            selectedDateRange={selectedDateRange}
-                            skipLoading={!!restoreDate}
-                        >
-                            <WeeklyErrorBoundary>
-                                <WeeklySalesComparison
-                                    selectedDateRange={selectedDateRange}
-                                />
-                            </WeeklyErrorBoundary>
+                <WeeklyChartProvider selectedDateRange={selectedDateRange} skipLoading={!!restoreDate}>
+                    <WeeklyErrorBoundary>
+                        <WeeklySalesComparison selectedDateRange={selectedDateRange} />
+                    </WeeklyErrorBoundary>
 
-                            <WeeklyChartComparison
-                                selectedDateRange={selectedDateRange}
-                            />
+                    <WeeklyChartComparison selectedDateRange={selectedDateRange} />
 
-                            <WeeklySalesBranches
-                                selectedDateRange={selectedDateRange}
-                            />
-                        </WeeklyChartProvider>
+                    <WeeklySalesBranches selectedDateRange={selectedDateRange} />
+                </WeeklyChartProvider>
 
-                        <MonthlyChartProvider
-                            selectedDateRange={selectedDateRange}
-                            skipLoading={!!restoreDate}
-                        >
-                            <MonthlyErrorBoundary>
-                                <MonthlySalesComparison
-                                    selectedDateRange={selectedDateRange}
-                                />
-                            </MonthlyErrorBoundary>
+                <MonthlyChartProvider selectedDateRange={selectedDateRange} skipLoading={!!restoreDate}>
+                    <MonthlyErrorBoundary>
+                        <MonthlySalesComparison selectedDateRange={selectedDateRange} />
+                    </MonthlyErrorBoundary>
 
-                            <MonthlyChartComparison
-                                selectedDateRange={selectedDateRange}
-                            />
+                    <MonthlyChartComparison selectedDateRange={selectedDateRange} />
 
-                            <MonthlySalesBranches
-                                selectedDateRange={selectedDateRange}
-                            />
-                        </MonthlyChartProvider>
+                    <MonthlySalesBranches selectedDateRange={selectedDateRange} />
+                </MonthlyChartProvider>
 
-                        <DailySalesBranches
-                            selectedDateRange={selectedDateRange}
-                        />
+                <DailySalesBranches selectedDateRange={selectedDateRange} />
 
-                        <CustomSalesComparison
-                            selectedDateRange={selectedDateRange}
-                        />
+                <CustomSalesComparison selectedDateRange={selectedDateRange} />
 
-                        <CustomSalesBranches
-                            selectedDateRange={selectedDateRange}
-                        />
-                    </div>
+                <CustomSalesBranches selectedDateRange={selectedDateRange} />
+            </div>
         </DashboardLoadingCoordinator>
     );
 }

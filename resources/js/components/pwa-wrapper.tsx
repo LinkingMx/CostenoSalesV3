@@ -1,10 +1,10 @@
 import React from 'react';
-import { PWAUpdateModal } from './pwa-update-modal';
 import { usePWAUpdate } from '../hooks/use-pwa-update';
+import { PWAUpdateModal } from './pwa-update-modal';
 
 interface PWAWrapperProps {
-  children: React.ReactNode;
-  onUpdateConfirmed: () => void;
+    children: React.ReactNode;
+    onUpdateConfirmed: () => void;
 }
 
 /**
@@ -12,25 +12,21 @@ interface PWAWrapperProps {
  * Manages the state and display of PWA update notifications.
  */
 export function PWAWrapper({ children, onUpdateConfirmed }: PWAWrapperProps) {
-  const { isUpdateModalOpen, showUpdateModal, confirmUpdate, cancelUpdate } = usePWAUpdate(onUpdateConfirmed);
+    const { isUpdateModalOpen, showUpdateModal, confirmUpdate, cancelUpdate } = usePWAUpdate(onUpdateConfirmed);
 
-  // Expose the showUpdateModal function globally so it can be called from the SW registration
-  React.useEffect(() => {
-    (window as any).__showPWAUpdateModal = showUpdateModal;
+    // Expose the showUpdateModal function globally so it can be called from the SW registration
+    React.useEffect(() => {
+        (window as any).__showPWAUpdateModal = showUpdateModal;
 
-    return () => {
-      delete (window as any).__showPWAUpdateModal;
-    };
-  }, [showUpdateModal]);
+        return () => {
+            delete (window as any).__showPWAUpdateModal;
+        };
+    }, [showUpdateModal]);
 
-  return (
-    <>
-      {children}
-      <PWAUpdateModal
-        open={isUpdateModalOpen}
-        onConfirm={confirmUpdate}
-        onCancel={cancelUpdate}
-      />
-    </>
-  );
+    return (
+        <>
+            {children}
+            <PWAUpdateModal open={isUpdateModalOpen} onConfirm={confirmUpdate} onCancel={cancelUpdate} />
+        </>
+    );
 }

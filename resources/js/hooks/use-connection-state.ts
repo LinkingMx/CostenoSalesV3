@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ConnectionState {
     isOnline: boolean;
@@ -28,9 +28,7 @@ declare global {
 
 export function useConnectionState() {
     const [connectionState, setConnectionState] = useState<ConnectionState>(() => {
-        const connection = navigator.connection || 
-                          navigator.mozConnection || 
-                          navigator.webkitConnection;
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
         return {
             isOnline: navigator.onLine,
@@ -46,9 +44,7 @@ export function useConnectionState() {
     const [pendingActions, setPendingActions] = useState<Array<() => Promise<void>>>([]);
 
     const updateConnectionState = useCallback(() => {
-        const connection = navigator.connection || 
-                          navigator.mozConnection || 
-                          navigator.webkitConnection;
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
         setConnectionState({
             isOnline: navigator.onLine,
@@ -62,7 +58,7 @@ export function useConnectionState() {
     }, []);
 
     const addPendingAction = useCallback((action: () => Promise<void>) => {
-        setPendingActions(prev => [...prev, action]);
+        setPendingActions((prev) => [...prev, action]);
     }, []);
 
     const processPendingActions = useCallback(async () => {
@@ -79,7 +75,7 @@ export function useConnectionState() {
             } catch (error) {
                 console.error('Error processing pending action:', error);
                 // Re-add failed action to queue
-                setPendingActions(prev => [...prev, action]);
+                setPendingActions((prev) => [...prev, action]);
             }
         }
     }, [pendingActions]);
@@ -101,9 +97,7 @@ export function useConnectionState() {
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
-        const connection = navigator.connection || 
-                          navigator.mozConnection || 
-                          navigator.webkitConnection;
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
         if (connection) {
             connection.addEventListener('change', handleConnectionChange);
@@ -112,7 +106,7 @@ export function useConnectionState() {
         return () => {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
-            
+
             if (connection) {
                 connection.removeEventListener('change', handleConnectionChange);
             }

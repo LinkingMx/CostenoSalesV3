@@ -3,18 +3,18 @@
  * Elegant error display for weekly chart comparison with retry functionality
  */
 
-import * as React from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import * as React from 'react';
 
 interface WeeklyChartErrorProps {
-  /** Error message to display */
-  message: string;
-  /** Optional retry function */
-  onRetry?: () => void;
-  /** Whether retry is currently in progress */
-  isRetrying?: boolean;
+    /** Error message to display */
+    message: string;
+    /** Optional retry function */
+    onRetry?: () => void;
+    /** Whether retry is currently in progress */
+    isRetrying?: boolean;
 }
 
 /**
@@ -48,72 +48,57 @@ interface WeeklyChartErrorProps {
  * />
  * ```
  */
-export const WeeklyChartError: React.FC<WeeklyChartErrorProps> = ({
-  message,
-  onRetry,
-  isRetrying = false
-}) => {
-  return (
-    <Card className="w-full border-border">
-      <CardContent className="px-4 py-8">
-        {/* Error content container */}
-        <div
-          className="flex flex-col items-center justify-center space-y-4 text-center"
-          role="alert"
-          aria-live="polite"
-        >
-          {/* Error icon */}
-          <div className="flex-shrink-0">
-            <AlertCircle
-              className="h-8 w-8 text-destructive"
-              aria-hidden="true"
-            />
-          </div>
+export const WeeklyChartError: React.FC<WeeklyChartErrorProps> = ({ message, onRetry, isRetrying = false }) => {
+    return (
+        <Card className="w-full border-border">
+            <CardContent className="px-4 py-8">
+                {/* Error content container */}
+                <div className="flex flex-col items-center justify-center space-y-4 text-center" role="alert" aria-live="polite">
+                    {/* Error icon */}
+                    <div className="flex-shrink-0">
+                        <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+                    </div>
 
-          {/* Error message */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-foreground">
-              Error en el Gráfico Semanal
-            </h3>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              {message}
-            </p>
-          </div>
+                    {/* Error message */}
+                    <div className="space-y-2">
+                        <h3 className="text-sm font-medium text-foreground">Error en el Gráfico Semanal</h3>
+                        <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
+                    </div>
 
-          {/* Retry button if onRetry is provided */}
-          {onRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              disabled={isRetrying}
-              className="min-w-[120px]"
-              aria-describedby="retry-description"
-            >
-              {isRetrying ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                  Reintentando...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Reintentar
-                </>
-              )}
-            </Button>
-          )}
+                    {/* Retry button if onRetry is provided */}
+                    {onRetry && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={onRetry}
+                            disabled={isRetrying}
+                            className="min-w-[120px]"
+                            aria-describedby="retry-description"
+                        >
+                            {isRetrying ? (
+                                <>
+                                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                                    Reintentando...
+                                </>
+                            ) : (
+                                <>
+                                    <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+                                    Reintentar
+                                </>
+                            )}
+                        </Button>
+                    )}
 
-          {/* Screen reader description for retry button */}
-          {onRetry && (
-            <span id="retry-description" className="sr-only">
-              Hacer clic para volver a cargar los datos del gráfico semanal
-            </span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+                    {/* Screen reader description for retry button */}
+                    {onRetry && (
+                        <span id="retry-description" className="sr-only">
+                            Hacer clic para volver a cargar los datos del gráfico semanal
+                        </span>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
 };
 
 export default WeeklyChartError;

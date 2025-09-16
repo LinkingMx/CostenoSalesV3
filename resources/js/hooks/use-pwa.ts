@@ -9,7 +9,7 @@ declare global {
     interface WindowEventMap {
         beforeinstallprompt: BeforeInstallPromptEvent;
     }
-    
+
     interface Navigator {
         standalone?: boolean;
     }
@@ -26,11 +26,9 @@ export function usePWA() {
         // Check if already installed
         const checkIfInstalled = () => {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-            const isInStandaloneMode = 
-                ('standalone' in window.navigator && window.navigator.standalone) || 
-                isStandalone ||
-                document.referrer.includes('android-app://');
-            
+            const isInStandaloneMode =
+                ('standalone' in window.navigator && window.navigator.standalone) || isStandalone || document.referrer.includes('android-app://');
+
             setIsInStandaloneMode(isInStandaloneMode);
             setIsInstalled(isInStandaloneMode);
         };
@@ -40,7 +38,7 @@ export function usePWA() {
             const userAgent = window.navigator.userAgent.toLowerCase();
             const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
             setIsIOS(isIOSDevice);
-            
+
             // iOS doesn't support beforeinstallprompt, but we can check if it's installable
             if (isIOSDevice && !isInStandaloneMode) {
                 setIsInstallable(true);
@@ -81,14 +79,14 @@ export function usePWA() {
         try {
             await deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            
+
             if (outcome === 'accepted') {
                 setIsInstalled(true);
                 setIsInstallable(false);
                 setDeferredPrompt(null);
                 return true;
             }
-            
+
             return false;
         } catch (error) {
             console.error('Error installing PWA:', error);

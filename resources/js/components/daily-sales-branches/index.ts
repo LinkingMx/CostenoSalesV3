@@ -34,19 +34,10 @@ export { DailySalesBranches } from './daily-sales-branches';
 export { useBranchSalesData } from './hooks/use-branch-sales-data';
 
 // TypeScript interface exports for external usage
-export type {
-  DailySalesBranchesProps,
-  BranchSalesData,
-  BranchCollapsibleItemProps
-} from './types';
+export type { BranchCollapsibleItemProps, BranchSalesData, DailySalesBranchesProps } from './types';
 
 // Utility function exports
-export {
-  isSingleDaySelected,
-  formatCurrency,
-  formatPercentage,
-  DUMMY_BRANCHES_DATA
-} from './utils';
+export { DUMMY_BRANCHES_DATA, formatCurrency, formatPercentage, isSingleDaySelected } from './utils';
 
 // Re-export individual component for advanced usage
 export { BranchCollapsibleItem } from './components/branch-collapsible-item';

@@ -20,10 +20,10 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * };
  */
 export interface SalesMonthData {
-  date: Date;
-  amount: number;
-  isCurrentMonth: boolean;
-  monthName: string;
+    date: Date;
+    amount: number;
+    isCurrentMonth: boolean;
+    monthName: string;
 }
 
 /**
@@ -43,9 +43,9 @@ export interface SalesMonthData {
  * };
  */
 export interface MonthlySummaryData {
-  totalAmount: number;
-  monthNameWithYear: string;
-  monthLabel: string;
+    totalAmount: number;
+    monthNameWithYear: string;
+    monthLabel: string;
 }
 
 /**
@@ -62,58 +62,58 @@ export interface MonthlySummaryData {
  * />
  */
 export interface MonthlySalesComparisonProps {
-  selectedDateRange: DateRange | undefined;
+    selectedDateRange: DateRange | undefined;
 }
 
 /**
  * Props for the SalesMonthCard component.
  * Represents a single month's sales information in a monthly card format.
- * 
+ *
  * @interface SalesMonthCardProps
  * @property {SalesMonthData} data - Sales data for this specific month
  * @property {boolean} [isHighlighted] - Whether this card should be visually highlighted
- * 
+ *
  * @example
- * <SalesMonthCard 
+ * <SalesMonthCard
  *   data={salesData}
  *   isHighlighted={data.isCurrentMonth}
  * />
  */
 export interface SalesMonthCardProps {
-  data: SalesMonthData;
-  isHighlighted?: boolean;
+    data: SalesMonthData;
+    isHighlighted?: boolean;
 }
 
 /**
  * Props for the MonthlyComparisonHeader component.
  * Contains the title and subtitle information for the monthly comparison section.
- * 
+ *
  * @interface MonthlyComparisonHeaderProps
  * @property {string} [title] - Main title text
  * @property {string} [subtitle] - Subtitle description text
- * 
+ *
  * @example
- * <MonthlyComparisonHeader 
+ * <MonthlyComparisonHeader
  *   title="Análisis de ventas (Mensuales)"
  *   subtitle="Mes completo seleccionado"
  * />
  */
 export interface MonthlyComparisonHeaderProps {
-  title?: string;
-  subtitle?: string;
+    title?: string;
+    subtitle?: string;
 }
 
 /**
  * Validation result interface for runtime data validation.
  * Provides detailed feedback on data integrity and validation errors.
  * Used by validation functions to return comprehensive validation status.
- * 
+ *
  * @interface ValidationResult
  * @property {boolean} isValid - Whether the data passed all critical validation checks
  * @property {string[]} errors - Array of critical validation error messages that prevent usage
  * @property {string[]} warnings - Array of non-critical validation warnings (data still usable)
  * @property {object} metadata - Additional validation context and debugging information
- * 
+ *
  * @example
  * ```tsx
  * const result: ValidationResult = {
@@ -125,12 +125,12 @@ export interface MonthlyComparisonHeaderProps {
  * ```
  */
 export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  metadata: {
-    validatedAt: Date;
-    source: string;
-    itemCount?: number;
-  };
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+    metadata: {
+        validatedAt: Date;
+        source: string;
+        itemCount?: number;
+    };
 }

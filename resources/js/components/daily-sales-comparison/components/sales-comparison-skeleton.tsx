@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart3 } from 'lucide-react';
@@ -26,45 +25,42 @@ import { BarChart3 } from 'lucide-react';
  * ```
  */
 export function SalesComparisonSkeleton() {
-  return (
-    <Card className="w-full border-border">
-      <CardContent className="px-4 py-3">
-        {/* Header skeleton */}
-        <div className="mb-3 flex items-start justify-between">
-          <div className="flex items-start gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div>
-              <Skeleton className="h-5 w-48 mb-1" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
-        </div>
+    return (
+        <Card className="w-full border-border">
+            <CardContent className="px-4 py-3">
+                {/* Header skeleton */}
+                <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-start gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                            <Skeleton className="mb-1 h-5 w-48" />
+                            <Skeleton className="h-4 w-32" />
+                        </div>
+                    </div>
+                </div>
 
-        {/* Sales cards skeleton */}
-        <div className="space-y-2">
-          {[...Array(4)].map((_, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2"
-            >
-              <div className="flex items-center gap-3">
-                {/* Circle indicator skeleton */}
-                <Skeleton className="h-9 w-9 rounded-full" />
+                {/* Sales cards skeleton */}
+                <div className="space-y-2">
+                    {[...Array(4)].map((_, index) => (
+                        <div key={index} className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2">
+                            <div className="flex items-center gap-3">
+                                {/* Circle indicator skeleton */}
+                                <Skeleton className="h-9 w-9 rounded-full" />
 
-                {/* Date text skeleton */}
-                <Skeleton className="h-4 w-28" />
-              </div>
+                                {/* Date text skeleton */}
+                                <Skeleton className="h-4 w-28" />
+                            </div>
 
-              {/* Amount skeleton */}
-              <Skeleton className="h-5 w-24" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
+                            {/* Amount skeleton */}
+                            <Skeleton className="h-5 w-24" />
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 export default SalesComparisonSkeleton;

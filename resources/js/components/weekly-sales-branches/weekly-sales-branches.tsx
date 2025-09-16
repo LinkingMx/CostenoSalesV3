@@ -1,12 +1,11 @@
-import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { WeeklySalesBranchesHeader } from './components/weekly-sales-branches-header';
-import { BranchCollapsibleItem } from './components/branch-collapsible-item';
-import { WeeklyBranchesLoadingSkeleton } from './components/weekly-branches-loading-skeleton';
-import { WeeklyBranchesError } from './components/weekly-branches-error';
-import type { WeeklySalesBranchesProps } from './types';
-import { useWeeklyBranches } from './hooks/use-weekly-branches';
 import { DateRangeProvider } from '@/contexts/date-range-context';
+import { BranchCollapsibleItem } from './components/branch-collapsible-item';
+import { WeeklyBranchesError } from './components/weekly-branches-error';
+import { WeeklyBranchesLoadingSkeleton } from './components/weekly-branches-loading-skeleton';
+import { WeeklySalesBranchesHeader } from './components/weekly-sales-branches-header';
+import { useWeeklyBranches } from './hooks/use-weekly-branches';
+import type { WeeklySalesBranchesProps } from './types';
 
 /**
  * WeeklySalesBranches - Component for displaying weekly branch sales data in collapsible format.
@@ -42,63 +41,53 @@ import { DateRangeProvider } from '@/contexts/date-range-context';
  * ```
  */
 export function WeeklySalesBranches({ selectedDateRange }: WeeklySalesBranchesProps) {
-  // Use custom hook for API integration and state management
-  const { branchesData, isLoading, error, isValidCompleteWeek, isCurrentWeek, refetch } = useWeeklyBranches(selectedDateRange);
+    // Use custom hook for API integration and state management
+    const { branchesData, isLoading, error, isValidCompleteWeek, isCurrentWeek, refetch } = useWeeklyBranches(selectedDateRange);
 
-  // Only render if exactly one week is selected (Monday to Sunday)
-  if (!isValidCompleteWeek) {
-    return null;
-  }
+    // Only render if exactly one week is selected (Monday to Sunday)
+    if (!isValidCompleteWeek) {
+        return null;
+    }
 
-  // Show loading skeleton while fetching data
-  if (isLoading) {
-    return <WeeklyBranchesLoadingSkeleton />;
-  }
+    // Show loading skeleton while fetching data
+    if (isLoading) {
+        return <WeeklyBranchesLoadingSkeleton />;
+    }
 
-  // Show error state with retry functionality
-  if (error) {
-    return <WeeklyBranchesError error={error} onRetry={refetch} />;
-  }
+    // Show error state with retry functionality
+    if (error) {
+        return <WeeklyBranchesError error={error} onRetry={refetch} />;
+    }
 
-  // Show empty state if no branches data
-  if (branchesData.length === 0) {
+    // Show empty state if no branches data
+    if (branchesData.length === 0) {
+        return (
+            <Card className="w-full">
+                <CardContent className="px-4 py-3">
+                    <WeeklySalesBranchesHeader />
+                    <div className="py-8 text-center text-muted-foreground">No hay datos de sucursales disponibles para esta semana.</div>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
-      <Card className="w-full">
-        <CardContent className="px-4 py-3">
-          <WeeklySalesBranchesHeader />
-          <div className="text-center py-8 text-muted-foreground">
-            No hay datos de sucursales disponibles para esta semana.
-          </div>
-        </CardContent>
-      </Card>
+        <Card className="w-full">
+            <CardContent className="px-4 py-3">
+                {/* Header section */}
+                <WeeklySalesBranchesHeader />
+
+                {/* Branch collapsibles with real API data */}
+                <DateRangeProvider dateRange={selectedDateRange}>
+                    <div className="space-y-2" role="region" aria-label="Detalles de ventas por sucursal semanales">
+                        {branchesData.map((branch) => (
+                            <BranchCollapsibleItem key={branch.id} branch={branch} isCurrentWeek={isCurrentWeek} />
+                        ))}
+                    </div>
+                </DateRangeProvider>
+            </CardContent>
+        </Card>
     );
-  }
-
-  return (
-    <Card className="w-full">
-      <CardContent className="px-4 py-3">
-        {/* Header section */}
-        <WeeklySalesBranchesHeader />
-
-        {/* Branch collapsibles with real API data */}
-        <DateRangeProvider dateRange={selectedDateRange}>
-          <div
-            className="space-y-2"
-            role="region"
-            aria-label="Detalles de ventas por sucursal semanales"
-          >
-            {branchesData.map((branch) => (
-              <BranchCollapsibleItem
-                key={branch.id}
-                branch={branch}
-                isCurrentWeek={isCurrentWeek}
-              />
-            ))}
-          </div>
-        </DateRangeProvider>
-      </CardContent>
-    </Card>
-  );
 }
 
 export default WeeklySalesBranches;

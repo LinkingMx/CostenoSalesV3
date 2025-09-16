@@ -3,12 +3,12 @@
  * Main component for displaying monthly sales chart comparison
  */
 
-import * as React from 'react';
-import { MonthlyChartHeader } from './components/monthly-chart-header';
-import { MonthlyComparisonChart } from './components/monthly-comparison-chart';
-import { MonthlyChartError } from './components/monthly-chart-error';
-import { MonthlyChartSkeleton } from './components/monthly-chart-skeleton';
 import { useMonthlyChartContext } from '@/contexts/monthly-chart-context';
+import * as React from 'react';
+import { MonthlyChartError } from './components/monthly-chart-error';
+import { MonthlyChartHeader } from './components/monthly-chart-header';
+import { MonthlyChartSkeleton } from './components/monthly-chart-skeleton';
+import { MonthlyComparisonChart } from './components/monthly-comparison-chart';
 import type { MonthlyChartComparisonProps } from './types';
 import { isCompleteMonthSelected } from './utils';
 
@@ -17,51 +17,47 @@ const MemoizedMonthlyChartHeader = React.memo(MonthlyChartHeader);
 
 // Performance: Memoized chart component with deep comparison for chart data
 const MemoizedMonthlyComparisonChart = React.memo(MonthlyComparisonChart, (prevProps, nextProps) => {
-  // Custom comparison for better performance - only re-render if actual data changes
-  const prevData = prevProps.data;
-  const nextData = nextProps.data;
+    // Custom comparison for better performance - only re-render if actual data changes
+    const prevData = prevProps.data;
+    const nextData = nextProps.data;
 
-  // Compare chart configuration props
-  if (
-    prevProps.height !== nextProps.height ||
-    prevProps.showLegend !== nextProps.showLegend ||
-    prevProps.showGrid !== nextProps.showGrid
-  ) {
-    return false; // Props changed, need to re-render
-  }
-
-  // Deep comparison of chart data
-  if (prevData === nextData) return true; // Same reference, no change
-  if (!prevData || !nextData) return false; // One is null/undefined
-
-  // Compare daily data arrays
-  if (prevData.dailyData.length !== nextData.dailyData.length) return false;
-
-  for (let i = 0; i < prevData.dailyData.length; i++) {
-    const prevDay = prevData.dailyData[i];
-    const nextDay = nextData.dailyData[i];
-
-    if (
-      prevDay.dayNumber !== nextDay.dayNumber ||
-      prevDay.dayLabel !== nextDay.dayLabel ||
-      prevDay.month1 !== nextDay.month1 ||
-      prevDay.month2 !== nextDay.month2 ||
-      prevDay.month3 !== nextDay.month3
-    ) {
-      return false; // Data changed
+    // Compare chart configuration props
+    if (prevProps.height !== nextProps.height || prevProps.showLegend !== nextProps.showLegend || prevProps.showGrid !== nextProps.showGrid) {
+        return false; // Props changed, need to re-render
     }
-  }
 
-  // Compare month labels and colors
-  if (
-    JSON.stringify(prevData.monthLabels) !== JSON.stringify(nextData.monthLabels) ||
-    JSON.stringify(prevData.monthColors) !== JSON.stringify(nextData.monthColors) ||
-    JSON.stringify(prevData.legendLabels) !== JSON.stringify(nextData.legendLabels)
-  ) {
-    return false; // Labels or colors changed
-  }
+    // Deep comparison of chart data
+    if (prevData === nextData) return true; // Same reference, no change
+    if (!prevData || !nextData) return false; // One is null/undefined
 
-  return true; // No changes detected
+    // Compare daily data arrays
+    if (prevData.dailyData.length !== nextData.dailyData.length) return false;
+
+    for (let i = 0; i < prevData.dailyData.length; i++) {
+        const prevDay = prevData.dailyData[i];
+        const nextDay = nextData.dailyData[i];
+
+        if (
+            prevDay.dayNumber !== nextDay.dayNumber ||
+            prevDay.dayLabel !== nextDay.dayLabel ||
+            prevDay.month1 !== nextDay.month1 ||
+            prevDay.month2 !== nextDay.month2 ||
+            prevDay.month3 !== nextDay.month3
+        ) {
+            return false; // Data changed
+        }
+    }
+
+    // Compare month labels and colors
+    if (
+        JSON.stringify(prevData.monthLabels) !== JSON.stringify(nextData.monthLabels) ||
+        JSON.stringify(prevData.monthColors) !== JSON.stringify(nextData.monthColors) ||
+        JSON.stringify(prevData.legendLabels) !== JSON.stringify(nextData.legendLabels)
+    ) {
+        return false; // Labels or colors changed
+    }
+
+    return true; // No changes detected
 });
 
 /**
@@ -97,69 +93,53 @@ const MemoizedMonthlyComparisonChart = React.memo(MonthlyComparisonChart, (prevP
  * </MonthlyChartProvider>
  * ```
  */
-export const MonthlyChartComparison = React.memo(function MonthlyChartComparison({
-  selectedDateRange
-}: MonthlyChartComparisonProps) {
-  // Get shared data from context
-  const { data, isLoading, error, refetch, isValidForMonthlyChart } = useMonthlyChartContext();
+export const MonthlyChartComparison = React.memo(function MonthlyChartComparison({ selectedDateRange }: MonthlyChartComparisonProps) {
+    // Get shared data from context
+    const { data, isLoading, error, refetch, isValidForMonthlyChart } = useMonthlyChartContext();
 
-  // Performance: Memoize complete month validation to avoid repeated calculations
-  const isValidCompleteMonth = React.useMemo(() =>
-    isCompleteMonthSelected(selectedDateRange),
-    [selectedDateRange]
-  );
+    // Performance: Memoize complete month validation to avoid repeated calculations
+    const isValidCompleteMonth = React.useMemo(() => isCompleteMonthSelected(selectedDateRange), [selectedDateRange]);
 
-  // Early return for performance - avoid unnecessary computations if not valid complete month
-  // IMPORTANT: Must come after ALL hooks to avoid "hooks rule" violation
-  if (!isValidCompleteMonth || !isValidForMonthlyChart) {
-    return null;
-  }
+    // Early return for performance - avoid unnecessary computations if not valid complete month
+    // IMPORTANT: Must come after ALL hooks to avoid "hooks rule" violation
+    if (!isValidCompleteMonth || !isValidForMonthlyChart) {
+        return null;
+    }
 
-  // Show loading skeleton while data is being fetched
-  if (isLoading) {
-    return <MonthlyChartSkeleton height={300} />;
-  }
+    // Show loading skeleton while data is being fetched
+    if (isLoading) {
+        return <MonthlyChartSkeleton height={300} />;
+    }
 
-  // Show error state with retry option
-  if (error) {
+    // Show error state with retry option
+    if (error) {
+        return <MonthlyChartError message={error} onRetry={refetch} isRetrying={isLoading} />;
+    }
+
+    // Show nothing if no data available
+    if (!data) {
+        return null;
+    }
+
     return (
-      <MonthlyChartError
-        message={error}
-        onRetry={refetch}
-        isRetrying={isLoading}
-      />
+        <div className="w-full rounded-xl border border-border bg-card p-6">
+            {/* Header section - memoized for performance */}
+            <div className="mb-6">
+                <MemoizedMonthlyChartHeader />
+            </div>
+
+            {/* Chart container - optimized rendering with proper accessibility */}
+            <div
+                className="focus:ring-0 focus:outline-none [&_*]:outline-none [&_*]:focus:outline-none [&_svg]:outline-none [&_svg]:focus:outline-none"
+                role="region"
+                aria-label="Gráfico de comparación mensual de ventas"
+                tabIndex={-1}
+                style={{ outline: 'none' }}
+            >
+                <MemoizedMonthlyComparisonChart data={data} height={225} showLegend={true} showGrid={true} />
+            </div>
+        </div>
     );
-  }
-
-  // Show nothing if no data available
-  if (!data) {
-    return null;
-  }
-
-  return (
-    <div className="w-full rounded-xl bg-card border border-border p-6">
-      {/* Header section - memoized for performance */}
-      <div className="mb-6">
-        <MemoizedMonthlyChartHeader />
-      </div>
-
-      {/* Chart container - optimized rendering with proper accessibility */}
-      <div
-        className="focus:outline-none focus:ring-0 [&_svg]:focus:outline-none [&_svg]:outline-none [&_*]:focus:outline-none [&_*]:outline-none"
-        role="region"
-        aria-label="Gráfico de comparación mensual de ventas"
-        tabIndex={-1}
-        style={{ outline: 'none' }}
-      >
-        <MemoizedMonthlyComparisonChart
-          data={data}
-          height={225}
-          showLegend={true}
-          showGrid={true}
-        />
-      </div>
-    </div>
-  );
 });
 
 export default MonthlyChartComparison;

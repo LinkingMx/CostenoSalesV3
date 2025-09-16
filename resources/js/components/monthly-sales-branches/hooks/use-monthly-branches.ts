@@ -1,8 +1,8 @@
-import * as React from 'react';
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { BranchSalesData, ApiCardData } from '../types';
-import { isExactMonthSelected, transformApiCardsToBranchData, isCurrentMonth } from '../utils';
 import { useMonthlyChartContext } from '@/contexts/monthly-chart-context';
+import * as React from 'react';
+import type { ApiCardData, BranchSalesData } from '../types';
+import { isCurrentMonth, isExactMonthSelected, transformApiCardsToBranchData } from '../utils';
 
 /**
  * Custom hook for managing monthly branches data from API.
@@ -36,48 +36,48 @@ import { useMonthlyChartContext } from '@/contexts/monthly-chart-context';
  */
 
 export interface UseMonthlyBranchesReturn {
-  branchesData: BranchSalesData[];
-  isLoading: boolean;
-  error: string | null;
-  isValidCompleteMonth: boolean;
-  isCurrentMonth: boolean;
-  refetch: () => void;
+    branchesData: BranchSalesData[];
+    isLoading: boolean;
+    error: string | null;
+    isValidCompleteMonth: boolean;
+    isCurrentMonth: boolean;
+    refetch: () => void;
 }
 
 export const useMonthlyBranches = (selectedDateRange?: DateRange): UseMonthlyBranchesReturn => {
-  // Get shared data from context - single API call for all monthly components
-  const { rawApiData, isLoading, error, refetch, isValidForMonthlyChart } = useMonthlyChartContext();
+    // Get shared data from context - single API call for all monthly components
+    const { rawApiData, isLoading, error, refetch, isValidForMonthlyChart } = useMonthlyChartContext();
 
-  // Validate that exactly one complete month is selected (first to last day)
-  const isValidCompleteMonth = React.useMemo(() => {
-    return isExactMonthSelected(selectedDateRange) && isValidForMonthlyChart;
-  }, [selectedDateRange, isValidForMonthlyChart]);
+    // Validate that exactly one complete month is selected (first to last day)
+    const isValidCompleteMonth = React.useMemo(() => {
+        return isExactMonthSelected(selectedDateRange) && isValidForMonthlyChart;
+    }, [selectedDateRange, isValidForMonthlyChart]);
 
-  // Check if the selected month contains today's date
-  const isCurrentMonthSelected = React.useMemo(() => {
-    return isCurrentMonth(selectedDateRange);
-  }, [selectedDateRange]);
+    // Check if the selected month contains today's date
+    const isCurrentMonthSelected = React.useMemo(() => {
+        return isCurrentMonth(selectedDateRange);
+    }, [selectedDateRange]);
 
-  // Transform raw API data to branch format
-  const branchesData = React.useMemo(() => {
-    // Type guard to check if rawApiData has the expected structure
-    const apiData = rawApiData as { data?: { cards?: unknown } } | null;
+    // Transform raw API data to branch format
+    const branchesData = React.useMemo(() => {
+        // Type guard to check if rawApiData has the expected structure
+        const apiData = rawApiData as { data?: { cards?: unknown } } | null;
 
-    if (!apiData?.data?.cards) {
-      return [];
-    }
+        if (!apiData?.data?.cards) {
+            return [];
+        }
 
-    const transformedData = transformApiCardsToBranchData(apiData.data.cards as Record<string, ApiCardData>);
+        const transformedData = transformApiCardsToBranchData(apiData.data.cards as Record<string, ApiCardData>);
 
-    return transformedData;
-  }, [rawApiData]);
+        return transformedData;
+    }, [rawApiData]);
 
-  return {
-    branchesData,
-    isLoading,
-    error,
-    isValidCompleteMonth,
-    isCurrentMonth: isCurrentMonthSelected,
-    refetch
-  };
+    return {
+        branchesData,
+        isLoading,
+        error,
+        isValidCompleteMonth,
+        isCurrentMonth: isCurrentMonthSelected,
+        refetch,
+    };
 };

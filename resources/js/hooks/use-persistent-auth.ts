@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
 import { router } from '@inertiajs/react';
+import { useCallback, useEffect } from 'react';
 
 interface SessionData {
     sessionExpiry?: number;
@@ -9,14 +9,14 @@ interface SessionData {
 export function usePersistentAuth() {
     const checkAndRefreshSession = useCallback(() => {
         const sessionData = localStorage.getItem('session_data');
-        
+
         if (!sessionData) {
             return;
         }
 
         try {
             const data: SessionData = JSON.parse(sessionData);
-            
+
             if (!data.sessionExpiry) {
                 return;
             }
@@ -36,18 +36,21 @@ export function usePersistentAuth() {
                     },
                     credentials: 'same-origin',
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.session_expiry) {
-                        localStorage.setItem('session_data', JSON.stringify({
-                            sessionExpiry: data.session_expiry,
-                            userId: data.user_id,
-                        }));
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to refresh session:', error);
-                });
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.session_expiry) {
+                            localStorage.setItem(
+                                'session_data',
+                                JSON.stringify({
+                                    sessionExpiry: data.session_expiry,
+                                    userId: data.user_id,
+                                }),
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Failed to refresh session:', error);
+                    });
             }
         } catch (error) {
             console.error('Error parsing session data:', error);
@@ -55,10 +58,13 @@ export function usePersistentAuth() {
     }, []);
 
     const saveSessionData = useCallback((expiry: number, userId: number) => {
-        localStorage.setItem('session_data', JSON.stringify({
-            sessionExpiry: expiry,
-            userId: userId,
-        }));
+        localStorage.setItem(
+            'session_data',
+            JSON.stringify({
+                sessionExpiry: expiry,
+                userId: userId,
+            }),
+        );
     }, []);
 
     const clearSessionData = useCallback(() => {

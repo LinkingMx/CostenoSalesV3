@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useConnectionState } from '@/hooks/use-connection-state';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { WifiOff, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useConnectionState } from '@/hooks/use-connection-state';
+import { AlertCircle, CheckCircle2, WifiOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function ConnectionStatus() {
     const { isOnline, isSlowConnection, effectiveType, pendingActions } = useConnectionState();
@@ -33,8 +33,8 @@ export function ConnectionStatus() {
 
     if (!isOnline) {
         return (
-            <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-5">
-                <Alert className="rounded-none border-x-0 border-b-0 border-t bg-destructive/10 text-destructive">
+            <div className="fixed right-0 bottom-0 left-0 z-50 animate-in slide-in-from-bottom-5">
+                <Alert className="rounded-none border-x-0 border-t border-b-0 bg-destructive/10 text-destructive">
                     <WifiOff className="h-4 w-4" />
                     <AlertDescription className="font-medium">
                         You are currently offline. Changes will be synced when connection is restored.
@@ -51,8 +51,8 @@ export function ConnectionStatus() {
 
     if (wasOffline && isOnline) {
         return (
-            <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-5">
-                <Alert className="rounded-none border-x-0 border-b-0 border-t bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400">
+            <div className="fixed right-0 bottom-0 left-0 z-50 animate-in slide-in-from-bottom-5">
+                <Alert className="rounded-none border-x-0 border-t border-b-0 bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription className="font-medium">
                         Connection restored. Syncing data...
@@ -69,8 +69,8 @@ export function ConnectionStatus() {
 
     if (isSlowConnection) {
         return (
-            <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-5">
-                <Alert className="rounded-none border-x-0 border-b-0 border-t bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400">
+            <div className="fixed right-0 bottom-0 left-0 z-50 animate-in slide-in-from-bottom-5">
+                <Alert className="rounded-none border-x-0 border-t border-b-0 bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="font-medium">
                         Slow connection detected ({effectiveType}). Some features may be limited.

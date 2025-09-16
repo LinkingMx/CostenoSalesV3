@@ -22,7 +22,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
 /**
  * Comprehensive sales data interface for a single branch location.
  * Contains all metrics needed to display detailed branch performance in Spanish-localized UI.
- * 
+ *
  * @interface BranchSalesData
  * @property {string} id - Unique branch identifier (typically numeric but stored as string)
  * @property {string} name - Human-readable branch name displayed in the UI
@@ -35,11 +35,11 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {number} totalTickets - Total number of transactions/tickets processed
  * @property {string} avatar - Single character identifier for branch visual display
  * @property {number} [previousWeekSales] - Total sales from same day previous week (for comparison context)
- * 
+ *
  * @description This interface represents the core data structure for branch sales analytics.
  * All monetary values are expected to be in USD and will be formatted using Spanish
  * locale conventions (es-MX) for consistent presentation.
- * 
+ *
  * @example
  * ```tsx
  * const branchData: BranchSalesData = {
@@ -55,22 +55,22 @@ import type { DateRange } from '@/components/main-filter-calendar';
  *   avatar: 'L'
  * };
  * ```
- * 
+ *
  * @see {@link formatCurrency} for monetary value formatting
  * @see {@link formatPercentage} for percentage display formatting
  */
 export interface BranchSalesData {
-  id: string;
-  name: string;
-  location?: string;
-  totalSales: number;
-  percentage: number;
-  openAccounts: number;
-  closedSales: number;
-  averageTicket: number;
-  totalTickets: number;
-  avatar: string;
-  previousWeekSales?: number;
+    id: string;
+    name: string;
+    location?: string;
+    totalSales: number;
+    percentage: number;
+    openAccounts: number;
+    closedSales: number;
+    averageTicket: number;
+    totalTickets: number;
+    avatar: string;
+    previousWeekSales?: number;
 }
 
 /**
@@ -108,8 +108,8 @@ export interface BranchSalesData {
  * @see {@link isSingleDaySelected} for visibility logic
  */
 export interface DailySalesBranchesProps {
-  selectedDateRange?: DateRange;
-  branches?: BranchSalesData[];
+    selectedDateRange?: DateRange;
+    branches?: BranchSalesData[];
 }
 
 /**
@@ -140,6 +140,6 @@ export interface DailySalesBranchesProps {
  * @see {@link DailySalesBranches} for parent component usage
  */
 export interface BranchCollapsibleItemProps {
-  branch: BranchSalesData;
-  isToday?: boolean;
+    branch: BranchSalesData;
+    isToday?: boolean;
 }

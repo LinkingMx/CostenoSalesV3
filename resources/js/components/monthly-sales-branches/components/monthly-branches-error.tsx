@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { MonthlySalesBranchesHeader } from './monthly-sales-branches-header';
+import * as React from 'react';
 import type { MonthlyBranchesErrorProps } from '../types';
+import { MonthlySalesBranchesHeader } from './monthly-sales-branches-header';
 
 /**
  * Error state component for monthly branches data.
@@ -30,85 +30,68 @@ import type { MonthlyBranchesErrorProps } from '../types';
  * ```
  */
 export function MonthlyBranchesError({ error, onRetry }: MonthlyBranchesErrorProps) {
-  const [isRetrying, setIsRetrying] = React.useState(false);
+    const [isRetrying, setIsRetrying] = React.useState(false);
 
-  const handleRetry = async () => {
-    if (!onRetry) return;
+    const handleRetry = async () => {
+        if (!onRetry) return;
 
-    setIsRetrying(true);
-    try {
-      await onRetry();
-    } finally {
-      // Reset retry state after a short delay to show feedback
-      setTimeout(() => setIsRetrying(false), 1000);
-    }
-  };
+        setIsRetrying(true);
+        try {
+            await onRetry();
+        } finally {
+            // Reset retry state after a short delay to show feedback
+            setTimeout(() => setIsRetrying(false), 1000);
+        }
+    };
 
-  return (
-    <Card className="w-full">
-      <CardContent className="px-4 py-3">
-        {/* Header section - same as actual component */}
-        <MonthlySalesBranchesHeader />
+    return (
+        <Card className="w-full">
+            <CardContent className="px-4 py-3">
+                {/* Header section - same as actual component */}
+                <MonthlySalesBranchesHeader />
 
-        {/* Error state content */}
-        <div
-          className="space-y-4 py-8 px-4"
-          role="region"
-          aria-label="Error en datos de sucursales mensuales"
-        >
-          {/* Error icon and message */}
-          <div className="flex flex-col items-center text-center space-y-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <AlertCircle className="h-6 w-6 text-destructive" />
-            </div>
+                {/* Error state content */}
+                <div className="space-y-4 px-4 py-8" role="region" aria-label="Error en datos de sucursales mensuales">
+                    {/* Error icon and message */}
+                    <div className="flex flex-col items-center space-y-3 text-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                            <AlertCircle className="h-6 w-6 text-destructive" />
+                        </div>
 
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-foreground">
-                Error al cargar datos de sucursales
-              </h3>
-              <p className="text-xs text-muted-foreground max-w-sm">
-                No se pudieron obtener los datos de las sucursales.
-                Por favor, intenta nuevamente.
-              </p>
+                        <div className="space-y-2">
+                            <h3 className="text-sm font-medium text-foreground">Error al cargar datos de sucursales</h3>
+                            <p className="max-w-sm text-xs text-muted-foreground">
+                                No se pudieron obtener los datos de las sucursales. Por favor, intenta nuevamente.
+                            </p>
 
-              {/* Technical error message for development */}
-              {process.env.NODE_ENV === 'development' && (
-                <details className="mt-2 text-xs text-muted-foreground">
-                  <summary className="cursor-pointer hover:text-foreground">
-                    Detalles técnicos
-                  </summary>
-                  <p className="mt-1 p-2 bg-muted rounded text-left font-mono">
-                    {error}
-                  </p>
-                </details>
-              )}
-            </div>
+                            {/* Technical error message for development */}
+                            {process.env.NODE_ENV === 'development' && (
+                                <details className="mt-2 text-xs text-muted-foreground">
+                                    <summary className="cursor-pointer hover:text-foreground">Detalles técnicos</summary>
+                                    <p className="mt-1 rounded bg-muted p-2 text-left font-mono">{error}</p>
+                                </details>
+                            )}
+                        </div>
 
-            {/* Retry button */}
-            {onRetry && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRetry}
-                disabled={isRetrying}
-                className="min-w-24"
-              >
-                {isRetrying ? (
-                  <>
-                    <RefreshCw className="h-3 w-3 mr-2 animate-spin" />
-                    Intentando...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-3 w-3 mr-2" />
-                    Reintentar
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+                        {/* Retry button */}
+                        {onRetry && (
+                            <Button variant="outline" size="sm" onClick={handleRetry} disabled={isRetrying} className="min-w-24">
+                                {isRetrying ? (
+                                    <>
+                                        <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+                                        Intentando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshCw className="mr-2 h-3 w-3" />
+                                        Reintentar
+                                    </>
+                                )}
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }

@@ -3,7 +3,7 @@ import type { DateRange } from '@/components/main-filter-calendar';
 /**
  * Comprehensive sales data interface for a single branch location.
  * Contains all metrics needed to display detailed branch performance in Spanish-localized UI.
- * 
+ *
  * @interface BranchSalesData
  * @property {string} id - Unique branch identifier (typically numeric but stored as string)
  * @property {string} name - Human-readable branch name displayed in the UI
@@ -15,11 +15,11 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * @property {number} averageTicket - Average transaction amount per ticket
  * @property {number} totalTickets - Total number of transactions/tickets processed
  * @property {string} avatar - Single character identifier for branch visual display
- * 
+ *
  * @description This interface represents the core data structure for branch sales analytics.
  * All monetary values are in Mexican pesos and will be formatted using Spanish
  * locale conventions (es-MX) for consistent presentation.
- * 
+ *
  * @example
  * ```tsx
  * const branchData: BranchSalesData = {
@@ -35,21 +35,21 @@ import type { DateRange } from '@/components/main-filter-calendar';
  *   avatar: 'L'
  * };
  * ```
- * 
+ *
  * @see {@link formatCurrency} for monetary value formatting
  * @see {@link formatPercentage} for percentage display formatting
  */
 export interface BranchSalesData {
-  id: string;
-  name: string;
-  location?: string;
-  totalSales: number;
-  percentage: number;
-  openAccounts: number;
-  closedSales: number;
-  averageTicket: number;
-  totalTickets: number;
-  avatar: string;
+    id: string;
+    name: string;
+    location?: string;
+    totalSales: number;
+    percentage: number;
+    openAccounts: number;
+    closedSales: number;
+    averageTicket: number;
+    totalTickets: number;
+    avatar: string;
 }
 
 /**
@@ -78,19 +78,19 @@ export interface BranchSalesData {
  * @see {@link useWeeklyBranches} for API integration logic
  */
 export interface WeeklySalesBranchesProps {
-  selectedDateRange?: DateRange;
+    selectedDateRange?: DateRange;
 }
 
 /**
  * Props interface for individual BranchCollapsibleItem components.
  * Defines the data needed to render a single branch as an independent collapsible.
- * 
+ *
  * @interface BranchCollapsibleItemProps
  * @property {BranchSalesData} branch - Complete branch sales data object
- * 
+ *
  * @description This interface ensures type safety for individual branch collapsible items.
  * Unlike accordion items, collapsibles don't require a value prop since each operates independently.
- * 
+ *
  * @example
  * ```tsx
  * // Typical usage within map iteration
@@ -101,13 +101,13 @@ export interface WeeklySalesBranchesProps {
  *   />
  * ))}
  * ```
- * 
+ *
  * @see {@link BranchSalesData} for branch data structure
  * @see {@link WeeklySalesBranches} for parent component usage
  */
 export interface BranchCollapsibleItemProps {
-  branch: BranchSalesData;
-  isCurrentWeek: boolean;
+    branch: BranchSalesData;
+    isCurrentWeek: boolean;
 }
 
 /**
@@ -115,12 +115,12 @@ export interface BranchCollapsibleItemProps {
  * Provides state and methods for managing weekly branches data.
  */
 export interface UseWeeklyBranchesReturn {
-  branchesData: BranchSalesData[];
-  isLoading: boolean;
-  error: string | null;
-  isValidCompleteWeek: boolean;
-  isCurrentWeek: boolean;
-  refetch: () => void;
+    branchesData: BranchSalesData[];
+    isLoading: boolean;
+    error: string | null;
+    isValidCompleteWeek: boolean;
+    isCurrentWeek: boolean;
+    refetch: () => void;
 }
 
 /**
@@ -128,8 +128,8 @@ export interface UseWeeklyBranchesReturn {
  * Defines error display and retry functionality.
  */
 export interface WeeklyBranchesErrorProps {
-  error: string;
-  onRetry?: () => void;
+    error: string;
+    onRetry?: () => void;
 }
 
 /**
@@ -137,18 +137,18 @@ export interface WeeklyBranchesErrorProps {
  * Defines the raw data format returned by the API.
  */
 export interface ApiCardData {
-  store_id: number;
-  closed_ticket: {
-    money: number;
-    total: number;
-  };
-  open_accounts?: {
-    money: number;
-  };
-  percentage: {
-    qty: number;
-  };
-  average_ticket: number;
-  brand?: string;
-  region?: string;
+    store_id: number;
+    closed_ticket: {
+        money: number;
+        total: number;
+    };
+    open_accounts?: {
+        money: number;
+    };
+    percentage: {
+        qty: number;
+    };
+    average_ticket: number;
+    brand?: string;
+    region?: string;
 }

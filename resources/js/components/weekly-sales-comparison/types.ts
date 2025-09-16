@@ -20,10 +20,10 @@ import type { DateRange } from '@/components/main-filter-calendar';
  * };
  */
 export interface SalesWeekData {
-  date: Date;
-  amount: number;
-  isCurrentWeek: boolean;
-  dayName: string;
+    date: Date;
+    amount: number;
+    isCurrentWeek: boolean;
+    dayName: string;
 }
 
 /**
@@ -48,11 +48,11 @@ export interface SalesWeekData {
  * };
  */
 export interface WeeklySummaryData {
-  startDate: Date;
-  endDate: Date;
-  totalAmount: number;
-  dateRangeLabel: string;
-  weekLabel: string;
+    startDate: Date;
+    endDate: Date;
+    totalAmount: number;
+    dateRangeLabel: string;
+    weekLabel: string;
 }
 
 /**
@@ -71,8 +71,8 @@ export interface WeeklySummaryData {
  * />
  */
 export interface WeeklySalesComparisonProps {
-  selectedDateRange: DateRange | undefined;
-  weeklySummaryData?: WeeklySummaryData[];
+    selectedDateRange: DateRange | undefined;
+    weeklySummaryData?: WeeklySummaryData[];
 }
 
 /**
@@ -90,8 +90,8 @@ export interface WeeklySalesComparisonProps {
  * />
  */
 export interface SalesWeekCardProps {
-  data: SalesWeekData;
-  isHighlighted?: boolean;
+    data: SalesWeekData;
+    isHighlighted?: boolean;
 }
 
 /**
@@ -107,39 +107,39 @@ export interface SalesWeekCardProps {
  * />
  */
 export interface WeeklySummaryCardProps {
-  data: WeeklySummaryData;
+    data: WeeklySummaryData;
 }
 
 /**
  * Props for the WeeklyComparisonHeader component.
  * Contains the title and subtitle information for the weekly comparison section.
- * 
+ *
  * @interface WeeklyComparisonHeaderProps
  * @property {string} [title] - Main title text
  * @property {string} [subtitle] - Subtitle description text
- * 
+ *
  * @example
- * <WeeklyComparisonHeader 
+ * <WeeklyComparisonHeader
  *   title="Ventas semanales"
  *   subtitle="Semana seleccionada (Lunes - Viernes)"
  * />
  */
 export interface WeeklyComparisonHeaderProps {
-  title?: string;
-  subtitle?: string;
+    title?: string;
+    subtitle?: string;
 }
 
 /**
  * Validation result interface for runtime data validation.
  * Provides detailed feedback on data integrity and validation errors.
  * Used by validation functions to return comprehensive validation status.
- * 
+ *
  * @interface ValidationResult
  * @property {boolean} isValid - Whether the data passed all critical validation checks
  * @property {string[]} errors - Array of critical validation error messages that prevent usage
  * @property {string[]} warnings - Array of non-critical validation warnings (data still usable)
  * @property {object} metadata - Additional validation context and debugging information
- * 
+ *
  * @example
  * ```tsx
  * const result: ValidationResult = {
@@ -151,12 +151,12 @@ export interface WeeklyComparisonHeaderProps {
  * ```
  */
 export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  metadata: {
-    validatedAt: Date;
-    source: string;
-    itemCount?: number;
-  };
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+    metadata: {
+        validatedAt: Date;
+        source: string;
+        itemCount?: number;
+    };
 }

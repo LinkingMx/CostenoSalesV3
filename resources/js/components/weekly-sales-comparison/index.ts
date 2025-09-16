@@ -1,14 +1,13 @@
 /**
  * Weekly Sales Comparison Component
- * 
+ *
  * A comprehensive component for displaying weekly sales data comparison.
  * Shows the selected work week (Monday through Friday) with highlighted current week indicator.
  * Only renders when exactly one work week is selected in the date filter.
  */
 
 // Main component exports
-export { WeeklySalesComparison } from './weekly-sales-comparison';
-export { default } from './weekly-sales-comparison';
+export { WeeklySalesComparison, default } from './weekly-sales-comparison';
 
 // Sub-component exports
 export { SalesWeekCard } from './components/sales-week-card';
@@ -17,27 +16,27 @@ export { WeeklyErrorBoundary } from './components/weekly-error-boundary';
 
 // Type exports
 export type {
-  SalesWeekData,
-  WeeklySalesComparisonProps,
-  SalesWeekCardProps,
-  WeeklyComparisonHeaderProps,
-  ValidationResult,
-  WeeklySummaryData,
-  WeeklySummaryCardProps
+    SalesWeekCardProps,
+    SalesWeekData,
+    ValidationResult,
+    WeeklyComparisonHeaderProps,
+    WeeklySalesComparisonProps,
+    WeeklySummaryCardProps,
+    WeeklySummaryData,
 } from './types';
 
 // Utility function exports
 export {
-  isWorkWeekSelected,
-  generateWeekdays,
-  formatSalesAmount,
-  formatDateForWeekCard,
-  getDayLetter,
-  getDayName,
-  generateMockWeeklySalesData,
-  validateWeeklySalesData,
-  validateWeekDateRange,
-  transformApiDataToWeeklySummary,
-  formatWeekDateRange,
-  formatWeeklySalesAmount
+    formatDateForWeekCard,
+    formatSalesAmount,
+    formatWeekDateRange,
+    formatWeeklySalesAmount,
+    generateMockWeeklySalesData,
+    generateWeekdays,
+    getDayLetter,
+    getDayName,
+    isWorkWeekSelected,
+    transformApiDataToWeeklySummary,
+    validateWeekDateRange,
+    validateWeeklySalesData,
 } from './utils';

@@ -3,24 +3,18 @@
  */
 
 export { BranchSalesCategories } from './branch-sales-categories';
-export { CategoryCard } from './components/category-card';
 export { BranchSalesCategoriesHeader } from './components/branch-sales-categories-header';
+export { CategoryCard } from './components/category-card';
 
 // Types
 export type {
-  BranchSalesData,
-  CategoryCardData,
-  BranchSalesCategoriesProps,
-  CategoryCardProps,
-  BranchSalesCategoriesHeaderProps,
-  SalesCategory
+    BranchSalesCategoriesHeaderProps,
+    BranchSalesCategoriesProps,
+    BranchSalesData,
+    CategoryCardData,
+    CategoryCardProps,
+    SalesCategory,
 } from './types';
 
 // Utils
-export {
-  formatMexicanPesos,
-  formatPercentage,
-  transformToCategoryCards,
-  calculateTotalSales,
-  validatePercentages
-} from './utils';
+export { calculateTotalSales, formatMexicanPesos, formatPercentage, transformToCategoryCards, validatePercentages } from './utils';

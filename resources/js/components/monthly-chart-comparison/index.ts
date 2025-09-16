@@ -11,29 +11,29 @@
 export { MonthlyChartComparison, default } from './monthly-chart-comparison';
 
 // Subcomponent exports for advanced usage
-export { MonthlyChartHeader } from './components/monthly-chart-header';
-export { MonthlyComparisonChart } from './components/monthly-comparison-chart';
-export { MonthlyChartSkeleton } from './components/monthly-chart-skeleton';
 export { MonthlyChartError } from './components/monthly-chart-error';
+export { MonthlyChartHeader } from './components/monthly-chart-header';
+export { MonthlyChartSkeleton } from './components/monthly-chart-skeleton';
+export { MonthlyComparisonChart } from './components/monthly-comparison-chart';
 
 // Type exports for TypeScript integration
 export type {
-  MonthlyChartData,
-  ChartDayData,
-  MonthlyChartComparisonProps,
-  MonthlyComparisonChartProps,
-  MonthlyChartHeaderProps,
-  MonthlyChartSkeletonProps,
-  MonthlyChartErrorProps,
-  MonthlyChartValidationResult
+    ChartDayData,
+    MonthlyChartComparisonProps,
+    MonthlyChartData,
+    MonthlyChartErrorProps,
+    MonthlyChartHeaderProps,
+    MonthlyChartSkeletonProps,
+    MonthlyChartValidationResult,
+    MonthlyComparisonChartProps,
 } from './types';
 
 // Utility function exports for advanced integration
 export {
-  isCompleteMonthSelected,
-  generateMockMonthlyChartData,
-  validateMonthlyChartData,
-  formatChartAmount,
-  getDefaultChartTheme,
-  SPANISH_MONTHS
+    SPANISH_MONTHS,
+    formatChartAmount,
+    generateMockMonthlyChartData,
+    getDefaultChartTheme,
+    isCompleteMonthSelected,
+    validateMonthlyChartData,
 } from './utils';

@@ -18,21 +18,24 @@
  * formatCurrencyAmount(850000, true);  // "$850K"
  */
 export function formatCurrencyAmount(amount: number, abbreviated: boolean = false): string {
-  if (abbreviated) {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
+    if (abbreviated) {
+        if (amount >= 1000000) {
+            return `$${(amount / 1000000).toFixed(1)}M`;
+        } else if (amount >= 1000) {
+            return `$${(amount / 1000).toFixed(0)}K`;
+        }
+        return `$${amount.toFixed(0)}`;
     }
-    return `$${amount.toFixed(0)}`;
-  }
 
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(amount).replace('MXN', '$').trim();
+    return new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })
+        .format(amount)
+        .replace('MXN', '$')
+        .trim();
 }
 
 /**
@@ -48,9 +51,9 @@ export function formatCurrencyAmount(amount: number, abbreviated: boolean = fals
  * formatFullDayName(date); // "Jueves, 12 de Septiembre"
  */
 export function formatFullDayName(date: Date): string {
-  return date.toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long'
-  });
+    return date.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+    });
 }

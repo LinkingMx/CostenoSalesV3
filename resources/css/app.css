@@ -60,24 +60,24 @@
 }
 
 :root {
-    --background: #F8F8F8;
-    --foreground: #5A5A5A;
-    --card: #EFEFEF;
-    --card-foreground: #5A5A5A;
+    --background: #f8f8f8;
+    --foreground: #5a5a5a;
+    --card: #efefef;
+    --card-foreground: #5a5a5a;
     --popover: oklch(1 0 0);
-    --popover-foreground: #5A5A5A;
+    --popover-foreground: #5a5a5a;
     --primary: #897053;
-    --primary-foreground: #FFFFFF;
-    --secondary: #EFEFEF;
-    --secondary-foreground: #5A5A5A;
+    --primary-foreground: #ffffff;
+    --secondary: #efefef;
+    --secondary-foreground: #5a5a5a;
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
-    --accent: #64B5F6;
-    --accent-foreground: #FFFFFF;
-    --destructive: #EF4444;
-    --destructive-foreground: #FFFFFF;
-    --border: #D1D5DB;
-    --input: #D1D5DB;
+    --accent: #64b5f6;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #d1d5db;
+    --input: #d1d5db;
     --ring: #897053;
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
@@ -85,48 +85,48 @@
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 0.5rem;
-    --sidebar: #FFFFFF;
-    --sidebar-foreground: #5A5A5A;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #5a5a5a;
     --sidebar-primary: #897053;
-    --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #EFEFEF;
-    --sidebar-accent-foreground: #5A5A5A;
-    --sidebar-border: #D1D5DB;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #efefef;
+    --sidebar-accent-foreground: #5a5a5a;
+    --sidebar-border: #d1d5db;
     --sidebar-ring: #897053;
 }
 
 .dark {
-    --background: #1A1A1A;
-    --foreground: #E0E0E0;
-    --card: #2C2C2C;
-    --card-foreground: #E0E0E0;
-    --popover: #2C2C2C;
-    --popover-foreground: #E0E0E0;
+    --background: #1a1a1a;
+    --foreground: #e0e0e0;
+    --card: #2c2c2c;
+    --card-foreground: #e0e0e0;
+    --popover: #2c2c2c;
+    --popover-foreground: #e0e0e0;
     --primary: #897053;
-    --primary-foreground: #FFFFFF;
-    --secondary: #2C2C2C;
-    --secondary-foreground: #E0E0E0;
+    --primary-foreground: #ffffff;
+    --secondary: #2c2c2c;
+    --secondary-foreground: #e0e0e0;
     --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(0.708 0 0);
-    --accent: #64B5F6;
-    --accent-foreground: #FFFFFF;
-    --destructive: #EF4444;
-    --destructive-foreground: #FFFFFF;
-    --border: #3F3F3F;
-    --input: #3F3F3F;
+    --accent: #64b5f6;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #3f3f3f;
+    --input: #3f3f3f;
     --ring: #897053;
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: #2C2C2C;
-    --sidebar-foreground: #E0E0E0;
+    --sidebar: #2c2c2c;
+    --sidebar-foreground: #e0e0e0;
     --sidebar-primary: #897053;
-    --sidebar-primary-foreground: #FFFFFF;
-    --sidebar-accent: #3F3F3F;
-    --sidebar-accent-foreground: #E0E0E0;
-    --sidebar-border: #3F3F3F;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #3f3f3f;
+    --sidebar-accent-foreground: #e0e0e0;
+    --sidebar-border: #3f3f3f;
     --sidebar-ring: #897053;
 }
 
@@ -136,22 +136,22 @@
     }
 
     body {
-        @apply text-foreground bg-background;
+        @apply bg-background text-foreground;
     }
 }
 
 @layer components {
     /* Optimized Collapsible animations for smooth expand/collapse */
-    [data-slot="collapsible-content"] {
+    [data-slot='collapsible-content'] {
         overflow: hidden;
         transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    [data-slot="collapsible-content"][data-state="closed"] {
+    [data-slot='collapsible-content'][data-state='closed'] {
         animation: collapsible-up 300ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    [data-slot="collapsible-content"][data-state="open"] {
+    [data-slot='collapsible-content'][data-state='open'] {
         animation: collapsible-down 300ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 

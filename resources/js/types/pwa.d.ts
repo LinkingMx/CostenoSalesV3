@@ -14,7 +14,7 @@ declare module 'virtual:pwa-register' {
 
 declare module 'virtual:pwa-register/react' {
     import type { Dispatch, SetStateAction } from 'react';
-    
+
     export interface UseRegisterSWOptions {
         immediate?: boolean;
         onNeedRefresh?: () => void;
@@ -22,7 +22,7 @@ declare module 'virtual:pwa-register/react' {
         onRegisteredSW?: (swScriptUrl: string, registration?: ServiceWorkerRegistration) => void;
         onRegisterError?: (error: Error) => void;
     }
-    
+
     export function useRegisterSW(options?: UseRegisterSWOptions): {
         needRefresh: [boolean, Dispatch<SetStateAction<boolean>>];
         offlineReady: [boolean, Dispatch<SetStateAction<boolean>>];

@@ -1,12 +1,11 @@
-import * as React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { MonthlySalesBranchesHeader } from './components/monthly-sales-branches-header';
-import { MonthlyBranchCollapsibleItem } from './components/monthly-branch-collapsible-item';
-import { MonthlyBranchesLoadingSkeleton } from './components/monthly-branches-loading-skeleton';
-import { MonthlyBranchesError } from './components/monthly-branches-error';
-import type { MonthlySalesBranchesProps } from './types';
-import { useMonthlyBranches } from './hooks/use-monthly-branches';
 import { DateRangeProvider } from '@/contexts/date-range-context';
+import { MonthlyBranchCollapsibleItem } from './components/monthly-branch-collapsible-item';
+import { MonthlyBranchesError } from './components/monthly-branches-error';
+import { MonthlyBranchesLoadingSkeleton } from './components/monthly-branches-loading-skeleton';
+import { MonthlySalesBranchesHeader } from './components/monthly-sales-branches-header';
+import { useMonthlyBranches } from './hooks/use-monthly-branches';
+import type { MonthlySalesBranchesProps } from './types';
 
 /**
  * MonthlySalesBranches - Component for displaying monthly branch sales data in collapsible format.
@@ -44,63 +43,53 @@ import { DateRangeProvider } from '@/contexts/date-range-context';
  * ```
  */
 export function MonthlySalesBranches({ selectedDateRange }: MonthlySalesBranchesProps) {
-  // Use custom hook for API integration and state management
-  const { branchesData, isLoading, error, isValidCompleteMonth, isCurrentMonth, refetch } = useMonthlyBranches(selectedDateRange);
+    // Use custom hook for API integration and state management
+    const { branchesData, isLoading, error, isValidCompleteMonth, isCurrentMonth, refetch } = useMonthlyBranches(selectedDateRange);
 
-  // Only render if exactly one month is selected (first to last day)
-  if (!isValidCompleteMonth) {
-    return null;
-  }
+    // Only render if exactly one month is selected (first to last day)
+    if (!isValidCompleteMonth) {
+        return null;
+    }
 
-  // Show loading skeleton while fetching data
-  if (isLoading) {
-    return <MonthlyBranchesLoadingSkeleton />;
-  }
+    // Show loading skeleton while fetching data
+    if (isLoading) {
+        return <MonthlyBranchesLoadingSkeleton />;
+    }
 
-  // Show error state with retry functionality
-  if (error) {
-    return <MonthlyBranchesError error={error} onRetry={refetch} />;
-  }
+    // Show error state with retry functionality
+    if (error) {
+        return <MonthlyBranchesError error={error} onRetry={refetch} />;
+    }
 
-  // Show empty state if no branches data
-  if (branchesData.length === 0) {
+    // Show empty state if no branches data
+    if (branchesData.length === 0) {
+        return (
+            <Card className="w-full">
+                <CardContent className="px-4 py-3">
+                    <MonthlySalesBranchesHeader />
+                    <div className="py-8 text-center text-muted-foreground">No hay datos de sucursales disponibles para este mes.</div>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
-      <Card className="w-full">
-        <CardContent className="px-4 py-3">
-          <MonthlySalesBranchesHeader />
-          <div className="text-center py-8 text-muted-foreground">
-            No hay datos de sucursales disponibles para este mes.
-          </div>
-        </CardContent>
-      </Card>
+        <Card className="w-full">
+            <CardContent className="px-4 py-3">
+                {/* Header section */}
+                <MonthlySalesBranchesHeader />
+
+                {/* Branch collapsibles with real API data */}
+                <DateRangeProvider dateRange={selectedDateRange}>
+                    <div className="space-y-2" role="region" aria-label="Detalles de ventas por sucursal mensuales">
+                        {branchesData.map((branch) => (
+                            <MonthlyBranchCollapsibleItem key={branch.id} branch={branch} isCurrentMonth={isCurrentMonth} />
+                        ))}
+                    </div>
+                </DateRangeProvider>
+            </CardContent>
+        </Card>
     );
-  }
-
-  return (
-    <Card className="w-full">
-      <CardContent className="px-4 py-3">
-        {/* Header section */}
-        <MonthlySalesBranchesHeader />
-
-        {/* Branch collapsibles with real API data */}
-        <DateRangeProvider dateRange={selectedDateRange}>
-          <div
-            className="space-y-2"
-            role="region"
-            aria-label="Detalles de ventas por sucursal mensuales"
-          >
-            {branchesData.map((branch) => (
-              <MonthlyBranchCollapsibleItem
-                key={branch.id}
-                branch={branch}
-                isCurrentMonth={isCurrentMonth}
-              />
-            ))}
-          </div>
-        </DateRangeProvider>
-      </CardContent>
-    </Card>
-  );
 }
 
 export default MonthlySalesBranches;

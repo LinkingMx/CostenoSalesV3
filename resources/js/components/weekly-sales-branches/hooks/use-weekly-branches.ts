@@ -1,8 +1,8 @@
-import * as React from 'react';
 import type { DateRange } from '@/components/main-filter-calendar';
-import type { BranchSalesData, ApiCardData } from '../types';
-import { isExactWeekSelected, transformApiCardsToBranchData, isCurrentWeek } from '../utils';
 import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
+import * as React from 'react';
+import type { ApiCardData, BranchSalesData } from '../types';
+import { isCurrentWeek, isExactWeekSelected, transformApiCardsToBranchData } from '../utils';
 
 /**
  * Custom hook for managing weekly branches data from API.
@@ -35,52 +35,52 @@ import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
  */
 
 export interface UseWeeklyBranchesReturn {
-  branchesData: BranchSalesData[];
-  isLoading: boolean;
-  error: string | null;
-  isValidCompleteWeek: boolean;
-  isCurrentWeek: boolean;
-  refetch: () => void;
+    branchesData: BranchSalesData[];
+    isLoading: boolean;
+    error: string | null;
+    isValidCompleteWeek: boolean;
+    isCurrentWeek: boolean;
+    refetch: () => void;
 }
 
 export const useWeeklyBranches = (selectedDateRange?: DateRange): UseWeeklyBranchesReturn => {
-  // Get shared data from context - single API call for all weekly components
-  const { rawApiData, isLoading, error, refetch, isValidForWeeklyChart } = useWeeklyChartContext();
+    // Get shared data from context - single API call for all weekly components
+    const { rawApiData, isLoading, error, refetch, isValidForWeeklyChart } = useWeeklyChartContext();
 
-  // Validate that exactly one complete week is selected (Monday to Sunday)
-  const isValidCompleteWeek = React.useMemo(() => {
-    return isExactWeekSelected(selectedDateRange) && isValidForWeeklyChart;
-  }, [selectedDateRange, isValidForWeeklyChart]);
+    // Validate that exactly one complete week is selected (Monday to Sunday)
+    const isValidCompleteWeek = React.useMemo(() => {
+        return isExactWeekSelected(selectedDateRange) && isValidForWeeklyChart;
+    }, [selectedDateRange, isValidForWeeklyChart]);
 
-  // Check if the selected week contains today's date
-  const isCurrentWeekSelected = React.useMemo(() => {
-    return isCurrentWeek(selectedDateRange);
-  }, [selectedDateRange]);
+    // Check if the selected week contains today's date
+    const isCurrentWeekSelected = React.useMemo(() => {
+        return isCurrentWeek(selectedDateRange);
+    }, [selectedDateRange]);
 
-  // Transform raw API data to branch format
-  const branchesData = React.useMemo(() => {
-    // Type guard to check if rawApiData has the expected structure
-    const apiData = rawApiData as { data?: { cards?: unknown } } | null;
+    // Transform raw API data to branch format
+    const branchesData = React.useMemo(() => {
+        // Type guard to check if rawApiData has the expected structure
+        const apiData = rawApiData as { data?: { cards?: unknown } } | null;
 
-    if (!apiData?.data?.cards) {
-      return [];
-    }
+        if (!apiData?.data?.cards) {
+            return [];
+        }
 
-    const transformedData = transformApiCardsToBranchData(apiData.data.cards as Record<string, ApiCardData>);
+        const transformedData = transformApiCardsToBranchData(apiData.data.cards as Record<string, ApiCardData>);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`useWeeklyBranches: Transformed ${transformedData.length} branches from shared context`);
-    }
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`useWeeklyBranches: Transformed ${transformedData.length} branches from shared context`);
+        }
 
-    return transformedData;
-  }, [rawApiData]);
+        return transformedData;
+    }, [rawApiData]);
 
-  return {
-    branchesData,
-    isLoading,
-    error,
-    isValidCompleteWeek,
-    isCurrentWeek: isCurrentWeekSelected,
-    refetch
-  };
+    return {
+        branchesData,
+        isLoading,
+        error,
+        isValidCompleteWeek,
+        isCurrentWeek: isCurrentWeekSelected,
+        refetch,
+    };
 };

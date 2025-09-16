@@ -1,87 +1,73 @@
-import * as React from 'react';
-import { UtensilsCrossed, Coffee, Wine } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Coffee, UtensilsCrossed, Wine } from 'lucide-react';
 import type { CategoryCardProps } from '../types';
 import { formatMexicanPesos, formatPercentage } from '../utils';
 
 // Icon mapping
 const iconMap = {
-  UtensilsCrossed,
-  Coffee,
-  Wine
+    UtensilsCrossed,
+    Coffee,
+    Wine,
 };
 
 /**
  * Individual category card component for displaying sales data by product type
  */
-export function CategoryCard({
-  data,
-  isLoading = false,
-  className
-}: CategoryCardProps) {
-  const IconComponent = iconMap[data.icon as keyof typeof iconMap] || UtensilsCrossed;
-  const formattedMoney = formatMexicanPesos(data.money);
-  const formattedPercentage = formatPercentage(data.percentage);
+export function CategoryCard({ data, isLoading = false, className }: CategoryCardProps) {
+    const IconComponent = iconMap[data.icon as keyof typeof iconMap] || UtensilsCrossed;
+    const formattedMoney = formatMexicanPesos(data.money);
+    const formattedPercentage = formatPercentage(data.percentage);
 
-  if (isLoading) {
+    if (isLoading) {
+        return (
+            <div className={cn('flex items-center justify-between rounded-lg border border-border bg-card px-3 py-3', className)}>
+                {/* Left side skeleton */}
+                <div className="flex items-center gap-2.5">
+                    <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
+                    <div className="flex flex-col gap-1">
+                        <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+                    </div>
+                </div>
+
+                {/* Right side skeleton */}
+                <div className="flex flex-col items-end gap-0.5 text-right">
+                    <div className="h-5 w-20 animate-pulse rounded bg-muted" />
+                    <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />
+                </div>
+            </div>
+        );
+    }
+
     return (
-      <div className={cn(
-        "flex items-center justify-between px-3 py-3 rounded-lg bg-card border border-border",
-        className
-      )}>
-        {/* Left side skeleton */}
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
-          <div className="flex flex-col gap-1">
-            <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-          </div>
-        </div>
-
-        {/* Right side skeleton */}
-        <div className="text-right flex flex-col items-end gap-0.5">
-          <div className="h-5 w-20 bg-muted rounded animate-pulse" />
-          <div className="h-5 w-12 bg-muted rounded-full animate-pulse" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 bg-card border border-border hover:bg-card/80",
-        className
-      )}
-      role="article"
-      aria-label={`${data.name}: ${formattedMoney} (${formattedPercentage})`}
-    >
-      {/* Left side - Icon and category name */}
-      <div className="flex items-center gap-2.5">
-        {/* Category icon */}
         <div
-          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-primary-foreground shadow-sm bg-primary"
-          aria-hidden="true"
+            className={cn(
+                'flex items-center justify-between rounded-lg border border-border bg-card px-3 py-3 transition-all duration-200 hover:bg-card/80',
+                className,
+            )}
+            role="article"
+            aria-label={`${data.name}: ${formattedMoney} (${formattedPercentage})`}
         >
-          <IconComponent className="h-4 w-4" />
-        </div>
+            {/* Left side - Icon and category name */}
+            <div className="flex items-center gap-2.5">
+                {/* Category icon */}
+                <div
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shadow-sm"
+                    aria-hidden="true"
+                >
+                    <IconComponent className="h-4 w-4" />
+                </div>
 
-        {/* Category name */}
-        <div className="flex flex-col">
-          <span className="text-sm font-medium leading-tight text-foreground">
-            {data.name}
-          </span>
-        </div>
-      </div>
+                {/* Category name */}
+                <div className="flex flex-col">
+                    <span className="text-sm leading-tight font-medium text-foreground">{data.name}</span>
+                </div>
+            </div>
 
-      {/* Right side - Sales information */}
-      <div className="text-right flex flex-col items-end gap-0.5">
-        <div className="text-lg font-bold tabular-nums text-foreground">
-          {formattedMoney}
+            {/* Right side - Sales information */}
+            <div className="flex flex-col items-end gap-0.5 text-right">
+                <div className="text-lg font-bold text-foreground tabular-nums">{formattedMoney}</div>
+                <div className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{formattedPercentage}</div>
+            </div>
         </div>
-        <div className="text-xs font-medium rounded-full px-2 py-0.5 bg-primary/10 text-primary">
-          {formattedPercentage}
-        </div>
-      </div>
-    </div>
-  );
+    );
 }

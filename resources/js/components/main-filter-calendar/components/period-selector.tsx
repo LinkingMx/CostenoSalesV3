@@ -6,24 +6,24 @@ import { CUSTOM_OPTION, PERIOD_GROUPS } from '../utils';
 
 /**
  * PeriodSelector - Dropdown component for quick date range selection.
- * 
+ *
  * Provides grouped options for common date periods (daily, weekly, monthly)
  * with a custom option for manual calendar selection. Features Spanish
  * localization and organized grouping for better user experience.
- * 
+ *
  * @component
  * @param {PeriodSelectorProps} props - Component props
  * @returns {JSX.Element} Select dropdown with period options
- * 
+ *
  * @description Period groups:
  * - Custom: Manual calendar selection
- * - Diarios: Today, Yesterday  
+ * - Diarios: Today, Yesterday
  * - Semanales: This week, Last week
  * - Mensuales: This month, Last month
- * 
+ *
  * @example
  * ```tsx
- * <PeriodSelector 
+ * <PeriodSelector
  *   selectedPeriod="today"
  *   onPeriodChange={(period) => handlePeriodChange(period)}
  * />
@@ -35,12 +35,8 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
             <h3 className="mb-3 text-sm font-semibold text-foreground" id="period-selector-heading">
                 Selección de período rápido
             </h3>
-            <Select 
-                value={selectedPeriod} 
-                onValueChange={onPeriodChange}
-                aria-labelledby="period-selector-heading"
-            >
-                <SelectTrigger 
+            <Select value={selectedPeriod} onValueChange={onPeriodChange} aria-labelledby="period-selector-heading">
+                <SelectTrigger
                     className="h-10 w-full border-border bg-muted transition-colors hover:bg-muted/80"
                     aria-label="Seleccionar período de tiempo"
                 >
@@ -65,7 +61,7 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                     {PERIOD_GROUPS.map((group, index) => (
                         <React.Fragment key={group.label}>
                             <SelectGroup role="group" aria-labelledby={`group-${group.label}`}>
-                                <SelectLabel 
+                                <SelectLabel
                                     id={`group-${group.label}`}
                                     className="border-b border-border bg-muted px-3 py-1 text-xs font-bold tracking-wider text-muted-foreground uppercase"
                                 >
@@ -82,9 +78,7 @@ export const PeriodSelector = React.memo<PeriodSelectorProps>(({ selectedPeriod,
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
-                            {index < PERIOD_GROUPS.length - 1 && (
-                                <SelectSeparator className="my-0.5 bg-border" role="separator" />
-                            )}
+                            {index < PERIOD_GROUPS.length - 1 && <SelectSeparator className="my-0.5 bg-border" role="separator" />}
                         </React.Fragment>
                     ))}
                 </SelectContent>
