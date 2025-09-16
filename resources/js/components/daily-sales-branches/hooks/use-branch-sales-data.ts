@@ -13,6 +13,7 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import { fetchMainDashboardData, formatDateForApi, isValidDateRange } from '@/lib/services/main-dashboard.service';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { logger } from '../lib/logger';
 import type { BranchSalesData } from '../types';
 import { isSelectedDateToday, isSingleDaySelected } from '../utils';
 
@@ -51,7 +52,6 @@ export interface UseBranchSalesDataReturn {
  */
 export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBranchSalesDataOptions = {}): UseBranchSalesDataReturn {
     const { enabled = true, fallbackData = [], useFallbackDuringLoad = false } = options;
-
 
     // State management
     const [branches, setBranches] = useState<BranchSalesData[]>(fallbackData);
@@ -95,15 +95,15 @@ export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBr
     // API fetch function - FIXED: Removed circular dependency on branches.length
     const fetchData = useCallback(
         async (isRefresh = false) => {
-            console.log('🎯 BRANCH SALES HOOK - fetchData called:', {
+            logger.debug('fetchData called', {
                 enabled,
                 isVisible,
-                formattedDates,
+                hasFormattedDates: !!formattedDates,
                 isRefresh,
             });
 
             if (!enabled || !isVisible || !formattedDates) {
-                console.log('🚫 BRANCH SALES HOOK - Early return due to conditions');
+                logger.debug('Early return due to conditions');
                 return;
             }
 
@@ -158,29 +158,27 @@ export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBr
                         return prevBranches;
                     });
                 } else {
-                    if (process.env.NODE_ENV === 'development') {
-                        console.log('🔍 API Response received:', {
-                            hasError: !!result.error,
-                            branchesType: typeof result.branches,
-                            branchesIsArray: Array.isArray(result.branches),
-                            branchesLength: result.branches?.length || 'N/A',
-                            totalSales: result.totalSales,
-                            includedPreviousWeek: isSingleDay,
-                            firstBranchSample: result.branches?.[0] || 'N/A',
-                        });
-                    }
+                    logger.debug('API Response received', {
+                        hasError: !!result.error,
+                        branchesType: typeof result.branches,
+                        branchesIsArray: Array.isArray(result.branches),
+                        branchesLength: result.branches?.length || 'N/A',
+                        totalSales: result.totalSales,
+                        includedPreviousWeek: isSingleDay,
+                    });
 
                     // Validate that branches is actually an array with data
                     if (!result.branches || !Array.isArray(result.branches)) {
-                        if (process.env.NODE_ENV === 'development') {
-                            console.warn('⚠️ API returned invalid branches data structure:', result.branches);
-                        }
+                        logger.warn('API returned invalid branches data structure', {
+                            branchesType: typeof result.branches,
+                            isArray: Array.isArray(result.branches)
+                        });
                         setBranches(fallbackData.length > 0 ? fallbackData : []);
                         setError('Estructura de datos inválida');
                     } else if (result.branches.length === 0) {
-                        if (process.env.NODE_ENV === 'development') {
-                            console.warn('⚠️ API returned empty branches array for date:', formattedDates.startDate);
-                        }
+                        logger.warn('API returned empty branches array', {
+                            date: formattedDates.startDate
+                        });
                         // Use fallback data when API returns empty array
                         setBranches(fallbackData.length > 0 ? fallbackData : []);
                         setError(null);
@@ -189,13 +187,11 @@ export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBr
                         setTotalSales(result.totalSales);
                         setError(null);
 
-                        if (process.env.NODE_ENV === 'development') {
-                            console.log('✅ Branch sales data loaded successfully:', {
-                                branchCount: result.branches.length,
-                                totalSales: result.totalSales,
-                                includedPreviousWeek: isSingleDay,
-                            });
-                        }
+                        logger.debug('Branch sales data loaded successfully', {
+                            branchCount: result.branches.length,
+                            totalSales: result.totalSales,
+                            includedPreviousWeek: isSingleDay,
+                        });
                     }
 
                     setIsFromCache(false); // Assume fresh data for now
@@ -214,7 +210,7 @@ export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBr
                     setBranches(fallbackData);
                 }
 
-                console.error('Branch sales data fetch error:', err);
+                logger.error('Branch sales data fetch error', err);
             } finally {
                 if (isMountedRef.current) {
                     setIsLoading(false);

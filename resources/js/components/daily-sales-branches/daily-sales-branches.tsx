@@ -8,6 +8,7 @@ import * as React from 'react';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
 import { DailySalesBranchesSkeleton } from './components/daily-sales-branches-skeleton';
 import { useDailyBranchesSimple } from './hooks/use-daily-branches-simple';
+import { logger } from './lib/logger';
 import type { DailySalesBranchesProps } from './types';
 
 /**
@@ -54,33 +55,40 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
     const { branchesData, isLoading: actualIsLoading, error, isValidSingleDay, isToday, refetch } = useDailyBranchesSimple(selectedDateRange);
 
     // Enhanced loading state with minimum duration for better UX
-    const isLoading = useMinimumLoadingDuration(actualIsLoading, 3000);
+    const isLoading = useMinimumLoadingDuration(actualIsLoading, 1500);
 
     // Use static branches if provided, otherwise use API data
     const displayBranches = staticBranches || branchesData;
 
     // Debug logging to track data flow (reduced to prevent infinite loops)
     React.useEffect(() => {
-        if (process.env.NODE_ENV === 'development' && selectedDateRange) {
-            console.log('🔍 DailySalesBranches component state:', {
+        if (selectedDateRange) {
+            logger.debug('Component state updated', {
                 isValidSingleDay,
                 isLoading,
                 error,
                 staticBranches: !!staticBranches,
                 branchesFromAPI: branchesData?.length || 0,
                 displayBranches: displayBranches?.length || 0,
-                selectedDate: selectedDateRange?.from?.toISOString()?.split('T')[0],
+                selectedDate: selectedDateRange?.from ? formatDateForDebug(selectedDateRange.from) : null,
             });
         }
-    }, [selectedDateRange?.from, selectedDateRange?.to, isValidSingleDay, isLoading, error]);
+    }, [selectedDateRange, isValidSingleDay, isLoading, error, staticBranches, branchesData?.length, displayBranches?.length]);
+
+    // Utility function to format date for debug logging without expensive operations
+    const formatDateForDebug = (date: Date): string => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
 
     // Memoize validated and sorted branches to prevent unnecessary processing on each render
     // Includes data validation and sorting by total sales in descending order for better UX
     const sortedBranches = React.useMemo(() => {
         // Validate branches data to prevent runtime errors
         if (!Array.isArray(displayBranches) || displayBranches.length === 0) {
-            if (process.env.NODE_ENV === 'development') {
-                console.warn('DailySalesBranches: Invalid or empty branches data provided');
+            // Only log if we're in a valid single day and not loading
+            // This prevents spam during initial load or when date range is invalid
+            if (isValidSingleDay && !isLoading) {
+                logger.debug('No branches data available yet');
             }
             return [];
         }
@@ -88,15 +96,14 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
         // Filter out invalid branch objects and log warnings
         const validBranches = displayBranches.filter((branch) => {
             if (!branch || typeof branch !== 'object') {
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('DailySalesBranches: Invalid branch object found:', branch);
-                }
+                logger.warn('Invalid branch object found', { branchType: typeof branch });
                 return false;
             }
             if (!branch.id || typeof branch.name !== 'string') {
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn('DailySalesBranches: Branch missing required fields (id, name):', branch);
-                }
+                logger.warn('Branch missing required fields (id, name)', {
+                    hasId: !!branch.id,
+                    nameType: typeof branch.name
+                });
                 return false;
             }
             return true;
@@ -108,7 +115,7 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
             const salesB = typeof b.totalSales === 'number' ? b.totalSales : 0;
             return salesB - salesA;
         });
-    }, [displayBranches]);
+    }, [displayBranches, isValidSingleDay, isLoading]);
 
     // Conditional rendering: Only display component when a single day is selected
     // This ensures data relevance and prevents confusion with multi-day aggregates

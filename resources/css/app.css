@@ -226,18 +226,14 @@
 
     .animate-shimmer {
         animation: shimmer 2.5s ease-in-out infinite;
-        background-image: linear-gradient(
-            90deg,
-            transparent,
-            hsl(var(--primary) / 0.1),
-            transparent
-        );
+        background-image: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
         background-size: 200% 100%;
     }
 
     /* Enhanced pulse animation for skeleton elements */
     @keyframes enhanced-pulse {
-        0%, 100% {
+        0%,
+        100% {
             opacity: 1;
             transform: scale(1);
         }

@@ -20,10 +20,7 @@ import { useEffect, useRef, useState } from 'react';
  * }
  * ```
  */
-export function useMinimumLoadingDuration(
-    actualIsLoading: boolean,
-    minimumDurationMs: number = 3000
-): boolean {
+export function useMinimumLoadingDuration(actualIsLoading: boolean, minimumDurationMs: number = 3000): boolean {
     const [displayLoading, setDisplayLoading] = useState(false);
     const loadingStartedRef = useRef<number | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);

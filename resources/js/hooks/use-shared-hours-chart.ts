@@ -49,7 +49,7 @@ export const useSharedHoursChart = (
     const enhancedOptions = useMemo(
         () => ({
             ...hoursChartOptions,
-            
+
             onSuccess: (data: ProcessedChartData) => {
                 onApiCallStatusChange?.(true);
                 hoursChartOptions.onSuccess?.(data);

@@ -1,4 +1,4 @@
-import { DailySkeletonBase, getStaggeredDelay, SkeletonShimmer, SKELETON_LOADING_TEXTS } from '@/components/ui/daily-skeleton-base';
+import { DailySkeletonBase, getStaggeredDelay, SKELETON_LOADING_TEXTS, SkeletonShimmer } from '@/components/ui/daily-skeleton-base';
 import { Building } from 'lucide-react';
 import * as React from 'react';
 
@@ -29,16 +29,9 @@ import * as React from 'react';
  * }
  * ```
  */
-export const DailySalesBranchesSkeleton = React.memo(({
-    itemCount = 3,
-}: {
-    itemCount?: number;
-}) => {
+export const DailySalesBranchesSkeleton = React.memo(({ itemCount = 3 }: { itemCount?: number }) => {
     // Generate array of items for rendering skeleton branches
-    const skeletonItems = React.useMemo(
-        () => Array.from({ length: itemCount }, (_, index) => ({ id: index })),
-        [itemCount]
-    );
+    const skeletonItems = React.useMemo(() => Array.from({ length: itemCount }, (_, index) => ({ id: index })), [itemCount]);
 
     return (
         <DailySkeletonBase aria-label={SKELETON_LOADING_TEXTS.branches}>
@@ -49,12 +42,8 @@ export const DailySalesBranchesSkeleton = React.memo(({
                         <Building className="h-4 w-4 text-primary-foreground" />
                     </div>
                     <div className="flex flex-col">
-                        <h2 className="text-base leading-none font-semibold tracking-tight text-foreground">
-                            Ventas por sucursal (Por día)
-                        </h2>
-                        <p className="mt-0.5 text-sm text-muted-foreground">
-                            Ventas diarias por sucursal detalladas
-                        </p>
+                        <h2 className="text-base leading-none font-semibold tracking-tight text-foreground">Ventas por sucursal (Por día)</h2>
+                        <p className="mt-0.5 text-sm text-muted-foreground">Ventas diarias por sucursal detalladas</p>
                     </div>
                 </div>
             </div>
@@ -78,7 +67,7 @@ export const DailySalesBranchesSkeleton = React.memo(({
                             </div>
 
                             {/* Right side - Sales data */}
-                            <div className="text-right space-y-1">
+                            <div className="space-y-1 text-right">
                                 {/* Sales amount */}
                                 <SkeletonShimmer className="mb-1 h-5 w-20 rounded" />
                                 {/* Percentage change */}
@@ -88,7 +77,7 @@ export const DailySalesBranchesSkeleton = React.memo(({
 
                         {/* Optional: Subtle hint of collapsible content for first item */}
                         {item.id === 0 && (
-                            <div className="mt-3 pt-3 border-t border-border/30">
+                            <div className="mt-3 border-t border-border/30 pt-3">
                                 <div className="grid grid-cols-2 gap-3 opacity-40">
                                     <div className="space-y-2">
                                         <SkeletonShimmer className="h-3 w-20 rounded" />

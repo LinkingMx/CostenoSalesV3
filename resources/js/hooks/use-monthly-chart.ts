@@ -35,11 +35,7 @@ interface UseMonthlyChartReturn {
  * Provides API integration, caching, loading states, and error handling
  */
 export const useMonthlyChart = (selectedDateRange: DateRange | undefined, options: UseMonthlyChartOptions = {}): UseMonthlyChartReturn => {
-    const {
-        enableRetry = true,
-        maxRetries = 3,
-        debounceMs = 300,
-    } = options;
+    const { enableRetry = true, maxRetries = 3, debounceMs = 300 } = options;
 
     const [data, setData] = useState<MonthlyChartData | null>(null);
     const [rawApiData, setRawApiData] = useState<unknown | null>(null);
@@ -123,7 +119,6 @@ export const useMonthlyChart = (selectedDateRange: DateRange | undefined, option
                 if (currentRequestRef.current !== requestId || !isMountedRef.current) {
                     return;
                 }
-
 
                 if (result.error) {
                     setError(result.error);

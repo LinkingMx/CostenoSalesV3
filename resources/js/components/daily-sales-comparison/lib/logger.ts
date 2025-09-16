@@ -32,11 +32,12 @@ export const logger = {
         if (!DEBUG_DAILY_SALES) return;
 
         // Simplify complex objects to prevent performance issues
-        const logData = data && typeof data === 'object' && !Array.isArray(data)
-            ? Object.keys(data).length > 5
-                ? { keys: Object.keys(data), count: Object.keys(data).length }
-                : data
-            : data;
+        const logData =
+            data && typeof data === 'object' && !Array.isArray(data)
+                ? Object.keys(data).length > 5
+                    ? { keys: Object.keys(data), count: Object.keys(data).length }
+                    : data
+                : data;
 
         console.debug(`[DailySales] ${message}`, logData);
     },
@@ -68,7 +69,7 @@ export const logger = {
     info: (message: string, data?: unknown): void => {
         if (!DEBUG_DAILY_SALES) return;
         console.info(`[DailySales] ${message}`, data);
-    }
+    },
 };
 
 /**

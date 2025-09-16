@@ -26,7 +26,7 @@ export interface UseHoursChartReturn {
  * Custom hook for fetching hours chart data with caching and error handling
  */
 export const useHoursChart = (date: Date | string | null, options: UseHoursChartOptions = {}): UseHoursChartReturn => {
-    const { enableRetry = true, maxRetries = 3, debounceMs = 300,   onSuccess } = options;
+    const { enableRetry = true, maxRetries = 3, debounceMs = 300, onSuccess } = options;
 
     const [data, setData] = useState<ProcessedChartData | null>(null);
     const [isLoading, setIsLoading] = useState(false);

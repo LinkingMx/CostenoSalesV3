@@ -1,6 +1,7 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import { fetchMainDashboardData, formatDateForApi } from '@/lib/services/main-dashboard.service';
 import * as React from 'react';
+import { logger } from '../lib/logger';
 import type { BranchSalesData } from '../types';
 import { isSelectedDateToday, isSingleDaySelected } from '../utils';
 
@@ -52,7 +53,7 @@ export const useDailyBranchesSimple = (selectedDateRange?: DateRange): UseDailyB
         setError(null);
 
         try {
-            console.log('🎯 DailyBranchesSimple: Fetching data for date:', formattedDate);
+            logger.debug('Fetching data for date', { formattedDate });
 
             const result = await fetchMainDashboardData(
                 formattedDate,
@@ -64,7 +65,7 @@ export const useDailyBranchesSimple = (selectedDateRange?: DateRange): UseDailyB
                 setError(result.error);
                 setBranchesData([]);
             } else {
-                console.log('✅ DailyBranchesSimple: Data received:', {
+                logger.debug('Data received successfully', {
                     branchCount: result.branches?.length || 0,
                     totalSales: result.totalSales,
                 });
@@ -72,7 +73,7 @@ export const useDailyBranchesSimple = (selectedDateRange?: DateRange): UseDailyB
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error al cargar datos diarios';
-            console.error('❌ DailyBranchesSimple: Fetch error:', errorMessage);
+            logger.error('Fetch error occurred', { message: errorMessage });
             setError(errorMessage);
             setBranchesData([]);
         } finally {

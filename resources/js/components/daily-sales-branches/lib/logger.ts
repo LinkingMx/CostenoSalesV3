@@ -1,5 +1,5 @@
 /**
- * Conditional logging utility for daily-chart-comparison component
+ * Conditional logging utility for daily-sales-branches component
  *
  * Features:
  * - Development-only logging with localStorage debug flag control
@@ -12,11 +12,11 @@
 /**
  * Debug flag check - only computed once per module load for performance
  */
-const DEBUG_DAILY_CHART = (() => {
+const DEBUG_DAILY_BRANCHES = (() => {
     if (typeof window === 'undefined' || process.env.NODE_ENV !== 'development') {
         return false;
     }
-    return window.localStorage.getItem('debug:daily-chart') === 'true';
+    return window.localStorage.getItem('debug:daily-branches') === 'true';
 })();
 
 /**
@@ -29,7 +29,7 @@ export const logger = {
      * @param data - Optional data to log (keep simple for performance)
      */
     debug: (message: string, data?: unknown): void => {
-        if (!DEBUG_DAILY_CHART) return;
+        if (!DEBUG_DAILY_BRANCHES) return;
 
         // Simplify complex objects to prevent performance issues
         const logData =
@@ -39,7 +39,7 @@ export const logger = {
                     : data
                 : data;
 
-        console.debug(`[DailyChart] ${message}`, logData);
+        console.debug(`[DailyBranches] ${message}`, logData);
     },
 
     /**
@@ -49,7 +49,7 @@ export const logger = {
      */
     warn: (message: string, data?: unknown): void => {
         if (process.env.NODE_ENV !== 'development') return;
-        console.warn(`[DailyChart] ${message}`, data);
+        console.warn(`[DailyBranches] ${message}`, data);
     },
 
     /**
@@ -58,7 +58,7 @@ export const logger = {
      * @param data - Optional error data to log
      */
     error: (message: string, data?: unknown): void => {
-        console.error(`[DailyChart] ${message}`, data);
+        console.error(`[DailyBranches] ${message}`, data);
     },
 
     /**
@@ -67,15 +67,15 @@ export const logger = {
      * @param data - Optional data to log
      */
     info: (message: string, data?: unknown): void => {
-        if (!DEBUG_DAILY_CHART) return;
-        console.info(`[DailyChart] ${message}`, data);
+        if (!DEBUG_DAILY_BRANCHES) return;
+        console.info(`[DailyBranches] ${message}`, data);
     },
 };
 
 /**
  * Enable debug logging in browser console:
- * localStorage.setItem('debug:daily-chart', 'true')
+ * localStorage.setItem('debug:daily-branches', 'true')
  *
  * Disable debug logging:
- * localStorage.removeItem('debug:daily-chart')
+ * localStorage.removeItem('debug:daily-branches')
  */

@@ -1,4 +1,4 @@
-import { DailySkeletonBase, getStaggeredDelay, SkeletonShimmer, SKELETON_LOADING_TEXTS } from '@/components/ui/daily-skeleton-base';
+import { DailySkeletonBase, getStaggeredDelay, SKELETON_LOADING_TEXTS, SkeletonShimmer } from '@/components/ui/daily-skeleton-base';
 import * as React from 'react';
 import { SalesComparisonHeader } from './sales-comparison-header';
 
@@ -28,18 +28,15 @@ import { SalesComparisonHeader } from './sales-comparison-header';
  * }
  * ```
  */
-export function SalesComparisonSkeleton({
-    cardCount = 4
-}: {
-    cardCount?: number;
-}) {
+export function SalesComparisonSkeleton({ cardCount = 4 }: { cardCount?: number }) {
     // Generate sales card data for consistent rendering
     const salesCards = React.useMemo(
-        () => Array.from({ length: cardCount }, (_, index) => ({
-            id: index,
-            isHighlighted: index === 0 // First card (today) should be highlighted
-        })),
-        [cardCount]
+        () =>
+            Array.from({ length: cardCount }, (_, index) => ({
+                id: index,
+                isHighlighted: index === 0, // First card (today) should be highlighted
+            })),
+        [cardCount],
     );
 
     return (
@@ -52,58 +49,37 @@ export function SalesComparisonSkeleton({
                 {salesCards.map((card) => (
                     <div
                         key={card.id}
-                        className={`
-                            flex items-center justify-between rounded-lg border bg-card px-3 py-2
-                            animate-in fade-in-50 slide-in-from-left-1
-                            ${card.isHighlighted
-                                ? 'border-primary/20 bg-gradient-to-r from-primary/5 to-transparent'
-                                : 'border-border'
-                            }
-                        `}
+                        className={`flex items-center justify-between rounded-lg border bg-card px-3 py-2 animate-in fade-in-50 slide-in-from-left-1 ${
+                            card.isHighlighted ? 'border-primary/20 bg-gradient-to-r from-primary/5 to-transparent' : 'border-border'
+                        } `}
                         style={getStaggeredDelay(card.id, 150)}
                     >
                         {/* Left section - Circle and date */}
                         <div className="flex items-center gap-3">
                             {/* Enhanced circle indicator with gradient */}
-                            <div className={`
-                                h-9 w-9 rounded-full relative overflow-hidden
-                                ${card.isHighlighted
-                                    ? 'bg-gradient-to-br from-primary/20 to-primary/10'
-                                    : 'bg-muted'
-                                }
-                            `}>
+                            <div
+                                className={`relative h-9 w-9 overflow-hidden rounded-full ${
+                                    card.isHighlighted ? 'bg-gradient-to-br from-primary/20 to-primary/10' : 'bg-muted'
+                                } `}
+                            >
                                 <SkeletonShimmer className="absolute inset-0 rounded-full" />
                                 {/* Highlight effect for today's card */}
-                                {card.isHighlighted && (
-                                    <div className="absolute inset-0 bg-primary/10 animate-enhanced-pulse rounded-full" />
-                                )}
+                                {card.isHighlighted && <div className="animate-enhanced-pulse absolute inset-0 rounded-full bg-primary/10" />}
                             </div>
 
                             {/* Date text with varied widths for realism */}
                             <SkeletonShimmer
-                                className={`h-4 rounded ${
-                                    card.id === 0 ? 'w-20' :
-                                    card.id === 1 ? 'w-16' :
-                                    card.id === 2 ? 'w-18' : 'w-24'
-                                }`}
+                                className={`h-4 rounded ${card.id === 0 ? 'w-20' : card.id === 1 ? 'w-16' : card.id === 2 ? 'w-18' : 'w-24'}`}
                             />
                         </div>
 
                         {/* Right section - Sales amount */}
                         <div className="text-right">
                             {/* Main amount with highlighting for today */}
-                            <SkeletonShimmer
-                                className={`mb-1 h-5 rounded ${
-                                    card.isHighlighted ? 'w-28 bg-primary/20' : 'w-24'
-                                }`}
-                            />
+                            <SkeletonShimmer className={`mb-1 h-5 rounded ${card.isHighlighted ? 'w-28 bg-primary/20' : 'w-24'}`} />
 
                             {/* Optional percentage indicator for first few cards */}
-                            {card.id < 2 && (
-                                <SkeletonShimmer
-                                    className="h-3 w-12 rounded opacity-60"
-                                />
-                            )}
+                            {card.id < 2 && <SkeletonShimmer className="h-3 w-12 rounded opacity-60" />}
                         </div>
                     </div>
                 ))}
@@ -112,7 +88,7 @@ export function SalesComparisonSkeleton({
             {/* Loading progress indicator */}
             <div className="mt-3 flex items-center justify-center text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                    <SkeletonShimmer className="h-4 w-4 rounded animate-spin" />
+                    <SkeletonShimmer className="h-4 w-4 animate-spin rounded" />
                     <span className="opacity-70">Calculando comparación de ventas...</span>
                 </div>
             </div>

@@ -16,7 +16,7 @@ export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsib
 
     // Access date range from context and dashboard state management
     const { dateRange } = useDateRange();
-    const { setOriginalDateRange } = useDashboardState();
+    const { originalDateRange, setOriginalDateRange } = useDashboardState();
 
     const handleViewDetails = () => {
         try {
@@ -39,9 +39,19 @@ export function BranchCollapsibleItem({ branch, isCurrentWeek }: BranchCollapsib
             // Branch.id is already a string based on type definition
             const branchId = branch.id;
 
-            // Save current dateRange as original for return navigation
-            if (dateRange) {
+            // Only set originalDateRange if it doesn't exist yet
+            // This preserves the user's original selection from the dashboard
+            if (!originalDateRange && dateRange) {
                 setOriginalDateRange(dateRange);
+                console.log('🔄 Setting originalDateRange for first navigation:', {
+                    from: dateRange.from?.toISOString(),
+                    to: dateRange.to?.toISOString(),
+                });
+            } else if (originalDateRange) {
+                console.log('✅ Preserving existing originalDateRange:', {
+                    from: originalDateRange.from?.toISOString(),
+                    to: originalDateRange.to?.toISOString(),
+                });
             }
 
             // Navigate with iOS transition - NO preserveState to avoid refresh issues

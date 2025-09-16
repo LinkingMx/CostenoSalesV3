@@ -6,9 +6,9 @@ import { DailyChartError } from './components/daily-chart-error';
 import { DailyChartHeader } from './components/daily-chart-header';
 import { DailyChartSkeleton } from './components/daily-chart-skeleton';
 import { DailyComparisonChart } from './components/daily-comparison-chart';
+import { logger } from './lib/logger';
 import type { DailyChartComparisonProps, DailyChartData } from './types';
 import { convertApiDataToChartData, generateMockDailyChartData, validateDailyChartData } from './utils';
-import { logger } from './lib/logger';
 
 // Performance: Memoized components using standard React.memo patterns
 const MemoizedDailyChartHeader = React.memo(DailyChartHeader);

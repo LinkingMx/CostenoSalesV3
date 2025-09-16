@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import { ChevronDown, TicketCheck, TicketMinus, TicketPercent } from 'lucide-react';
 import * as React from 'react';
+import { logger } from '../lib/logger';
 import type { BranchCollapsibleItemProps } from '../types';
 import { formatCurrency, formatPercentage } from '../utils';
 
@@ -16,32 +17,38 @@ export function BranchCollapsibleItem({ branch, isToday = false }: BranchCollaps
 
     // Access date range from context and dashboard state management
     const { dateRange } = useDateRange();
-    const { setOriginalDateRange } = useDashboardState();
+    const { originalDateRange, setOriginalDateRange } = useDashboardState();
 
     const handleViewDetails = () => {
         try {
             // Debug logging
-            if (process.env.NODE_ENV === 'development') {
-                console.log('🔍 DailySalesBranches navigating to branch:', {
-                    id: branch.id,
-                    idType: typeof branch.id,
-                    name: branch.name,
-                    location: branch.location,
-                    dateRange: dateRange
-                        ? {
-                              from: dateRange.from?.toISOString(),
-                              to: dateRange.to?.toISOString(),
-                          }
-                        : null,
-                });
-            }
+            logger.debug('Navigating to branch details', {
+                id: branch.id,
+                idType: typeof branch.id,
+                name: branch.name,
+                location: branch.location,
+                hasDateRange: !!dateRange,
+            });
 
             // Branch.id is already a string based on type definition
             const branchId = branch.id;
 
-            // Save current dateRange as original for return navigation
+            // ALWAYS ensure originalDateRange is set when navigating to branch
+            // This ensures we can restore the dashboard state when returning
             if (dateRange) {
-                setOriginalDateRange(dateRange);
+                // Only update if it's different or missing
+                if (!originalDateRange ||
+                    originalDateRange.from?.getTime() !== dateRange.from?.getTime() ||
+                    originalDateRange.to?.getTime() !== dateRange.to?.getTime()) {
+                    setOriginalDateRange(dateRange);
+                    logger.debug('Setting/updating originalDateRange for navigation', {
+                        hadPrevious: !!originalDateRange,
+                    });
+                } else {
+                    logger.debug('originalDateRange already correct');
+                }
+            } else {
+                logger.warn('No dateRange available for navigation');
             }
 
             // Navigate with iOS transition - NO preserveState to avoid refresh issues
@@ -62,12 +69,12 @@ export function BranchCollapsibleItem({ branch, isToday = false }: BranchCollaps
                 // Removed preserveState and preserveScroll for clean iOS transitions
             });
         } catch (error) {
-            console.error('Error navigating to branch details:', error);
+            logger.error('Error navigating to branch details', error);
             // Fallback to basic navigation
             try {
                 router.visit(`/branch/${branch.id}?name=${encodeURIComponent(branch.name)}&region=${encodeURIComponent(branch.location || '')}`);
             } catch (fallbackError) {
-                console.error('Fallback navigation also failed:', fallbackError);
+                logger.error('Fallback navigation also failed', fallbackError);
             }
         }
     };

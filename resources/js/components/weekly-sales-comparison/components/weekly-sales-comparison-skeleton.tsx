@@ -49,7 +49,7 @@ export function WeeklySalesComparisonSkeleton() {
  */
 function WeeklySummarySkeletonCard() {
     return (
-        <div className="animate-pulse flex items-center justify-between rounded-lg border border-border bg-card px-3 py-3">
+        <div className="flex animate-pulse items-center justify-between rounded-lg border border-border bg-card px-3 py-3">
             {/* Left side - Week indicator and date range skeleton */}
             <div className="flex items-center gap-2.5">
                 {/* Circular week indicator skeleton */}

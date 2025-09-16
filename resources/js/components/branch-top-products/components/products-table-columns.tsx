@@ -31,7 +31,7 @@ function SortableHeader({ children, canSort, onClick }: SortableHeaderProps) {
         <Button variant="ghost" onClick={onClick} className="h-auto p-0 font-medium text-foreground hover:bg-transparent hover:text-foreground">
             <span className="flex items-center gap-3">
                 {children}
-                <div className="flex h-5 w-5 min-w-5 items-center justify-center rounded-full bg-primary flex-shrink-0">
+                <div className="flex h-5 w-5 min-w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary">
                     <ArrowUpDown className="h-3 w-3 text-primary-foreground" />
                 </div>
             </span>
@@ -51,9 +51,9 @@ function ProductNameCell({ getValue }: { getValue: () => string }) {
         return (
             <Popover>
                 <PopoverTrigger asChild>
-                    <button className="flex items-center gap-1 font-medium text-white text-left group">
+                    <button className="group flex items-center gap-1 text-left font-medium text-white">
                         <span>{truncatedName}</span>
-                        <Info className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <Info className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" />
                     </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-3" side="top" align="start">
@@ -89,7 +89,6 @@ function CurrencyCellNoDecimals({ getValue }: { getValue: () => number }) {
     const amount = getValue();
     return <div className="text-right text-foreground">{formatMXNCurrencyNoDecimals(amount)}</div>;
 }
-
 
 /**
  * Column definitions for the products table
@@ -142,5 +141,4 @@ export const productsTableColumns = [
         sortingFn: 'basic',
         size: 110, // Fixed 110px width for "Total" mobile
     }),
-
 ];

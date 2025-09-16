@@ -101,23 +101,27 @@ export function DailyComparisonChart({
     const isMobile = useIsMobile();
 
     // Optimized chart configuration memoization
-    const chartConfig = React.useMemo(() => ({
-        margin: isMobile
-            ? { top: 20, right: 35, left: 35, bottom: 25 }
-            : { top: 20, right: 30, left: 30, bottom: 20 },
-        cornerRadius: 4,
-        maxBarSize: orientation === 'vertical' ? 80 : undefined,
-    }), [orientation, isMobile]);
+    const chartConfig = React.useMemo(
+        () => ({
+            margin: isMobile ? { top: 20, right: 35, left: 35, bottom: 25 } : { top: 20, right: 30, left: 30, bottom: 20 },
+            cornerRadius: 4,
+            maxBarSize: orientation === 'vertical' ? 80 : undefined,
+        }),
+        [orientation, isMobile],
+    );
 
     // Streamlined chart data transformation
-    const chartData = React.useMemo(() =>
-        data.comparisonData.map((point) => ({
-            period: point.period,
-            amount: Number(point.amount),
-            fill: point.color,
-            date: point.date,
-            isSelected: point.isSelected,
-        })), [data.comparisonData]);
+    const chartData = React.useMemo(
+        () =>
+            data.comparisonData.map((point) => ({
+                period: point.period,
+                amount: Number(point.amount),
+                fill: point.color,
+                date: point.date,
+                isSelected: point.isSelected,
+            })),
+        [data.comparisonData],
+    );
 
     // Validate data before rendering
     if (!data?.comparisonData || data.comparisonData.length === 0) {

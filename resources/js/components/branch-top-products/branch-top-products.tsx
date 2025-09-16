@@ -103,15 +103,7 @@ interface TablePaginationProps {
     onNextPage: () => void;
 }
 
-function TablePagination({
-    canPreviousPage,
-    canNextPage,
-    currentPage,
-    pageCount,
-    totalItems,
-    onPreviousPage,
-    onNextPage,
-}: TablePaginationProps) {
+function TablePagination({ canPreviousPage, canNextPage, currentPage, pageCount, totalItems, onPreviousPage, onNextPage }: TablePaginationProps) {
     if (totalItems === 0) return null;
 
     return (
@@ -119,7 +111,7 @@ function TablePagination({
             <Button
                 onClick={onPreviousPage}
                 disabled={!canPreviousPage}
-                className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none p-0"
+                className="h-9 w-9 rounded-full bg-primary p-0 text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
             >
                 <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -131,7 +123,7 @@ function TablePagination({
             <Button
                 onClick={onNextPage}
                 disabled={!canNextPage}
-                className="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none p-0"
+                className="h-9 w-9 rounded-full bg-primary p-0 text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
             >
                 <ChevronRight className="h-4 w-4" />
             </Button>
@@ -185,7 +177,7 @@ export function BranchTopProducts({ data, isLoading = false, error = null }: Bra
                         <ProductsTableSearch value={searchValue} onChange={setSearchValue} placeholder="Buscar producto..." />
 
                         {/* Table */}
-                        <div className="rounded-md border overflow-x-auto">
+                        <div className="overflow-x-auto rounded-md border">
                             <Table style={{ tableLayout: 'fixed', minWidth: '470px' }}>
                                 <TableHeader>
                                     {table.getHeaderGroups().map((headerGroup) => (
@@ -194,9 +186,7 @@ export function BranchTopProducts({ data, isLoading = false, error = null }: Bra
                                                 <TableHead
                                                     key={header.id}
                                                     className={`px-3 py-2 ${
-                                                        index === 0
-                                                            ? 'sticky left-0 z-10 border-r border-border text-white'
-                                                            : ''
+                                                        index === 0 ? 'sticky left-0 z-10 border-r border-border text-white' : ''
                                                     }`}
                                                     style={{
                                                         width: `${header.getSize()}px`,
@@ -216,11 +206,7 @@ export function BranchTopProducts({ data, isLoading = false, error = null }: Bra
                                                 {row.getVisibleCells().map((cell, cellIndex) => (
                                                     <TableCell
                                                         key={cell.id}
-                                                        className={`px-3 py-2 ${
-                                                            cellIndex === 0
-                                                                ? 'sticky left-0 z-10 border-r border-border'
-                                                                : ''
-                                                        }`}
+                                                        className={`px-3 py-2 ${cellIndex === 0 ? 'sticky left-0 z-10 border-r border-border' : ''}`}
                                                         style={{
                                                             width: `${cell.column.getSize()}px`,
                                                             backgroundColor: cellIndex === 0 ? '#6b5d4a' : undefined, // Darkened primary

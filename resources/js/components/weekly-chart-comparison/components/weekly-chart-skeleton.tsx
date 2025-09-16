@@ -53,15 +53,17 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                 {/* Real header - shown immediately for better UX */}
                 <WeeklyChartHeader />
 
-
                 {/* Chart container skeleton */}
-                <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-b from-card to-card/80" style={{ height }}>
+                <div
+                    className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-b from-card to-card/80"
+                    style={{ height }}
+                >
                     {/* Legend skeleton */}
                     <div className="absolute top-4 right-4 flex flex-col space-y-2">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="flex items-center gap-2">
-                                <div className="h-3 w-3 animate-pulse rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20" />
-                                <div className="h-3 w-16 animate-pulse rounded bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/15" />
+                                <div className="h-3 w-3 animate-pulse rounded-full border border-primary/20 bg-gradient-to-r from-primary/25 to-primary/15" />
+                                <div className="h-3 w-16 animate-pulse rounded border border-primary/15 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
                             </div>
                         ))}
                     </div>
@@ -85,7 +87,7 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                                         {[1, 2, 3].map((lineIndex) => (
                                             <div
                                                 key={lineIndex}
-                                                className="h-2 w-2 animate-pulse rounded-full bg-gradient-to-r from-primary/30 to-primary/20 border border-primary/25"
+                                                className="h-2 w-2 animate-pulse rounded-full border border-primary/25 bg-gradient-to-r from-primary/30 to-primary/20"
                                                 style={{
                                                     animationDelay: `${(dayIndex * 3 + lineIndex) * 50}ms`,
                                                     transform: `translateY(-${generateRandomHeight()}px)`,
@@ -95,7 +97,7 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                                     </div>
 
                                     {/* Day label skeleton */}
-                                    <div className="h-3 w-8 animate-pulse rounded bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/15" />
+                                    <div className="h-3 w-8 animate-pulse rounded border border-primary/15 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20" />
                                 </div>
                             ))}
                         </div>

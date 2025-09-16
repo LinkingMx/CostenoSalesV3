@@ -22,6 +22,7 @@
  */
 
 import type { DateRange } from '@/components/main-filter-calendar';
+import { logger } from './lib/logger';
 import type { BranchSalesData } from './types';
 
 /**
@@ -137,7 +138,7 @@ export function isSingleDaySelected(dateRange?: DateRange): boolean {
 export function formatCurrency(amount: number): string {
     // Handle invalid or non-numeric inputs gracefully
     if (typeof amount !== 'number' || isNaN(amount) || !isFinite(amount)) {
-        console.warn(`formatCurrency: Invalid amount provided: ${amount}`);
+        logger.warn('formatCurrency: Invalid amount provided', { amount, type: typeof amount });
         return '$0.00'; // Fallback to zero currency format
     }
 
@@ -150,7 +151,7 @@ export function formatCurrency(amount: number): string {
             currencyDisplay: 'symbol', // Show only $ symbol, not USD
         }).format(amount);
     } catch (error) {
-        console.error('formatCurrency: Formatting error:', error);
+        logger.error('formatCurrency: Formatting error', error);
         return `$${amount.toFixed(2)}`; // Fallback formatting
     }
 }
@@ -182,14 +183,14 @@ export function formatCurrency(amount: number): string {
 export function formatPercentage(percentage: number): string {
     // Handle invalid or non-numeric inputs gracefully
     if (typeof percentage !== 'number' || isNaN(percentage) || !isFinite(percentage)) {
-        console.warn(`formatPercentage: Invalid percentage provided: ${percentage}`);
+        logger.warn('formatPercentage: Invalid percentage provided', { percentage, type: typeof percentage });
         return '0.0%'; // Fallback to zero percentage
     }
 
     try {
         return `${percentage.toFixed(1)}%`;
     } catch (error) {
-        console.error('formatPercentage: Formatting error:', error);
+        logger.error('formatPercentage: Formatting error', error);
         return `${percentage}%`; // Fallback without decimal precision
     }
 }

@@ -9,6 +9,7 @@ El componente `BranchTopProducts` es una tabla de datos completamente funcional 
 ## Características Principales
 
 ### ✅ Funcionalidades de Datos
+
 - **Búsqueda en tiempo real** por nombre de producto
 - **Ordenamiento dinámico** por cantidad, precio unitario y total
 - **Paginación** con navegación anterior/siguiente
@@ -16,6 +17,7 @@ El componente `BranchTopProducts` es una tabla de datos completamente funcional 
 - **Validación de datos** con manejo robusto de errores
 
 ### ✅ Diseño Mobile-First
+
 - **Columna fija** para nombres de productos con scroll horizontal
 - **Anchos optimizados** para pantallas móviles (470px total)
 - **Iconos de ordenamiento** en círculos primary perfectos
@@ -23,6 +25,7 @@ El componente `BranchTopProducts` es una tabla de datos completamente funcional 
 - **Formato sin decimales** para valores monetarios
 
 ### ✅ Experiencia de Usuario
+
 - **Estados de carga** con skeleton components
 - **Estados de error** con mensajes informativos
 - **Estado vacío** cuando no hay productos
@@ -47,6 +50,7 @@ branch-top-products/
 ## Interfaces TypeScript
 
 ### TopProduct (API Response)
+
 ```typescript
 interface TopProduct {
     item_id: number;
@@ -58,6 +62,7 @@ interface TopProduct {
 ```
 
 ### TopProductTableRow (Tabla Procesada)
+
 ```typescript
 interface TopProductTableRow extends TopProduct {
     total: number; // quantity * unit_cost
@@ -65,6 +70,7 @@ interface TopProductTableRow extends TopProduct {
 ```
 
 ### Props del Componente Principal
+
 ```typescript
 interface BranchTopProductsProps {
     data: TopProduct[] | null;
@@ -76,6 +82,7 @@ interface BranchTopProductsProps {
 ## Configuración de Columnas
 
 ### Distribución de Anchos (Mobile-Optimized)
+
 - **Producto**: 180px (columna fija, fondo oscurecido)
 - **Qty**: 80px (cantidad)
 - **$ Unit**: 100px (precio unitario sin decimales)
@@ -84,6 +91,7 @@ interface BranchTopProductsProps {
 ### Características por Columna
 
 #### 1. Producto (Fija)
+
 ```typescript
 - Ancho: 180px (doble del estándar)
 - Posición: sticky left-0 z-10
@@ -95,6 +103,7 @@ interface BranchTopProductsProps {
 ```
 
 #### 2. Qty (Cantidad)
+
 ```typescript
 - Ancho: 80px
 - Formato: Números enteros, decimales solo si necesarios
@@ -103,6 +112,7 @@ interface BranchTopProductsProps {
 ```
 
 #### 3. $ Unit (Precio Unitario)
+
 ```typescript
 - Ancho: 100px
 - Formato: MXN sin decimales (ej: $149)
@@ -111,6 +121,7 @@ interface BranchTopProductsProps {
 ```
 
 #### 4. TT (Total)
+
 ```typescript
 - Ancho: 110px
 - Formato: MXN sin decimales (ej: $154,960)
@@ -122,25 +133,26 @@ interface BranchTopProductsProps {
 ## Lógica de Filtrado
 
 ### Filtros Automáticos
+
 ```typescript
 // 1. Filtro por precio unitario
-products.filter(product => product.unit_cost >= 10)
+products.filter((product) => product.unit_cost >= 10);
 
 // 2. Filtro por valor total
-products.filter(product => (product.quantity * product.unit_cost) >= 10)
+products.filter((product) => product.quantity * product.unit_cost >= 10);
 ```
 
 ### Filtro de Búsqueda
+
 ```typescript
 // Búsqueda insensible a mayúsculas/minúsculas en nombres
-products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
-)
+products.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
 ```
 
 ## Funciones de Formateo
 
 ### Moneda Mexicana
+
 ```typescript
 // Con decimales (legacy)
 formatMXNCurrency(amount: number): string
@@ -152,6 +164,7 @@ formatMXNCurrencyNoDecimals(amount: number): string
 ```
 
 ### Cantidades
+
 ```typescript
 formatQuantity(quantity: number): string
 // Enteros: "100"
@@ -159,6 +172,7 @@ formatQuantity(quantity: number): string
 ```
 
 ### Truncado de Texto
+
 ```typescript
 truncateProductName(name: string, maxLength: number = 18): string
 // "Producto Muy Largo..." (máximo 18 caracteres)
@@ -167,6 +181,7 @@ truncateProductName(name: string, maxLength: number = 18): string
 ## Estados del Componente
 
 ### Loading State
+
 ```typescript
 - Muestra: TableLoadingSkeleton
 - Skeleton para: búsqueda, headers, 5 filas, paginación
@@ -174,6 +189,7 @@ truncateProductName(name: string, maxLength: number = 18): string
 ```
 
 ### Error State
+
 ```typescript
 - Muestra: ErrorState component
 - Icono: AlertCircle destructive
@@ -182,6 +198,7 @@ truncateProductName(name: string, maxLength: number = 18): string
 ```
 
 ### Empty State
+
 ```typescript
 - Muestra: EmptyState component
 - Icono: Package2 muted
@@ -190,6 +207,7 @@ truncateProductName(name: string, maxLength: number = 18): string
 ```
 
 ### Success State
+
 ```typescript
 - Muestra: Tabla completa con datos
 - Búsqueda: Habilitada
@@ -200,6 +218,7 @@ truncateProductName(name: string, maxLength: number = 18): string
 ## Integración con TanStack Table
 
 ### Configuración del Hook
+
 ```typescript
 const table = useReactTable({
     data: tableData,
@@ -220,6 +239,7 @@ const table = useReactTable({
 ```
 
 ### Estados Manejados
+
 - **Sorting**: Estado de ordenamiento por columna
 - **ColumnFilters**: Filtros aplicados (no usado actualmente)
 - **Pagination**: Página actual y tamaño de página
@@ -228,6 +248,7 @@ const table = useReactTable({
 ## Componente de Búsqueda
 
 ### ProductsTableSearch
+
 ```typescript
 interface ProductsTableSearchProps {
     value: string;
@@ -237,6 +258,7 @@ interface ProductsTableSearchProps {
 ```
 
 Características:
+
 - Input con icono de búsqueda
 - Debounce automático en el hook padre
 - Reset de paginación al cambiar búsqueda
@@ -245,6 +267,7 @@ Características:
 ## Paginación
 
 ### TablePagination Component
+
 - **Botones circulares** con iconos ChevronLeft/ChevronRight
 - **Color primary** con hover effects
 - **Estados disabled** cuando no hay páginas disponibles
@@ -254,6 +277,7 @@ Características:
 ## Popover para Nombres Completos
 
 ### Características iOS-Compatible
+
 ```typescript
 <Popover>
     <PopoverTrigger asChild>
@@ -269,6 +293,7 @@ Características:
 ```
 
 Ventajas:
+
 - **Touch-friendly**: Funciona con tap en iOS/Android
 - **Posicionamiento inteligente**: Aparece arriba para no tapar contenido
 - **Indicador visual**: Icono Info sutil
@@ -277,11 +302,13 @@ Ventajas:
 ## Rendimiento y Optimización
 
 ### React Optimizations
+
 - **React.memo**: Componentes memoizados para prevenir re-renders
 - **useMemo**: Transformación y filtrado de datos optimizado
 - **useCallback**: Funciones estables para props de componentes
 
 ### Data Processing
+
 - **Filtrado en cascada**: Filtros aplicados secuencialmente
 - **Búsqueda optimizada**: Solo en campos relevantes
 - **Paginación eficiente**: Procesamiento solo de datos visibles
@@ -289,6 +316,7 @@ Ventajas:
 ## Integración en BranchDetails
 
 ### Uso en la Página
+
 ```typescript
 <BranchTopProducts
     data={branchData?.top_products || null}
@@ -298,6 +326,7 @@ Ventajas:
 ```
 
 ### Datos del API
+
 - **Endpoint**: Mismo endpoint que otros componentes de BranchDetails
 - **Campo**: `branchData.top_products`
 - **Formato**: Array de objetos TopProduct
@@ -306,6 +335,7 @@ Ventajas:
 ## Estilos y Theming
 
 ### Colores Utilizados
+
 - **Primary**: #897053 (iconos, círculos de ordenamiento)
 - **Primary Oscurecido**: #6b5d4a (fondo columna producto)
 - **Text White**: Texto en columna producto
@@ -313,6 +343,7 @@ Ventajas:
 - **Border**: Separadores y bordes
 
 ### Responsive Behavior
+
 - **Mobile-first**: Diseñado primero para móviles
 - **Scroll horizontal**: Automático cuando excede 470px
 - **Columna fija**: Siempre visible en scroll
@@ -321,12 +352,14 @@ Ventajas:
 ## Testing y Validación
 
 ### Validación de Datos
+
 ```typescript
 validateProductsData(data: unknown): data is TopProduct[]
 // Valida estructura, tipos y valores mínimos requeridos
 ```
 
 ### Manejo de Errores
+
 - **Network errors**: Capturados en el hook padre
 - **Data validation**: Validación antes de procesamiento
 - **Fallback states**: Estados por defecto para todos los casos
@@ -334,12 +367,14 @@ validateProductsData(data: unknown): data is TopProduct[]
 ## Casos de Uso
 
 ### Casos Principales
+
 1. **Visualizar productos top**: Lista ordenada por cantidad vendida
 2. **Buscar producto específico**: Filtrado por nombre
 3. **Analizar precios**: Comparar precios unitarios y totales
 4. **Navegación de datos**: Paginación para datasets grandes
 
 ### Casos Edge
+
 1. **Sin datos**: Estado vacío elegante
 2. **Error de API**: Mensaje de error informativo
 3. **Datos inválidos**: Validación y fallback
@@ -349,18 +384,21 @@ validateProductsData(data: unknown): data is TopProduct[]
 ## Mejores Prácticas de Implementación
 
 ### Código Limpio
+
 - **Single Responsibility**: Cada componente tiene una función específica
 - **Type Safety**: Interfaces TypeScript completas
 - **Error Boundaries**: Manejo robusto de errores
 - **Performance**: Optimizaciones de re-render
 
 ### UX/UI Guidelines
+
 - **Mobile-first**: Prioridad en experiencia móvil
 - **Touch-friendly**: Targets de al menos 44px
 - **Clear feedback**: Estados visuales claros
 - **Consistent design**: Alineado con design system
 
 ### Mantenibilidad
+
 - **Modular**: Separación clara de responsabilidades
 - **Documented**: Comentarios y documentación completa
 - **Testable**: Estructura que facilita testing
@@ -369,6 +407,7 @@ validateProductsData(data: unknown): data is TopProduct[]
 ## Roadmap y Mejoras Futuras
 
 ### Características Planificadas
+
 - [ ] Exportación a CSV/Excel
 - [ ] Filtros avanzados por rango de precios
 - [ ] Gráficos inline para tendencias
@@ -376,6 +415,7 @@ validateProductsData(data: unknown): data is TopProduct[]
 - [ ] Métricas adicionales (margen, ROI)
 
 ### Optimizaciones Técnicas
+
 - [ ] Virtualización para datasets muy grandes
 - [ ] Cache inteligente de resultados de búsqueda
 - [ ] Preload de páginas siguientes

@@ -3,10 +3,10 @@
  * Service for fetching and processing hourly sales data
  */
 
+import { logger } from '../../components/daily-chart-comparison/lib/logger';
 import { apiPost } from '../api/client';
 import { API_ENDPOINTS } from '../api/endpoints';
 import { ApiError } from '../api/types';
-import { logger } from '../../components/daily-chart-comparison/lib/logger';
 import { cacheManager, generateCacheKey } from './cache';
 import { HoursChartApiResponse, HoursChartRequest, ProcessedChartData, ProcessedDayData } from './types';
 

@@ -1,13 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { useDailyChartContext } from '@/contexts/daily-chart-context';
 import { useMinimumLoadingDuration } from '@/hooks/use-minimum-loading-duration';
-import * as React from 'react';
 import type { ProcessedChartData } from '@/lib/services/types';
-import { logger } from './lib/logger';
+import * as React from 'react';
 import { SalesComparisonError } from './components/sales-comparison-error';
 import { SalesComparisonHeader } from './components/sales-comparison-header';
 import { SalesComparisonSkeleton } from './components/sales-comparison-skeleton';
 import { SalesDayCard } from './components/sales-day-card';
+import { logger } from './lib/logger';
 import type { DailySalesComparisonProps, SalesDayData } from './types';
 import { convertProcessedChartDataToSalesData, generateMockSalesData, generatePreviousDays, validateSalesDayData } from './utils';
 
@@ -20,7 +20,7 @@ function resolveSalesData({
     useMockData,
     isLoading,
     datesToShow,
-    selectedDate
+    selectedDate,
 }: {
     salesData?: SalesDayData[];
     apiData: ProcessedChartData | null | undefined;
@@ -67,14 +67,14 @@ function validateAndProcessSalesData(data: SalesDayData[]): SalesDayData[] {
     if (!validation.isValid) {
         logger.error('Sales data validation failed', {
             errorCount: validation.errors.length,
-            errors: validation.errors.slice(0, 3) // Limit logged errors for performance
+            errors: validation.errors.slice(0, 3), // Limit logged errors for performance
         });
     }
 
     if (validation.warnings.length > 0) {
         logger.warn('Sales data validation warnings', {
             warningCount: validation.warnings.length,
-            warnings: validation.warnings.slice(0, 3) // Limit logged warnings for performance
+            warnings: validation.warnings.slice(0, 3), // Limit logged warnings for performance
         });
     }
 
@@ -146,7 +146,7 @@ export function DailySalesComparison({
             useMockData,
             isLoading,
             datesToShow,
-            selectedDate: selectedDate || new Date()
+            selectedDate: selectedDate || new Date(),
         });
     }, [salesData, apiData, useMockData, isLoading, datesToShow, selectedDate]);
 

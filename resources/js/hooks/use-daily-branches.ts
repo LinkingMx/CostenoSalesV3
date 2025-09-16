@@ -36,7 +36,7 @@ interface UseDailyBranchesReturn {
  * Hook for managing daily branches data with API integration
  */
 export function useDailyBranches(selectedDateRange?: DateRange, options: UseDailyBranchesOptions = {}): UseDailyBranchesReturn {
-    const { enableRetry = true, maxRetries = 3, debounceMs = 300,    } = options;
+    const { enableRetry = true, maxRetries = 3, debounceMs = 300 } = options;
 
     // State management
     const [branches, setBranches] = useState<BranchSalesData[]>([]);
@@ -186,7 +186,7 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
                 }
             }
         },
-        [isValidForDailyBranches, formattedDates,   ],
+        [isValidForDailyBranches, formattedDates],
     );
 
     // Debounced refetch function

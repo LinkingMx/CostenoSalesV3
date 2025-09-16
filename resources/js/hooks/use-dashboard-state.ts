@@ -9,6 +9,8 @@ interface DashboardState {
     currentDateRange: DateRange | undefined;
     apiResponses: Map<string, { data: any; timestamp: number }>;
     lastUpdated: number;
+    isUserSelected: boolean; // Track if date range was explicitly selected by user
+    userSelectionTimestamp?: number; // When the user made the selection
 }
 
 /**
@@ -34,6 +36,11 @@ const STORAGE_KEYS = {
 const DEFAULT_CACHE_TTL = 30 * 60 * 1000;
 
 /**
+ * User selection TTL (24 hours) - how long to preserve user-selected dates
+ */
+const USER_SELECTION_TTL = 24 * 60 * 60 * 1000;
+
+/**
  * Custom hook for managing dashboard state with session persistence
  */
 export function useDashboardState() {
@@ -44,8 +51,58 @@ export function useDashboardState() {
             if (stored) {
                 const parsed = JSON.parse(stored);
 
-                // Check if stored date is old (from previous day) and clear it
-                if (parsed.currentDateRange?.from) {
+                console.log('🔍 [useDashboardState] Loading from session storage:', {
+                    hasOriginal: !!parsed.originalDateRange,
+                    hasCurrent: !!parsed.currentDateRange,
+                    originalFrom: parsed.originalDateRange?.from,
+                    originalTo: parsed.originalDateRange?.to,
+                    currentFrom: parsed.currentDateRange?.from,
+                    currentTo: parsed.currentDateRange?.to,
+                });
+
+                // Convert string dates back to Date objects
+                const restoreDateRange = (range: any): DateRange | undefined => {
+                    if (!range || !range.from || !range.to) return undefined;
+
+                    const from = new Date(range.from);
+                    const to = new Date(range.to);
+
+                    // Validate the dates are valid
+                    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+                        console.warn('🔴 Invalid dates found in session storage:', range);
+                        return undefined;
+                    }
+
+                    return { from, to };
+                };
+
+                // Check if stored date is old and should be cleared
+                // ONLY clear if it's NOT a user-selected date range OR if user selection has expired
+                const isUserSelected = parsed.isUserSelected ?? false;
+                const userSelectionTimestamp = parsed.userSelectionTimestamp;
+
+                // Check if user selection has expired (older than 24 hours)
+                const isUserSelectionExpired =
+                    isUserSelected &&
+                    userSelectionTimestamp &&
+                    Date.now() - userSelectionTimestamp > USER_SELECTION_TTL;
+
+                if (isUserSelectionExpired) {
+                    console.log(
+                        '⏰ User-selected date range has expired (older than 24 hours), clearing state',
+                    );
+                    sessionStorage.removeItem(STORAGE_KEYS.DASHBOARD_STATE);
+                    return {
+                        originalDateRange: undefined,
+                        currentDateRange: undefined,
+                        apiResponses: new Map(),
+                        lastUpdated: Date.now(),
+                        isUserSelected: false,
+                        userSelectionTimestamp: undefined,
+                    };
+                }
+
+                if (!isUserSelected && parsed.currentDateRange?.from) {
                     const storedDate = new Date(parsed.currentDateRange.from);
                     const today = new Date();
 
@@ -53,10 +110,10 @@ export function useDashboardState() {
                     storedDate.setHours(0, 0, 0, 0);
                     today.setHours(0, 0, 0, 0);
 
-                    // If stored date is not today, clear the state
+                    // If stored date is not today AND it's not user-selected, clear the state
                     if (storedDate.getTime() !== today.getTime()) {
                         console.log(
-                            '🧹 Clearing old dashboard state - stored date was:',
+                            '🧹 Clearing old auto-generated dashboard state - stored date was:',
                             storedDate.toDateString(),
                             'but today is:',
                             today.toDateString(),
@@ -67,24 +124,54 @@ export function useDashboardState() {
                             currentDateRange: undefined,
                             apiResponses: new Map(),
                             lastUpdated: Date.now(),
+                            isUserSelected: false,
+                            userSelectionTimestamp: undefined,
                         };
                     }
+                } else if (isUserSelected && !isUserSelectionExpired) {
+                    const hoursRemaining = userSelectionTimestamp
+                        ? Math.round((USER_SELECTION_TTL - (Date.now() - userSelectionTimestamp)) / (60 * 60 * 1000))
+                        : 24;
+                    console.log('🔒 Preserving user-selected date range:', {
+                        from: parsed.originalDateRange?.from,
+                        to: parsed.originalDateRange?.to,
+                        reason: 'User explicitly selected this date range',
+                        expiresInHours: hoursRemaining,
+                    });
                 }
 
-                return {
-                    ...parsed,
+                const restoredState = {
+                    originalDateRange: restoreDateRange(parsed.originalDateRange),
+                    currentDateRange: restoreDateRange(parsed.currentDateRange),
                     apiResponses: new Map(parsed.apiResponses || []),
+                    lastUpdated: parsed.lastUpdated || Date.now(),
+                    isUserSelected: isUserSelected && !isUserSelectionExpired,
+                    userSelectionTimestamp: isUserSelectionExpired ? undefined : userSelectionTimestamp,
                 };
+
+                console.log('🟢 [useDashboardState] Restored state:', {
+                    hasOriginal: !!restoredState.originalDateRange,
+                    hasCurrent: !!restoredState.currentDateRange,
+                    originalValid: !!(restoredState.originalDateRange?.from && restoredState.originalDateRange?.to),
+                    currentValid: !!(restoredState.currentDateRange?.from && restoredState.currentDateRange?.to),
+                    isUserSelected: restoredState.isUserSelected,
+                    userSelectionTimestamp: restoredState.userSelectionTimestamp,
+                });
+
+                return restoredState;
             }
         } catch (error) {
             console.warn('Failed to load dashboard state from session storage:', error);
         }
 
+        console.log('🔵 [useDashboardState] No stored state, initializing fresh');
         return {
             originalDateRange: undefined,
             currentDateRange: undefined,
             apiResponses: new Map(),
             lastUpdated: Date.now(),
+            isUserSelected: false,
+            userSelectionTimestamp: undefined,
         };
     });
 
@@ -96,11 +183,34 @@ export function useDashboardState() {
      */
     const saveToStorage = useCallback((newState: DashboardState) => {
         try {
-            const toStore = {
-                ...newState,
-                apiResponses: Array.from(newState.apiResponses.entries()),
+            // Convert Date objects to ISO strings for JSON serialization
+            const serializeDateRange = (range: DateRange | undefined) => {
+                if (!range || !range.from || !range.to) return undefined;
+                return {
+                    from: range.from instanceof Date ? range.from.toISOString() : range.from,
+                    to: range.to instanceof Date ? range.to.toISOString() : range.to,
+                };
             };
+
+            const toStore = {
+                originalDateRange: serializeDateRange(newState.originalDateRange),
+                currentDateRange: serializeDateRange(newState.currentDateRange),
+                apiResponses: Array.from(newState.apiResponses.entries()),
+                lastUpdated: newState.lastUpdated,
+                isUserSelected: newState.isUserSelected,
+                userSelectionTimestamp: newState.userSelectionTimestamp,
+            };
+
             sessionStorage.setItem(STORAGE_KEYS.DASHBOARD_STATE, JSON.stringify(toStore));
+
+            console.log('💾 [useDashboardState] Saved to session storage:', {
+                hasOriginal: !!toStore.originalDateRange,
+                hasCurrent: !!toStore.currentDateRange,
+                originalFrom: toStore.originalDateRange?.from,
+                originalTo: toStore.originalDateRange?.to,
+                isUserSelected: toStore.isUserSelected,
+                userSelectionTimestamp: toStore.userSelectionTimestamp,
+            });
         } catch (error) {
             console.warn('Failed to save dashboard state to session storage:', error);
         }
@@ -156,13 +266,43 @@ export function useDashboardState() {
 
     /**
      * Set original date range (when first set in dashboard)
+     * Marks the range as user-selected if it's not today's date (auto-generated)
      */
     const setOriginalDateRange = useCallback(
-        (dateRange: DateRange | undefined) => {
+        (dateRange: DateRange | undefined, forceUserSelected: boolean = false) => {
             const validatedRange = validateDateRange(dateRange);
+
+            // Determine if this is a user selection vs auto-generated
+            let isUserSelection = forceUserSelected;
+            if (!forceUserSelected && validatedRange && validatedRange.from && validatedRange.to) {
+                // Check if the range is today (auto-generated)
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const fromDate = new Date(validatedRange.from);
+                fromDate.setHours(0, 0, 0, 0);
+                const toDate = new Date(validatedRange.to);
+                toDate.setHours(0, 0, 0, 0);
+
+                // If both from and to are today, it's likely auto-generated
+                const isToday = fromDate.getTime() === today.getTime() && toDate.getTime() === today.getTime();
+                isUserSelection = !isToday;
+            }
+
+            console.log('🔵 [useDashboardState] setOriginalDateRange called:', {
+                input: dateRange,
+                validated: validatedRange,
+                isValid: !!validatedRange,
+                from: validatedRange?.from?.toISOString(),
+                to: validatedRange?.to?.toISOString(),
+                isUserSelected: isUserSelection,
+                caller: new Error().stack?.split('\n')[2]?.trim(),
+            });
+
             updateState({
                 originalDateRange: validatedRange,
                 currentDateRange: validatedRange,
+                isUserSelected: isUserSelection,
+                userSelectionTimestamp: isUserSelection ? Date.now() : undefined,
             });
         },
         [updateState, validateDateRange],
@@ -276,6 +416,8 @@ export function useDashboardState() {
             currentDateRange: undefined,
             apiResponses: new Map(),
             lastUpdated: Date.now(),
+            isUserSelected: false,
+            userSelectionTimestamp: undefined,
         });
     }, []);
 
@@ -294,10 +436,42 @@ export function useDashboardState() {
      * Restore original date range (for returning from branch details)
      */
     const restoreOriginalDateRange = useCallback(() => {
-        updateState({
-            currentDateRange: state.originalDateRange,
+        console.log('🟢 [useDashboardState] restoreOriginalDateRange called:', {
+            originalDateRange: state.originalDateRange,
+            isValid: !!state.originalDateRange,
+            from: state.originalDateRange?.from,
+            to: state.originalDateRange?.to,
+            fromType: typeof state.originalDateRange?.from,
+            toType: typeof state.originalDateRange?.to,
+            sessionStorageData: (() => {
+                try {
+                    const stored = sessionStorage.getItem(STORAGE_KEYS.DASHBOARD_STATE);
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        return {
+                            hasOriginal: !!parsed.originalDateRange,
+                            hasCurrent: !!parsed.currentDateRange,
+                            original: parsed.originalDateRange,
+                            current: parsed.currentDateRange,
+                        };
+                    }
+                    return null;
+                } catch {
+                    return 'error parsing session storage';
+                }
+            })(),
         });
-        return state.originalDateRange;
+
+        // Make sure we have valid dates before returning
+        if (state.originalDateRange && state.originalDateRange.from && state.originalDateRange.to) {
+            updateState({
+                currentDateRange: state.originalDateRange,
+            });
+            return state.originalDateRange;
+        }
+
+        console.warn('🔴 [useDashboardState] restoreOriginalDateRange: No valid original date range found!');
+        return undefined;
     }, [state.originalDateRange, updateState]);
 
     return {

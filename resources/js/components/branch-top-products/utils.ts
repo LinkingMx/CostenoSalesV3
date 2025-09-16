@@ -112,9 +112,7 @@ export function truncateProductName(name: string, maxLength: number = 25): strin
  * Excludes products with unit_cost less than 10 pesos
  */
 export function calculateTotalSales(products: TopProduct[]): number {
-    return products
-        .filter((product) => product.unit_cost >= 10)
-        .reduce((total, product) => total + product.quantity * product.unit_cost, 0);
+    return products.filter((product) => product.unit_cost >= 10).reduce((total, product) => total + product.quantity * product.unit_cost, 0);
 }
 
 /**

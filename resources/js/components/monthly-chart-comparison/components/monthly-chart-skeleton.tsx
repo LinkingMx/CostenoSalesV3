@@ -34,7 +34,7 @@ export const MonthlyChartSkeleton = React.memo(function MonthlyChartSkeleton({ h
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="flex flex-col items-center gap-2">
                             <div
-                                className="w-1 bg-gradient-to-t from-primary/40 via-primary/25 to-primary/15 animate-pulse border border-primary/20 rounded-sm"
+                                className="w-1 animate-pulse rounded-sm border border-primary/20 bg-gradient-to-t from-primary/40 via-primary/25 to-primary/15"
                                 style={{
                                     height: `${Math.random() * 60 + 40}%`,
                                 }}
@@ -47,15 +47,15 @@ export const MonthlyChartSkeleton = React.memo(function MonthlyChartSkeleton({ h
                 {/* Legend skeleton */}
                 <div className="flex justify-center gap-6 pt-4">
                     <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20 animate-pulse" />
+                        <div className="h-3 w-3 animate-pulse rounded-full border border-primary/20 bg-gradient-to-r from-primary/25 to-primary/15" />
                         <Skeleton className="h-3 w-20" />
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20 animate-pulse" />
+                        <div className="h-3 w-3 animate-pulse rounded-full border border-primary/20 bg-gradient-to-r from-primary/25 to-primary/15" />
                         <Skeleton className="h-3 w-20" />
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20 animate-pulse" />
+                        <div className="h-3 w-3 animate-pulse rounded-full border border-primary/20 bg-gradient-to-r from-primary/25 to-primary/15" />
                         <Skeleton className="h-3 w-24" />
                     </div>
                 </div>

@@ -170,7 +170,6 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
                 {/* Header with title and custom date range info */}
                 <MemoizedCustomComparisonHeader dateRange={selectedDateRange} />
 
-
                 {/* Error state */}
                 {error && (
                     <div className="flex items-center justify-center py-4">

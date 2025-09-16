@@ -30,11 +30,7 @@ interface UseWeeklyChartReturn {
  * Provides API integration, caching, loading states, and error handling
  */
 export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options: UseWeeklyChartOptions = {}): UseWeeklyChartReturn => {
-    const {
-        enableRetry = true,
-        maxRetries = 3,
-        debounceMs = 300,
-    } = options;
+    const { enableRetry = true, maxRetries = 3, debounceMs = 300 } = options;
 
     const [data, setData] = useState<WeeklyChartData | null>(null);
     const [rawApiData, setRawApiData] = useState<unknown | null>(null);
@@ -109,7 +105,6 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
                 if (currentRequestRef.current !== requestId || !isMountedRef.current) {
                     return;
                 }
-
 
                 if (result.error) {
                     setError(result.error);
