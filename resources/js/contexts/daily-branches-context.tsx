@@ -5,7 +5,6 @@
 
 import type { BranchSalesData } from '@/components/daily-sales-branches/types';
 import type { DateRange } from '@/components/main-filter-calendar';
-import { useApiLoadingContext } from '@/contexts/api-loading-context';
 import { useDailyBranches } from '@/hooks/use-daily-branches';
 import React, { createContext, ReactNode, useContext } from 'react';
 
@@ -26,46 +25,16 @@ const DailyBranchesContext = createContext<DailyBranchesContextValue | null>(nul
 interface DailyBranchesProviderProps {
     children: ReactNode;
     selectedDateRange: DateRange | undefined;
-    skipLoading?: boolean;
 }
 
 /**
  * Provider component that makes a single API call and shares the daily branches data
- * Integrated with global API loading tracking system
  */
-export const DailyBranchesProvider: React.FC<DailyBranchesProviderProps> = React.memo(({ children, selectedDateRange, skipLoading = false }) => {
-    const { registerApiCall, completeApiCall } = useApiLoadingContext();
-
-    const onApiStart = React.useCallback(() => {
-        if (!skipLoading) {
-            registerApiCall('daily-branches-shared-api', 'DailyBranchesProvider', {
-                endpoint: 'main_dashboard_data',
-                priority: 'medium',
-                description: 'Daily branches data with week-over-week comparison',
-            });
-        }
-    }, [registerApiCall, skipLoading]);
-
-    const onApiComplete = React.useCallback(
-        (success: boolean) => {
-            if (!skipLoading) {
-                completeApiCall('daily-branches-shared-api', success);
-            }
-        },
-        [completeApiCall, skipLoading],
-    );
-
-    const onError = React.useCallback(() => {
-        // Silently handle errors
-    }, []);
-
+export const DailyBranchesProvider: React.FC<DailyBranchesProviderProps> = React.memo(({ children, selectedDateRange }) => {
     const dailyBranchesData = useDailyBranches(selectedDateRange, {
         enableRetry: true,
         maxRetries: 3,
         debounceMs: 300,
-        onApiStart,
-        onApiComplete,
-        onError,
     });
 
     return <DailyBranchesContext.Provider value={dailyBranchesData}>{children}</DailyBranchesContext.Provider>;

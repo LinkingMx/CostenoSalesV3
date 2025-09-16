@@ -3,6 +3,7 @@ import { fetchCustomSalesComparisonData } from '@/lib/services/custom-sales-comp
 import { formatDateForApi } from '@/lib/services/main-dashboard.service';
 import * as React from 'react';
 import { CustomComparisonHeader } from './components/custom-comparison-header';
+import { CustomSalesComparisonSkeleton } from './components/custom-sales-comparison-skeleton';
 import { SalesCustomCard } from './components/sales-custom-card';
 import type { CustomSalesComparisonProps, SalesCustomData } from './types';
 import { isCustomRangeSelected, validateCustomDateRange, validateCustomSalesData } from './utils/validation';
@@ -158,22 +159,20 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
         return null;
     }
 
+    // Loading state
+    if (loading) {
+        return <CustomSalesComparisonSkeleton />;
+    }
+
     return (
         <Card className="w-full">
             <CardContent className="px-4 py-3">
                 {/* Header with title and custom date range info */}
                 <MemoizedCustomComparisonHeader dateRange={selectedDateRange} />
 
-                {/* Loading state */}
-                {loading && (
-                    <div className="flex items-center justify-center py-4">
-                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                        <span className="ml-2 text-sm text-muted-foreground">Cargando datos de ventas personalizadas...</span>
-                    </div>
-                )}
 
                 {/* Error state */}
-                {error && !loading && (
+                {error && (
                     <div className="flex items-center justify-center py-4">
                         <div className="text-center text-sm text-destructive">
                             <p className="font-medium">Error al cargar datos</p>
@@ -183,14 +182,14 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
                 )}
 
                 {/* Success state with data */}
-                {!loading && !error && displayData.length > 0 && (
+                {!error && displayData.length > 0 && (
                     <div className="space-y-2">
                         <MemoizedSalesCustomCard data={displayData} dateRange={selectedDateRange!} isHighlighted={false} />
                     </div>
                 )}
 
                 {/* Empty state */}
-                {!loading && !error && displayData.length === 0 && (
+                {!error && displayData.length === 0 && (
                     <div className="flex items-center justify-center py-4">
                         <div className="text-center text-sm text-muted-foreground">
                             <p>No hay datos disponibles para el rango seleccionado</p>

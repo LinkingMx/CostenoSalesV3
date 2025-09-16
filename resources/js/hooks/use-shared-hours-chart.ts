@@ -11,8 +11,7 @@ import { useMemo } from 'react';
 import { useHoursChart, type UseHoursChartOptions } from './use-hours-chart';
 
 export interface UseSharedHoursChartOptions extends UseHoursChartOptions {
-    onApiStart?: () => void;
-    onApiComplete?: (success: boolean) => void;
+    onApiCallStatusChange?: (isLoading: boolean) => void;
 }
 
 export interface UseSharedHoursChartReturn {
@@ -31,7 +30,7 @@ export const useSharedHoursChart = (
     selectedDateRange: DateRange | undefined,
     options: UseSharedHoursChartOptions = {},
 ): UseSharedHoursChartReturn => {
-    const { onApiStart, onApiComplete, ...hoursChartOptions } = options;
+    const { onApiCallStatusChange, ...hoursChartOptions } = options;
 
     // Check if the date range is valid for daily components
     const isValidForDailyComponents = useMemo(() => {
@@ -50,17 +49,17 @@ export const useSharedHoursChart = (
     const enhancedOptions = useMemo(
         () => ({
             ...hoursChartOptions,
-            onApiStart,
+            
             onSuccess: (data: ProcessedChartData) => {
-                onApiComplete?.(true);
+                onApiCallStatusChange?.(true);
                 hoursChartOptions.onSuccess?.(data);
             },
             onError: (error: string) => {
-                onApiComplete?.(false);
+                onApiCallStatusChange?.(false);
                 hoursChartOptions.onError?.(error);
             },
         }),
-        [hoursChartOptions, onApiStart, onApiComplete],
+        [hoursChartOptions, onApiCallStatusChange],
     );
 
     // Use the existing useHoursChart hook

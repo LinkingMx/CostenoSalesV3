@@ -11,7 +11,6 @@
  */
 
 import type { DateRange } from '@/components/main-filter-calendar';
-import { useTrackedApiCall } from '@/hooks/use-tracked-api-call';
 import { fetchMainDashboardData, formatDateForApi, isValidDateRange } from '@/lib/services/main-dashboard.service';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { BranchSalesData } from '../types';
@@ -53,15 +52,6 @@ export interface UseBranchSalesDataReturn {
 export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBranchSalesDataOptions = {}): UseBranchSalesDataReturn {
     const { enabled = true, fallbackData = [], useFallbackDuringLoad = false } = options;
 
-    // API tracking integration
-    const { makeTrackedCall } = useTrackedApiCall({
-        componentName: 'DailySalesBranches',
-        defaultMetadata: {
-            endpoint: 'main_dashboard_data',
-            priority: 'medium',
-            description: 'Branch sales data with week-over-week comparison',
-        },
-    });
 
     // State management
     const [branches, setBranches] = useState<BranchSalesData[]>(fallbackData);
@@ -147,20 +137,10 @@ export function useBranchSalesData(selectedDateRange?: DateRange, options: UseBr
                 // For single day selections, include previous week comparison for percentage calculation
                 const isSingleDay = formattedDates.startDate === formattedDates.endDate;
 
-                const result = await makeTrackedCall(
-                    () =>
-                        fetchMainDashboardData(
-                            formattedDates.startDate,
-                            formattedDates.endDate,
-                            isSingleDay, // Include previous week data only for single day comparisons
-                        ),
-                    {
-                        callId: `branch-sales-${formattedDates.startDate}-${isRefresh ? 'refresh' : 'auto'}`,
-                        metadata: {
-                            priority: 'medium',
-                            description: `Branch sales for ${formattedDates.startDate}${isSingleDay ? ' with prev week comparison' : ''}`,
-                        },
-                    },
+                const result = await fetchMainDashboardData(
+                    formattedDates.startDate,
+                    formattedDates.endDate,
+                    isSingleDay, // Include previous week data only for single day comparisons
                 );
 
                 // Check if request was aborted or component unmounted

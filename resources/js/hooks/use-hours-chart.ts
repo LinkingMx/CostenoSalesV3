@@ -11,8 +11,6 @@ export interface UseHoursChartOptions {
     enableRetry?: boolean;
     maxRetries?: number;
     debounceMs?: number;
-    onApiStart?: () => void;
-    onError?: (error: string) => void;
     onSuccess?: (data: ProcessedChartData) => void;
 }
 
@@ -28,7 +26,7 @@ export interface UseHoursChartReturn {
  * Custom hook for fetching hours chart data with caching and error handling
  */
 export const useHoursChart = (date: Date | string | null, options: UseHoursChartOptions = {}): UseHoursChartReturn => {
-    const { enableRetry = true, maxRetries = 3, debounceMs = 300, onApiStart, onError, onSuccess } = options;
+    const { enableRetry = true, maxRetries = 3, debounceMs = 300,   onSuccess } = options;
 
     const [data, setData] = useState<ProcessedChartData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +84,6 @@ export const useHoursChart = (date: Date | string | null, options: UseHoursChart
             setError(null);
 
             // Notify that API call is starting
-            onApiStart?.();
 
             try {
                 const result = enableRetry ? await fetchWithRetry(dateString, maxRetries) : await fetchHoursChartData(dateString);
@@ -100,7 +97,6 @@ export const useHoursChart = (date: Date | string | null, options: UseHoursChart
                     const errorMessage = 'Error al cargar los datos del gráfico';
                     setError(errorMessage);
                     setData(null);
-                    onError?.(errorMessage);
                 } else {
                     setData(result);
                     setError(null);
@@ -116,12 +112,11 @@ export const useHoursChart = (date: Date | string | null, options: UseHoursChart
                 const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
                 setError(errorMessage);
                 setData(null);
-                onError?.(errorMessage);
             } finally {
                 setIsLoading(false);
             }
         },
-        [enableRetry, maxRetries, onError, onSuccess],
+        [enableRetry, maxRetries, onSuccess],
     );
 
     /**

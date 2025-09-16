@@ -13,10 +13,6 @@ interface UseWeeklyChartOptions {
     enableRetry?: boolean;
     maxRetries?: number;
     debounceMs?: number;
-    minLoadingDuration?: number;
-    onApiStart?: () => void;
-    onApiComplete?: (success: boolean) => void;
-    onError?: (errorMessage: string) => void;
 }
 
 interface UseWeeklyChartReturn {
@@ -38,10 +34,6 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
         enableRetry = true,
         maxRetries = 3,
         debounceMs = 300,
-        minLoadingDuration = 2000, // 2 seconds minimum loading
-        onApiStart,
-        onApiComplete,
-        onError,
     } = options;
 
     const [data, setData] = useState<WeeklyChartData | null>(null);
@@ -105,13 +97,8 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
             }
 
             try {
-                // Start loading and track the minimum duration
-                const loadingStartTime = Date.now();
                 setIsLoading(true);
                 setError(null);
-
-                // Notify API start
-                onApiStart?.();
 
                 // Fetch data with or without retry based on options
                 const result = enableRetry
@@ -123,31 +110,15 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
                     return;
                 }
 
-                // Calculate remaining loading time to meet minimum duration
-                const elapsedTime = Date.now() - loadingStartTime;
-                const remainingTime = Math.max(0, minLoadingDuration - elapsedTime);
-
-                // Wait for minimum loading duration if needed
-                if (remainingTime > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, remainingTime));
-                }
-
-                // Check again if request is still current after delay
-                if (currentRequestRef.current !== requestId || !isMountedRef.current) {
-                    return;
-                }
 
                 if (result.error) {
                     setError(result.error);
                     setData(null);
                     setRawApiData(null);
-                    onError?.(result.error);
-                    onApiComplete?.(false);
                 } else {
                     setData(result.data);
                     setRawApiData(result.rawData || null); // Store the raw API data
                     setError(null);
-                    onApiComplete?.(true);
                 }
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Failed to fetch weekly chart data';
@@ -156,8 +127,6 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
                     setError(errorMessage);
                     setData(null);
                     setRawApiData(null);
-                    onError?.(errorMessage);
-                    onApiComplete?.(false);
                 }
             } finally {
                 if (currentRequestRef.current === requestId && isMountedRef.current) {
@@ -165,7 +134,7 @@ export const useWeeklyChart = (selectedDateRange: DateRange | undefined, options
                 }
             }
         },
-        [getApiDateStrings, enableRetry, maxRetries, minLoadingDuration],
+        [getApiDateStrings, enableRetry, maxRetries],
     );
 
     /**

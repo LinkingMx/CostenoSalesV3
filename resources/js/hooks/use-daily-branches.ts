@@ -16,11 +16,8 @@ interface UseDailyBranchesOptions {
     /** Debounce delay in milliseconds */
     debounceMs?: number;
     /** Callback when API call starts */
-    onApiStart?: () => void;
     /** Callback when API call completes */
-    onApiComplete?: (success: boolean) => void;
     /** Callback when API call errors */
-    onError?: (error: string) => void;
 }
 
 interface UseDailyBranchesReturn {
@@ -39,7 +36,7 @@ interface UseDailyBranchesReturn {
  * Hook for managing daily branches data with API integration
  */
 export function useDailyBranches(selectedDateRange?: DateRange, options: UseDailyBranchesOptions = {}): UseDailyBranchesReturn {
-    const { enableRetry = true, maxRetries = 3, debounceMs = 300, onApiStart, onApiComplete, onError } = options;
+    const { enableRetry = true, maxRetries = 3, debounceMs = 300,    } = options;
 
     // State management
     const [branches, setBranches] = useState<BranchSalesData[]>([]);
@@ -109,7 +106,6 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
             if (!isValidDateRange(formattedDates.startDate, formattedDates.endDate)) {
                 if (isMountedRef.current) {
                     setError('Rango de fechas inválido');
-                    onError?.('Rango de fechas inválido');
                 }
                 return;
             }
@@ -122,7 +118,6 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
             if (isMountedRef.current) {
                 setIsLoading(true);
                 setError(null);
-                onApiStart?.();
             }
 
             try {
@@ -140,8 +135,6 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
 
                 if (result.error) {
                     setError(result.error);
-                    onError?.(result.error);
-                    onApiComplete?.(false);
                 } else {
                     if (process.env.NODE_ENV === 'development') {
                         console.log('🔍 Daily branches API Response received:', {
@@ -159,14 +152,11 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
                         }
                         setBranches([]);
                         setError('Estructura de datos inválida');
-                        onError?.('Estructura de datos inválida');
-                        onApiComplete?.(false);
                     } else {
                         setBranches(result.branches);
                         setTotalSales(result.totalSales);
                         setRawApiData(result); // Store raw response for potential use by other components
                         setError(null);
-                        onApiComplete?.(true);
 
                         if (process.env.NODE_ENV === 'development') {
                             console.log('✅ Daily branches data loaded successfully:', {
@@ -184,8 +174,6 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
 
                 const errorMessage = err instanceof Error ? err.message : 'Error al cargar datos de sucursales diarias';
                 setError(errorMessage);
-                onError?.(errorMessage);
-                onApiComplete?.(false);
 
                 console.error('Daily branches data fetch error:', err);
             } finally {
@@ -198,7 +186,7 @@ export function useDailyBranches(selectedDateRange?: DateRange, options: UseDail
                 }
             }
         },
-        [isValidForDailyBranches, formattedDates, onApiStart, onApiComplete, onError],
+        [isValidForDailyBranches, formattedDates,   ],
     );
 
     // Debounced refetch function

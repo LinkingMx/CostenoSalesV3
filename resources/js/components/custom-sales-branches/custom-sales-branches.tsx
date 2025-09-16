@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DateRangeProvider } from '@/contexts/date-range-context';
 import { BranchCustomCollapsibleItem } from './components/branch-custom-collapsible-item';
 import { CustomSalesBranchesHeader } from './components/custom-sales-branches-header';
+import { CustomSalesBranchesSkeleton } from './components/custom-sales-branches-skeleton';
 import { useCustomBranches } from './hooks/use-custom-branches';
 import type { CustomSalesBranchesProps } from './types';
 
@@ -55,16 +56,7 @@ export function CustomSalesBranches({ selectedDateRange }: CustomSalesBranchesPr
 
     // Show loading state
     if (isLoading) {
-        return (
-            <Card className="w-full">
-                <CardContent className="px-4 py-3">
-                    <CustomSalesBranchesHeader />
-                    <div className="flex items-center justify-center py-8">
-                        <div className="text-sm text-muted-foreground">Cargando datos de sucursales...</div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+        return <CustomSalesBranchesSkeleton />;
     }
 
     // Show error state

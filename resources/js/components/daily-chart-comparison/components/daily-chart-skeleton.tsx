@@ -1,52 +1,138 @@
 /**
- * Daily Chart Loading Skeleton
- * Loading state component for daily chart comparison
+ * Enhanced Daily Chart Loading Skeleton
+ * Modern loading state component for daily chart comparison with improved UX patterns
  */
 
+import { DailySkeletonBase, getStaggeredDelay, SkeletonShimmer, SKELETON_LOADING_TEXTS } from '@/components/ui/daily-skeleton-base';
+import { BarChart3 } from 'lucide-react';
+import * as React from 'react';
+
 /**
- * Loading skeleton for the daily chart comparison component.
- * Displays animated placeholder content while data is being fetched.
+ * Enhanced loading skeleton for the daily chart comparison component.
+ * Features modern UX patterns, staggered animations, and theme integration.
+ *
+ * @param {Object} props - Configuration props
+ * @param {number} [props.height=210] - Height of the chart area in pixels
+ * @param {number} [props.barCount=4] - Number of animated bars to display
+ * @returns {JSX.Element} Enhanced skeleton loading state
  */
-export function DailyChartSkeleton({ height = 300 }: { height?: number }) {
+export function DailyChartSkeleton({
+    height = 210,
+    barCount = 4
+}: {
+    height?: number;
+    barCount?: number;
+}) {
+    // Generate consistent bar heights for better visual stability
+    const barHeights = React.useMemo(() =>
+        Array.from({ length: barCount }, (_, i) => {
+            // Use predictable heights for better UX (no random flickering)
+            const baseHeight = 30 + (i * 15);
+            return Math.min(80, baseHeight);
+        }),
+        [barCount]
+    );
+
     return (
-        <div className="rounded-lg border bg-card p-4">
-            {/* Header skeleton */}
+        <DailySkeletonBase aria-label={SKELETON_LOADING_TEXTS.chart}>
+            {/* Enhanced Header Section */}
             <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
-                    <div>
-                        <div className="mb-2 h-5 w-32 animate-pulse rounded bg-muted" />
-                        <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+                    {/* Icon container with actual icon for continuity */}
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted animate-enhanced-pulse">
+                        <BarChart3 className="h-4 w-4 text-primary opacity-60" />
+                    </div>
+                    {/* Title and subtitle with improved sizing */}
+                    <div className="flex flex-col gap-1">
+                        <SkeletonShimmer className="h-5 w-52 rounded" />
+                        <SkeletonShimmer className="h-4 w-36 rounded" />
                     </div>
                 </div>
             </div>
 
-            {/* Chart skeleton */}
-            <div className="relative overflow-hidden rounded bg-muted/20" style={{ height }}>
-                {/* Animated bars */}
-                <div className="absolute right-0 bottom-0 left-0 flex items-end justify-around px-8 pb-8">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex flex-col items-center gap-2" style={{ width: '20%' }}>
-                            <div
-                                className="w-full animate-pulse rounded-t bg-muted"
-                                style={{
-                                    height: `${Math.random() * 60 + 20}%`,
-                                    animationDelay: `${i * 100}ms`,
-                                }}
+            {/* Enhanced Chart Container */}
+            <div
+                className="relative overflow-hidden rounded-lg bg-gradient-to-b from-muted/10 to-muted/20 border border-border/50"
+                style={{ height }}
+            >
+                {/* Background grid pattern */}
+                <div className="absolute inset-0">
+                    {/* Horizontal grid lines */}
+                    <div className="absolute inset-0 flex flex-col justify-between py-4 opacity-30">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <SkeletonShimmer
+                                key={`grid-h-${i}`}
+                                className="h-px w-full bg-border/20"
+                                style={getStaggeredDelay(i, 50)}
                             />
-                            <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+                        ))}
+                    </div>
+
+                    {/* Vertical grid lines */}
+                    <div className="absolute inset-0 flex justify-between px-8 opacity-20">
+                        {Array.from({ length: barCount }).map((_, i) => (
+                            <SkeletonShimmer
+                                key={`grid-v-${i}`}
+                                className="w-px h-full bg-border/20"
+                                style={getStaggeredDelay(i, 75)}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Enhanced Animated Bars */}
+                <div className="absolute inset-0 flex items-end justify-around px-8 pb-6">
+                    {barHeights.map((barHeight, i) => (
+                        <div
+                            key={i}
+                            className="flex flex-col items-center gap-2 animate-in slide-in-from-bottom-4"
+                            style={{
+                                width: '20%',
+                                ...getStaggeredDelay(i, 200)
+                            }}
+                        >
+                            {/* Bar with gradient and enhanced styling */}
+                            <div
+                                className="w-full rounded-t-md bg-gradient-to-t from-primary/30 via-primary/20 to-primary/10 animate-shimmer relative overflow-hidden"
+                                style={{ height: `${barHeight}%` }}
+                            >
+                                {/* Shimmer overlay effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
+
+                                {/* Highlight bar on selected (first) item */}
+                                {i === 0 && (
+                                    <div className="absolute inset-0 bg-primary/20 animate-enhanced-pulse" />
+                                )}
+                            </div>
+
+                            {/* Label placeholder with varied widths */}
+                            <SkeletonShimmer
+                                className={`h-3 rounded ${i === 0 ? 'w-20' : i === 1 ? 'w-16' : i === 2 ? 'w-18' : 'w-14'}`}
+                            />
                         </div>
                     ))}
                 </div>
 
-                {/* Grid lines skeleton */}
-                <div className="absolute inset-0 flex flex-col justify-between py-8">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-px bg-border/30" />
+                {/* Chart value indicators on Y-axis */}
+                <div className="absolute left-2 top-4 bottom-6 flex flex-col justify-between opacity-40">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <SkeletonShimmer
+                            key={`y-label-${i}`}
+                            className="h-3 w-8 rounded text-xs"
+                            style={getStaggeredDelay(i, 100)}
+                        />
                     ))}
                 </div>
             </div>
-        </div>
+
+            {/* Loading progress indicator */}
+            <div className="mt-3 flex items-center justify-center text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                    <SkeletonShimmer className="h-4 w-4 rounded animate-spin" />
+                    <span className="opacity-70">Generando comparación diaria...</span>
+                </div>
+            </div>
+        </DailySkeletonBase>
     );
 }
 

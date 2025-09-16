@@ -11,7 +11,6 @@ export interface UseBranchDetailsOptions {
     dateRange: DateRange | undefined;
     autoFetch?: boolean;
     onSuccess?: (data: StoreData) => void;
-    onError?: (error: Error) => void;
 }
 
 export interface UseBranchDetailsReturn {

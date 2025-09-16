@@ -18,10 +18,6 @@ interface UseMonthlyChartOptions {
     enableRetry?: boolean;
     maxRetries?: number;
     debounceMs?: number;
-    minLoadingDuration?: number;
-    onApiStart?: () => void;
-    onApiComplete?: (success: boolean) => void;
-    onError?: (errorMessage: string) => void;
 }
 
 interface UseMonthlyChartReturn {
@@ -43,10 +39,6 @@ export const useMonthlyChart = (selectedDateRange: DateRange | undefined, option
         enableRetry = true,
         maxRetries = 3,
         debounceMs = 300,
-        minLoadingDuration = 2000, // 2 seconds minimum loading
-        onApiStart,
-        onApiComplete,
-        onError,
     } = options;
 
     const [data, setData] = useState<MonthlyChartData | null>(null);
@@ -119,13 +111,8 @@ export const useMonthlyChart = (selectedDateRange: DateRange | undefined, option
             }
 
             try {
-                // Start loading and track the minimum duration
-                const loadingStartTime = Date.now();
                 setIsLoading(true);
                 setError(null);
-
-                // Notify API start
-                onApiStart?.();
 
                 // Fetch data with or without retry based on options
                 const result = enableRetry
@@ -137,31 +124,15 @@ export const useMonthlyChart = (selectedDateRange: DateRange | undefined, option
                     return;
                 }
 
-                // Calculate remaining loading time to meet minimum duration
-                const elapsedTime = Date.now() - loadingStartTime;
-                const remainingTime = Math.max(0, minLoadingDuration - elapsedTime);
-
-                // Wait for minimum loading duration if needed
-                if (remainingTime > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, remainingTime));
-                }
-
-                // Check again if request is still current after delay
-                if (currentRequestRef.current !== requestId || !isMountedRef.current) {
-                    return;
-                }
 
                 if (result.error) {
                     setError(result.error);
                     setData(null);
                     setRawApiData(null);
-                    onError?.(result.error);
-                    onApiComplete?.(false);
                 } else {
                     setData(result.data);
                     setRawApiData(result.rawData || null); // Store the raw API data
                     setError(null);
-                    onApiComplete?.(true);
                 }
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Failed to fetch monthly chart data';
@@ -170,8 +141,6 @@ export const useMonthlyChart = (selectedDateRange: DateRange | undefined, option
                     setError(errorMessage);
                     setData(null);
                     setRawApiData(null);
-                    onError?.(errorMessage);
-                    onApiComplete?.(false);
                 }
             } finally {
                 if (currentRequestRef.current === requestId && isMountedRef.current) {
@@ -179,7 +148,7 @@ export const useMonthlyChart = (selectedDateRange: DateRange | undefined, option
                 }
             }
         },
-        [getApiDateStrings, enableRetry, maxRetries, minLoadingDuration],
+        [getApiDateStrings, enableRetry, maxRetries],
     );
 
     /**

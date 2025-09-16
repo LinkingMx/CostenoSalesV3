@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { useDailyChartContext } from '@/contexts/daily-chart-context';
+import { useMinimumLoadingDuration } from '@/hooks/use-minimum-loading-duration';
 import * as React from 'react';
 import { SalesComparisonError } from './components/sales-comparison-error';
 import { SalesComparisonHeader } from './components/sales-comparison-header';
@@ -46,7 +47,10 @@ export function DailySalesComparison({
     useMockData = false, // Allow override for testing
 }: Omit<DailySalesComparisonProps, 'selectedDateRange'>) {
     // Get shared data from context (single API call)
-    const { data: apiData, isLoading, error, refetch, isValidForDailyComponents } = useDailyChartContext();
+    const { data: apiData, isLoading: actualIsLoading, error, refetch, isValidForDailyComponents } = useDailyChartContext();
+
+    // Enhanced loading state with minimum duration for better UX
+    const isLoading = useMinimumLoadingDuration(actualIsLoading, 3000);
 
     // Get the selected date from context data
     const selectedDate = React.useMemo(() => {

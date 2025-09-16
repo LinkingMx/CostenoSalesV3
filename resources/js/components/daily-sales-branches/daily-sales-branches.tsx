@@ -2,9 +2,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DateRangeProvider } from '@/contexts/date-range-context';
+import { useMinimumLoadingDuration } from '@/hooks/use-minimum-loading-duration';
 import { AlertCircle, Building, RefreshCw } from 'lucide-react';
 import * as React from 'react';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
+import { DailySalesBranchesSkeleton } from './components/daily-sales-branches-skeleton';
 import { useDailyBranchesSimple } from './hooks/use-daily-branches-simple';
 import type { DailySalesBranchesProps } from './types';
 
@@ -49,7 +51,10 @@ import type { DailySalesBranchesProps } from './types';
  */
 export function DailySalesBranches({ selectedDateRange, branches: staticBranches }: DailySalesBranchesProps) {
     // Use simple API hook (no complex context needed)
-    const { branchesData, isLoading, error, isValidSingleDay, isToday, refetch } = useDailyBranchesSimple(selectedDateRange);
+    const { branchesData, isLoading: actualIsLoading, error, isValidSingleDay, isToday, refetch } = useDailyBranchesSimple(selectedDateRange);
+
+    // Enhanced loading state with minimum duration for better UX
+    const isLoading = useMinimumLoadingDuration(actualIsLoading, 3000);
 
     // Use static branches if provided, otherwise use API data
     const displayBranches = staticBranches || branchesData;
@@ -131,32 +136,9 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
         </div>
     );
 
-    // Loading state
+    // Enhanced loading state with modern skeleton
     if (isLoading && sortedBranches.length === 0) {
-        return (
-            <Card className="w-full border-border">
-                <CardContent className="px-4 py-3">
-                    <HeaderSection showRefreshButton />
-                    <div className="space-y-3">
-                        {/* Loading skeleton */}
-                        {[1, 2, 3].map((index) => (
-                            <div key={index} className="animate-pulse rounded-lg border border-border bg-muted p-3">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="h-9 w-9 rounded-full bg-gray-300" />
-                                        <div className="h-4 w-32 rounded bg-gray-300" />
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="mb-1 h-5 w-20 rounded bg-gray-300" />
-                                        <div className="h-4 w-12 rounded bg-gray-300" />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        );
+        return <DailySalesBranchesSkeleton itemCount={3} />;
     }
 
     // Error state

@@ -207,4 +207,49 @@
             opacity: 0.8;
         }
     }
+
+    /* Modern shimmer animation for skeleton loading states */
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .animate-shimmer {
+        animation: shimmer 2s ease-in-out infinite;
+    }
+
+    /* Enhanced pulse animation for skeleton elements */
+    @keyframes enhanced-pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    .animate-enhanced-pulse {
+        animation: enhanced-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Staggered animation for multiple skeleton items */
+    .skeleton-stagger-1 {
+        animation-delay: 100ms;
+    }
+
+    .skeleton-stagger-2 {
+        animation-delay: 200ms;
+    }
+
+    .skeleton-stagger-3 {
+        animation-delay: 300ms;
+    }
+
+    .skeleton-stagger-4 {
+        animation-delay: 400ms;
+    }
 }

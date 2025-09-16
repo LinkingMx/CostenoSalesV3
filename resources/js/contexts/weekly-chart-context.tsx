@@ -5,7 +5,6 @@
 
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { WeeklyChartData } from '@/components/weekly-chart-comparison/types';
-import { useApiLoadingContext } from '@/contexts/api-loading-context';
 import { useWeeklyChart } from '@/hooks/use-weekly-chart';
 import React, { createContext, ReactNode, useContext } from 'react';
 
@@ -24,47 +23,16 @@ const WeeklyChartContext = createContext<WeeklyChartContextValue | null>(null);
 interface WeeklyChartProviderProps {
     children: ReactNode;
     selectedDateRange: DateRange | undefined;
-    skipLoading?: boolean;
 }
 
 /**
  * Provider component that makes a single API call and shares the weekly chart data
- * Integrated with global API loading tracking system
  */
-export const WeeklyChartProvider: React.FC<WeeklyChartProviderProps> = React.memo(({ children, selectedDateRange, skipLoading = false }) => {
-    const { registerApiCall, completeApiCall } = useApiLoadingContext();
-
-    const onApiStart = React.useCallback(() => {
-        if (!skipLoading) {
-            registerApiCall('weekly-chart-shared-api', 'WeeklyChartProvider', {
-                endpoint: 'main_dashboard_data',
-                priority: 'medium',
-                description: 'Weekly chart comparison data for 3-week analysis',
-            });
-        }
-    }, [registerApiCall, skipLoading]);
-
-    const onApiComplete = React.useCallback(
-        (success: boolean) => {
-            if (!skipLoading) {
-                completeApiCall('weekly-chart-shared-api', success);
-            }
-        },
-        [completeApiCall, skipLoading],
-    );
-
-    const onError = React.useCallback(() => {
-        // Silently handle errors
-    }, []);
-
+export const WeeklyChartProvider: React.FC<WeeklyChartProviderProps> = React.memo(({ children, selectedDateRange }) => {
     const weeklyChartData = useWeeklyChart(selectedDateRange, {
         enableRetry: true,
         maxRetries: 3,
         debounceMs: 300,
-        minLoadingDuration: 2000,
-        onApiStart,
-        onApiComplete,
-        onError,
     });
 
     return <WeeklyChartContext.Provider value={weeklyChartData}>{children}</WeeklyChartContext.Provider>;
