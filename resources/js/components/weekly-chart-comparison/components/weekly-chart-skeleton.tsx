@@ -5,6 +5,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import * as React from 'react';
+import { WeeklyChartHeader } from './weekly-chart-header';
 
 interface WeeklyChartSkeletonProps {
     /** Chart height in pixels */
@@ -24,7 +25,7 @@ interface WeeklyChartSkeletonProps {
  * @description Key features:
  * - Animated skeleton matching chart structure
  * - Multi-line chart skeleton with 3 lines
- * - Header skeleton with icon and text placeholders
+ * - Shows real header immediately for better UX
  * - Day labels skeleton for x-axis
  * - Grid lines and legend skeleton
  * - Consistent styling with actual chart component
@@ -49,23 +50,18 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
     return (
         <Card className="w-full border-border">
             <CardContent className="px-4 py-3">
-                {/* Header skeleton */}
-                <div className="mb-4 flex items-center gap-3">
-                    <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
-                    <div className="space-y-2">
-                        <div className="h-5 w-36 animate-pulse rounded bg-muted" />
-                        <div className="h-3 w-52 animate-pulse rounded bg-muted" />
-                    </div>
-                </div>
+                {/* Real header - shown immediately for better UX */}
+                <WeeklyChartHeader />
+
 
                 {/* Chart container skeleton */}
-                <div className="relative overflow-hidden rounded-lg bg-muted/10" style={{ height }}>
+                <div className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-b from-card to-card/80" style={{ height }}>
                     {/* Legend skeleton */}
                     <div className="absolute top-4 right-4 flex flex-col space-y-2">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="flex items-center gap-2">
-                                <div className="h-3 w-3 animate-pulse rounded-full bg-muted" />
-                                <div className="h-3 w-16 animate-pulse rounded bg-muted" />
+                                <div className="h-3 w-3 animate-pulse rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20" />
+                                <div className="h-3 w-16 animate-pulse rounded bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/15" />
                             </div>
                         ))}
                     </div>
@@ -73,9 +69,9 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                     {/* Chart area */}
                     <div className="absolute inset-0 p-4">
                         {/* Grid lines skeleton */}
-                        <div className="absolute inset-4 flex flex-col justify-between">
+                        <div className="absolute inset-4 flex flex-col justify-between opacity-40">
                             {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="h-px animate-pulse bg-border/20" style={{ animationDelay: `${i * 100}ms` }} />
+                                <div key={i} className="h-px animate-pulse bg-primary/15" style={{ animationDelay: `${i * 100}ms` }} />
                             ))}
                         </div>
 
@@ -89,7 +85,7 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                                         {[1, 2, 3].map((lineIndex) => (
                                             <div
                                                 key={lineIndex}
-                                                className="h-2 w-2 animate-pulse rounded-full bg-muted"
+                                                className="h-2 w-2 animate-pulse rounded-full bg-gradient-to-r from-primary/30 to-primary/20 border border-primary/25"
                                                 style={{
                                                     animationDelay: `${(dayIndex * 3 + lineIndex) * 50}ms`,
                                                     transform: `translateY(-${generateRandomHeight()}px)`,
@@ -99,7 +95,7 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                                     </div>
 
                                     {/* Day label skeleton */}
-                                    <div className="h-3 w-8 animate-pulse rounded bg-muted" />
+                                    <div className="h-3 w-8 animate-pulse rounded bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/15" />
                                 </div>
                             ))}
                         </div>
@@ -118,10 +114,10 @@ export const WeeklyChartSkeleton: React.FC<WeeklyChartSkeletonProps> = ({ height
                       ${height * 0.5} ${height * 0.5}
                       Q ${height * 0.7} ${height * 0.3}
                       ${height * 0.9} ${height * 0.4}`}
-                                    stroke="currentColor"
+                                    stroke="hsl(var(--primary))"
                                     strokeWidth="2"
                                     fill="none"
-                                    className="animate-pulse text-muted opacity-30"
+                                    className="animate-pulse opacity-20"
                                     style={{ animationDelay: `${lineIndex * 200}ms` }}
                                 />
                             ))}

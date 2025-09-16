@@ -15,7 +15,7 @@ import type { MonthlyChartSkeletonProps } from '../types';
  */
 export const MonthlyChartSkeleton = React.memo(function MonthlyChartSkeleton({ height = 300, className = '' }: MonthlyChartSkeletonProps) {
     return (
-        <div className={`w-full rounded-xl border border-border bg-card p-6 ${className}`}>
+        <div className={`w-full rounded-xl border border-primary/20 bg-gradient-to-b from-card to-card/80 p-6 ${className}`}>
             {/* Header skeleton */}
             <div className="mb-6">
                 <div className="flex items-center gap-3">
@@ -33,8 +33,8 @@ export const MonthlyChartSkeleton = React.memo(function MonthlyChartSkeleton({ h
                 <div className="flex h-full items-end justify-between px-4">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="flex flex-col items-center gap-2">
-                            <Skeleton
-                                className="w-1"
+                            <div
+                                className="w-1 bg-gradient-to-t from-primary/40 via-primary/25 to-primary/15 animate-pulse border border-primary/20 rounded-sm"
                                 style={{
                                     height: `${Math.random() * 60 + 40}%`,
                                 }}
@@ -47,15 +47,15 @@ export const MonthlyChartSkeleton = React.memo(function MonthlyChartSkeleton({ h
                 {/* Legend skeleton */}
                 <div className="flex justify-center gap-6 pt-4">
                     <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-3 rounded-full" />
+                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20 animate-pulse" />
                         <Skeleton className="h-3 w-20" />
                     </div>
                     <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-3 rounded-full" />
+                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20 animate-pulse" />
                         <Skeleton className="h-3 w-20" />
                     </div>
                     <div className="flex items-center gap-2">
-                        <Skeleton className="h-3 w-3 rounded-full" />
+                        <div className="h-3 w-3 rounded-full bg-gradient-to-r from-primary/25 to-primary/15 border border-primary/20 animate-pulse" />
                         <Skeleton className="h-3 w-24" />
                     </div>
                 </div>

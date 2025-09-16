@@ -103,7 +103,7 @@ export const WeeklyChartComparison = React.memo(function WeeklyChartComparison({
 
     // Show loading skeleton while data is being fetched
     if (isLoading) {
-        return <WeeklyChartSkeleton height={300} />;
+        return <WeeklyChartSkeleton height={225} />;
     }
 
     // Show error state with retry option

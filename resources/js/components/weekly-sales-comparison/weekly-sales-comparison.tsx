@@ -3,6 +3,7 @@ import { isCompleteWeekSelected } from '@/components/weekly-chart-comparison/uti
 import { useWeeklyChartContext } from '@/contexts/weekly-chart-context';
 import * as React from 'react';
 import { WeeklyComparisonHeader } from './components/weekly-comparison-header';
+import { WeeklySalesComparisonSkeleton } from './components/weekly-sales-comparison-skeleton';
 import type { WeeklySalesComparisonProps, WeeklySummaryData } from './types';
 import { formatWeeklySalesAmount, transformApiDataToWeeklySummary } from './utils';
 
@@ -64,20 +65,9 @@ export function WeeklySalesComparison({ selectedDateRange }: WeeklySalesComparis
         return null;
     }
 
-    // If still loading but no data, show loading state
+    // If still loading but no data, show loading skeleton
     if (isLoading && weeklySummaryData.length === 0) {
-        return (
-            <Card className="w-full">
-                <CardContent className="px-4 py-3">
-                    <MemoizedWeeklyComparisonHeader />
-                    <div className="space-y-2" role="region" aria-label="Cargando comparación de ventas semanales">
-                        <div className="flex items-center justify-center py-8">
-                            <div className="text-sm text-muted-foreground">Cargando datos semanales...</div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+        return <WeeklySalesComparisonSkeleton />;
     }
 
     // If not loading but still no data, don't show the component

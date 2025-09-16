@@ -40,28 +40,28 @@ export function DailyChartSkeleton({
 
             {/* Enhanced Chart Container */}
             <div
-                className="relative overflow-hidden rounded-lg bg-gradient-to-b from-muted/10 to-muted/20 border border-border/50"
+                className="relative overflow-hidden rounded-lg border border-primary/20 bg-gradient-to-br from-card via-primary/5 to-card shadow-sm"
                 style={{ height }}
             >
                 {/* Background grid pattern */}
                 <div className="absolute inset-0">
                     {/* Horizontal grid lines */}
-                    <div className="absolute inset-0 flex flex-col justify-between py-4 opacity-30">
+                    <div className="absolute inset-0 flex flex-col justify-between py-4 opacity-60">
                         {Array.from({ length: 5 }).map((_, i) => (
-                            <SkeletonShimmer
+                            <div
                                 key={`grid-h-${i}`}
-                                className="h-px w-full bg-border/20"
+                                className="h-px w-full bg-primary/25 animate-pulse shadow-sm"
                                 style={getStaggeredDelay(i, 50)}
                             />
                         ))}
                     </div>
 
                     {/* Vertical grid lines */}
-                    <div className="absolute inset-0 flex justify-between px-8 opacity-20">
+                    <div className="absolute inset-0 flex justify-between px-8 opacity-50">
                         {Array.from({ length: barCount }).map((_, i) => (
-                            <SkeletonShimmer
+                            <div
                                 key={`grid-v-${i}`}
-                                className="w-px h-full bg-border/20"
+                                className="w-px h-full bg-primary/25 animate-pulse shadow-sm"
                                 style={getStaggeredDelay(i, 75)}
                             />
                         ))}
@@ -79,17 +79,17 @@ export function DailyChartSkeleton({
                                 ...getStaggeredDelay(i, 200)
                             }}
                         >
-                            {/* Bar with gradient and enhanced styling */}
+                            {/* Bar with enhanced gradient and styling */}
                             <div
-                                className="w-full rounded-t-md bg-gradient-to-t from-primary/30 via-primary/20 to-primary/10 animate-shimmer relative overflow-hidden"
+                                className="w-full rounded-t-md bg-gradient-to-t from-primary/50 via-primary/35 to-primary/25 animate-shimmer relative overflow-hidden border border-primary/30 shadow-md"
                                 style={{ height: `${barHeight}%` }}
                             >
-                                {/* Shimmer overlay effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" />
+                                {/* Enhanced shimmer overlay effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/25 to-transparent animate-shimmer" />
 
-                                {/* Highlight bar on selected (first) item */}
+                                {/* Highlight bar on selected (first) item with improved visibility */}
                                 {i === 0 && (
-                                    <div className="absolute inset-0 bg-primary/20 animate-enhanced-pulse" />
+                                    <div className="absolute inset-0 bg-primary/40 animate-enhanced-pulse border border-primary/35 shadow-lg" />
                                 )}
                             </div>
 
@@ -102,7 +102,7 @@ export function DailyChartSkeleton({
                 </div>
 
                 {/* Chart value indicators on Y-axis */}
-                <div className="absolute left-2 top-4 bottom-6 flex flex-col justify-between opacity-40">
+                <div className="absolute left-2 top-4 bottom-6 flex flex-col justify-between opacity-50">
                     {Array.from({ length: 4 }).map((_, i) => (
                         <SkeletonShimmer
                             key={`y-label-${i}`}
@@ -116,8 +116,8 @@ export function DailyChartSkeleton({
             {/* Loading progress indicator */}
             <div className="mt-3 flex items-center justify-center text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                    <SkeletonShimmer className="h-4 w-4 rounded animate-spin" />
-                    <span className="opacity-70">Generando comparación diaria...</span>
+                    <SkeletonShimmer className="h-4 w-4 rounded-full animate-spin shadow-sm" />
+                    <span className="opacity-75 font-medium">Generando comparación diaria...</span>
                 </div>
             </div>
         </DailySkeletonBase>

@@ -14,8 +14,15 @@ export const SkeletonShimmer = React.memo(({
 }: React.ComponentProps<"div">) => (
     <div
         className={cn(
-            "animate-pulse rounded-md bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%]",
-            "animate-shimmer",
+            "animate-pulse rounded-md",
+            // Enhanced visibility with primary color gradients and borders
+            "bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20",
+            "border border-primary/15",
+            // Theme-aware enhancements
+            "dark:from-primary/25 dark:via-primary/15 dark:to-primary/25",
+            "dark:border-primary/20",
+            // Shimmer animation for better loading indication
+            "bg-[length:200%_100%] animate-shimmer",
             className
         )}
         {...props}

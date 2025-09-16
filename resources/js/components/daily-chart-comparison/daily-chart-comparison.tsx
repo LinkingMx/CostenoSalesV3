@@ -153,8 +153,8 @@ export function DailyChartComparison({
         return null;
     }
 
-    // Show loading skeleton while fetching data
-    if (isLoading && !displayData) {
+    // Show loading skeleton while fetching data (regardless of cached data)
+    if (isLoading) {
         return <DailyChartSkeleton height={210} />;
     }
 
