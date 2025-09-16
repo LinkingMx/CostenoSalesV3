@@ -125,8 +125,8 @@ export function MainFilterCalendar({ value, onChange, placeholder = 'Seleccionar
 
                 if (process.env.NODE_ENV === 'development') {
                     console.log('🗓️ MainFilterCalendar: Initializing with complete today range:', {
-                        from: completeRange.from.toISOString(),
-                        to: completeRange.to.toISOString(),
+                        from: completeRange.from?.toISOString(),
+                        to: completeRange.to?.toISOString(),
                         originalRange: {
                             from: todayRange.from?.toISOString(),
                             to: todayRange.to?.toISOString(),

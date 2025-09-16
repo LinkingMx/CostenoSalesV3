@@ -120,8 +120,8 @@ export function DailySalesBranches({ selectedDateRange, branches: staticBranches
     const HeaderSection = ({ showRefreshButton = false }: { showRefreshButton?: boolean }) => (
         <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                    <Building className="h-4 w-4 text-primary" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                    <Building className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div className="flex flex-col">
                     <h2 className="text-base leading-none font-semibold tracking-tight text-foreground">Ventas por sucursal (Por día)</h2>

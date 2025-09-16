@@ -42,21 +42,21 @@ export const DailySalesBranchesSkeleton = React.memo(({
 
     return (
         <DailySkeletonBase aria-label={SKELETON_LOADING_TEXTS.branches}>
-            {/* Header Section - matches actual component */}
+            {/* Real Header Component - No skeleton loading */}
             <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    {/* Icon container with actual icon for better visual continuity */}
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted animate-enhanced-pulse">
-                        <Building className="h-4 w-4 text-primary opacity-60" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                        <Building className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    {/* Title and subtitle placeholders */}
-                    <div className="flex flex-col gap-1">
-                        <SkeletonShimmer className="h-5 w-56 rounded" />
-                        <SkeletonShimmer className="h-4 w-40 rounded" />
+                    <div className="flex flex-col">
+                        <h2 className="text-base leading-none font-semibold tracking-tight text-foreground">
+                            Ventas por sucursal (Por día)
+                        </h2>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
+                            Ventas diarias por sucursal detalladas
+                        </p>
                     </div>
                 </div>
-                {/* Refresh button placeholder */}
-                <SkeletonShimmer className="h-8 w-8 rounded" />
             </div>
 
             {/* Branch Cards Section */}

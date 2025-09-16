@@ -135,16 +135,18 @@ export function useDateRange({ value, defaultPeriod = 'today', onAutoApply }: Us
     /**
      * Handles day clicks on the calendar for range selection.
      * Always creates proper date ranges, never single-day selections.
+     * ALWAYS creates complete ranges (both from and to dates) for any single click.
      *
      * @function handleDayClick
      * @param {number} day - Day of month that was clicked (1-31)
      *
      * @description Selection logic:
-     * 1. No existing range OR complete range exists → Start new range (only 'from' date set)
+     * 1. No existing range OR complete range exists → Create same-day range (from === to === clicked date)
      * 2. Partial range (only 'from' date) → Complete range by setting 'to' date with auto-ordering
      * 3. Clicking same day as 'from' when pending → Create same-day range (from === to)
      * 4. Always switches to 'custom' period when manually selecting dates
      * 5. ALWAYS ensures both from and to are set (no single-day selections allowed)
+     * 6. Single click always creates a complete same-day range for immediate use
      */
     const handleDayClick = React.useCallback(
         (day: number) => {
@@ -152,13 +154,14 @@ export function useDateRange({ value, defaultPeriod = 'today', onAutoApply }: Us
             // Switch to custom period since user is manually selecting
             setSelectedPeriod('custom');
 
-            // Case 1: Start new range selection - set only 'from' date (pending state)
+            // Case 1: No existing range OR complete range exists → Create same-day range immediately
             if (!tempRange?.from || (tempRange.from && tempRange.to)) {
-                setTempRange({ from: clickedDate });
+                // Always create a complete same-day range for immediate use
+                setTempRange({ from: clickedDate, to: clickedDate });
                 return;
             }
 
-            // Case 2: Complete range selection with existing 'from' date
+            // Case 2: Complete range selection with existing 'from' date (pending state)
             if (tempRange.from && !tempRange.to) {
                 const fromTime = tempRange.from.getTime();
                 const clickedTime = clickedDate.getTime();

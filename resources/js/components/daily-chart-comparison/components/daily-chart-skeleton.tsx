@@ -4,8 +4,8 @@
  */
 
 import { DailySkeletonBase, getStaggeredDelay, SkeletonShimmer, SKELETON_LOADING_TEXTS } from '@/components/ui/daily-skeleton-base';
-import { BarChart3 } from 'lucide-react';
 import * as React from 'react';
+import { DailyChartHeader } from './daily-chart-header';
 
 /**
  * Enhanced loading skeleton for the daily chart comparison component.
@@ -35,20 +35,8 @@ export function DailyChartSkeleton({
 
     return (
         <DailySkeletonBase aria-label={SKELETON_LOADING_TEXTS.chart}>
-            {/* Enhanced Header Section */}
-            <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    {/* Icon container with actual icon for continuity */}
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted animate-enhanced-pulse">
-                        <BarChart3 className="h-4 w-4 text-primary opacity-60" />
-                    </div>
-                    {/* Title and subtitle with improved sizing */}
-                    <div className="flex flex-col gap-1">
-                        <SkeletonShimmer className="h-5 w-52 rounded" />
-                        <SkeletonShimmer className="h-4 w-36 rounded" />
-                    </div>
-                </div>
-            </div>
+            {/* Real Header Component - No skeleton loading */}
+            <DailyChartHeader />
 
             {/* Enhanced Chart Container */}
             <div

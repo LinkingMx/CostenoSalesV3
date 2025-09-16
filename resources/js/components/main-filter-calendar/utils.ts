@@ -220,16 +220,16 @@ export const formatDate = (date: Date): string => {
  *
  * @description Return formats:
  * - Empty range: "" (empty string)
- * - Single date: "15 ene, 2025"
- * - Same day range: "15 ene, 2025" (treats as single date)
- * - Date range: "15 ene, 2025 - 20 ene, 2025"
+ * - Single date: "15 ene, 2025 al 15 ene, 2025" (shows as range)
+ * - Same day range: "15 ene, 2025 al 15 ene, 2025" (explicit same-day range)
+ * - Date range: "15 ene, 2025 al 20 ene, 2025"
  *
  * @example
  * formatDateRange({ from: new Date('2025-01-15') })
- * // Returns: "15 ene, 2025"
+ * // Returns: "15 ene, 2025 al 15 ene, 2025"
  *
  * formatDateRange({ from: new Date('2025-01-15'), to: new Date('2025-01-20') })
- * // Returns: "15 ene, 2025 - 20 ene, 2025"
+ * // Returns: "15 ene, 2025 al 20 ene, 2025"
  *
  * formatDateRange(undefined)
  * // Returns: ""
@@ -239,13 +239,14 @@ export const formatDateRange = (range: DateRange | undefined): string => {
 
     const fromStr = formatDate(range.from);
 
-    // Handle single date or same-day range
-    if (!range.to || range.from.getTime() === range.to.getTime()) {
-        return fromStr;
+    // Always show as range format, even for same-day selections
+    if (!range.to) {
+        // If only 'from' date exists, show as same-day range
+        return `${fromStr} al ${fromStr}`;
     }
 
     const toStr = formatDate(range.to);
-    return `${fromStr} - ${toStr}`;
+    return `${fromStr} al ${toStr}`;
 };
 
 /**

@@ -1,6 +1,6 @@
 import { DailySkeletonBase, getStaggeredDelay, SkeletonShimmer, SKELETON_LOADING_TEXTS } from '@/components/ui/daily-skeleton-base';
-import { BarChart3 } from 'lucide-react';
 import * as React from 'react';
+import { SalesComparisonHeader } from './sales-comparison-header';
 
 /**
  * Enhanced SalesComparisonSkeleton - Modern loading skeleton for daily sales comparison component.
@@ -44,20 +44,8 @@ export function SalesComparisonSkeleton({
 
     return (
         <DailySkeletonBase aria-label={SKELETON_LOADING_TEXTS.comparison}>
-            {/* Enhanced Header Section */}
-            <div className="mb-3 flex items-start justify-between">
-                <div className="flex items-start gap-2">
-                    {/* Icon container with improved styling */}
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted animate-enhanced-pulse">
-                        <BarChart3 className="h-4 w-4 text-primary opacity-60" />
-                    </div>
-                    {/* Title and subtitle with better proportions */}
-                    <div className="flex flex-col gap-1">
-                        <SkeletonShimmer className="h-5 w-48 rounded" />
-                        <SkeletonShimmer className="h-4 w-32 rounded" />
-                    </div>
-                </div>
-            </div>
+            {/* Real Header Component - No skeleton loading */}
+            <SalesComparisonHeader />
 
             {/* Enhanced Sales Cards Section */}
             <div className="space-y-2" role="region" aria-label="Cargando comparación de ventas">
