@@ -5,7 +5,7 @@
  */
 
 import type { SalesCustomData } from '@/components/custom-sales-comparison/types';
-import { formatDateForCustomCard, getDayName } from '@/components/custom-sales-comparison/utils/formatting';
+import { formatDateForCustomCard, getDayName } from '@/components/custom-sales-comparison/lib/currency-formatting';
 import { apiPost } from '../api/client';
 import { API_ENDPOINTS } from '../api/endpoints';
 import { ApiError } from '../api/types';

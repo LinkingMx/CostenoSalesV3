@@ -1,12 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { fetchCustomSalesComparisonData } from '@/lib/services/custom-sales-comparison.service';
-import { formatDateForApi } from '@/lib/services/main-dashboard.service';
 import * as React from 'react';
 import { CustomComparisonHeader } from './components/custom-comparison-header';
 import { CustomSalesComparisonSkeleton } from './components/custom-sales-comparison-skeleton';
 import { SalesCustomCard } from './components/sales-custom-card';
-import type { CustomSalesComparisonProps, SalesCustomData } from './types';
-import { isCustomRangeSelected, validateCustomDateRange, validateCustomSalesData } from './utils/validation';
+import { useCustomSalesComparison } from './hooks/use-custom-sales-comparison';
+import type { CustomSalesComparisonProps } from './types';
 
 // Performance: Pre-memoized header component to prevent unnecessary re-renders
 const MemoizedCustomComparisonHeader = React.memo(CustomComparisonHeader);
@@ -78,89 +76,16 @@ MemoizedSalesCustomCard.displayName = 'MemoizedSalesCustomCard';
  * @see {@link isCustomRangeSelected} for range validation logic
  */
 export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSalesComparisonProps) {
-    const [displayData, setDisplayData] = React.useState<SalesCustomData[]>([]);
-    const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState<string | undefined>();
+    // Use dedicated hook for business logic abstraction
+    const { customSalesData, isLoading, error, isValidCustomRange } = useCustomSalesComparison(selectedDateRange, salesData);
 
-    // Fetch real API data when selectedDateRange changes
-    React.useEffect(() => {
-        if (!isCustomRangeSelected(selectedDateRange)) {
-            // Only clear data if there's actually data to clear
-            setDisplayData((prev) => (prev.length > 0 ? [] : prev));
-            setError((prev) => (prev ? undefined : prev));
-            return;
-        }
-
-        // If custom salesData is provided via props, use it instead of fetching
-        if (salesData && salesData.length > 0) {
-            const validation = validateCustomSalesData(salesData);
-            if (validation.isValid) {
-                setDisplayData(salesData);
-                setError(undefined);
-                return;
-            } else {
-                console.warn('CustomSalesComparison: Custom sales data validation failed:', validation.errors);
-                // Continue with API fetch as fallback
-            }
-        }
-
-        // Fetch data from API
-        const fetchData = async () => {
-            if (!selectedDateRange?.from || !selectedDateRange?.to) return;
-
-            setLoading(true);
-            setError(undefined);
-
-            try {
-                const startDate = formatDateForApi(selectedDateRange.from);
-                const endDate = formatDateForApi(selectedDateRange.to);
-
-                console.log('🚀 CustomSalesComparison: Fetching data for range:', { startDate, endDate });
-
-                const result = await fetchCustomSalesComparisonData(startDate, endDate);
-
-                if (result.error) {
-                    setError(result.error);
-                    setDisplayData([]);
-                } else {
-                    setDisplayData(result.data);
-                    setError(undefined);
-
-                    // Validate the fetched data
-                    const validation = validateCustomSalesData(result.data);
-                    if (!validation.isValid) {
-                        console.warn('CustomSalesComparison: Fetched data validation failed:', validation.errors);
-                    }
-                    if (validation.warnings.length > 0) {
-                        console.warn('CustomSalesComparison: Data warnings:', validation.warnings);
-                    }
-                }
-            } catch (fetchError) {
-                console.error('CustomSalesComparison: Failed to fetch data:', fetchError);
-                setError('Error al cargar los datos de ventas personalizadas');
-                setDisplayData([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [selectedDateRange, salesData]);
-
-    // Early return: Only proceed if custom range is selected
-    if (!isCustomRangeSelected(selectedDateRange)) {
-        return null;
-    }
-
-    // Validate date range before proceeding
-    const dateRangeValidation = validateCustomDateRange(selectedDateRange);
-    if (!dateRangeValidation.isValid) {
-        console.error('CustomSalesComparison: Custom date range validation failed:', dateRangeValidation.errors);
+    // Early return for performance - avoid unnecessary computations if not valid custom range
+    if (!isValidCustomRange) {
         return null;
     }
 
     // Loading state
-    if (loading) {
+    if (isLoading) {
         return <CustomSalesComparisonSkeleton />;
     }
 
@@ -181,14 +106,14 @@ export function CustomSalesComparison({ selectedDateRange, salesData }: CustomSa
                 )}
 
                 {/* Success state with data */}
-                {!error && displayData.length > 0 && (
+                {!error && customSalesData.length > 0 && (
                     <div className="space-y-2">
-                        <MemoizedSalesCustomCard data={displayData} dateRange={selectedDateRange!} isHighlighted={false} />
+                        <MemoizedSalesCustomCard data={customSalesData} dateRange={selectedDateRange!} isHighlighted={false} />
                     </div>
                 )}
 
                 {/* Empty state */}
-                {!error && displayData.length === 0 && (
+                {!error && customSalesData.length === 0 && (
                     <div className="flex items-center justify-center py-4">
                         <div className="text-center text-sm text-muted-foreground">
                             <p>No hay datos disponibles para el rango seleccionado</p>

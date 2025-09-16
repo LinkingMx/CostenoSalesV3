@@ -1,6 +1,6 @@
 import type { SalesCustomCardProps } from '../types';
-import { calculateCustomRangeSummary } from '../utils/data-generation';
-import { formatCustomDateRange, formatSalesAmount } from '../utils/formatting';
+import { calculateCustomRangeSummary } from '../lib/mock-data';
+import { formatCustomDateRange, formatSalesAmount } from '../lib/currency-formatting';
 
 /**
  * SalesCustomCard - Individual card component for displaying custom range sales data.

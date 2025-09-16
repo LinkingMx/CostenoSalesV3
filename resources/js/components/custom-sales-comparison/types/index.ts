@@ -160,3 +160,20 @@ export interface ValidationResult {
         rangeDays?: number;
     };
 }
+
+/**
+ * Return type for the useCustomSalesComparison hook
+ * @interface UseCustomSalesComparisonReturn
+ * @property {SalesCustomData[]} customSalesData - Array of custom sales data
+ * @property {boolean} isLoading - Loading state
+ * @property {string | undefined} error - Error message if any
+ * @property {boolean} isValidCustomRange - Whether the selected range is a valid custom range
+ * @property {() => void} refetch - Function to refetch data
+ */
+export interface UseCustomSalesComparisonReturn {
+    customSalesData: SalesCustomData[];
+    isLoading: boolean;
+    error: string | undefined;
+    isValidCustomRange: boolean;
+    refetch: () => void;
+}

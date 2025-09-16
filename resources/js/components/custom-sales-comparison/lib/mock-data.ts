@@ -1,6 +1,6 @@
 import type { DateRange } from '@/components/main-filter-calendar';
 import type { SalesCustomData } from '../types';
-import { formatDateForCustomCard, getDayName } from './formatting';
+import { formatDateForCustomCard, getDayName } from './currency-formatting';
 
 /**
  * Generates an array of dates within a custom date range.

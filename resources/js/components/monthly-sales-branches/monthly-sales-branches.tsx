@@ -1,9 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { DateRangeProvider } from '@/contexts/date-range-context';
 import { BranchCollapsibleItem } from './components/branch-collapsible-item';
+import { BranchFilters } from './components/branch-filters';
+import { BranchSummaryCard } from './components/branch-summary-card';
 import { MonthlyBranchesError } from './components/monthly-branches-error';
 import { MonthlyBranchesLoadingSkeleton } from './components/monthly-branches-loading-skeleton';
 import { MonthlySalesBranchesHeader } from './components/monthly-sales-branches-header';
+import { useBranchFilters } from './hooks/use-branch-filters';
 import { useMonthlyBranches } from './hooks/use-monthly-branches';
 import type { MonthlySalesBranchesProps } from './types';
 
@@ -46,6 +49,16 @@ export function MonthlySalesBranches({ selectedDateRange }: MonthlySalesBranches
     // Use custom hook for API integration and state management
     const { branchesData, isLoading, error, isValidCompleteMonth, isCurrentMonth, refetch } = useMonthlyBranches(selectedDateRange);
 
+    // Use filtering hook for client-side filtering
+    const {
+        filters,
+        setFilters,
+        filteredBranches,
+        filterOptions,
+        summary,
+        hasActiveFilters
+    } = useBranchFilters(branchesData);
+
     // Only render if exactly one month is selected (first to last day)
     if (!isValidCompleteMonth) {
         return null;
@@ -79,10 +92,24 @@ export function MonthlySalesBranches({ selectedDateRange }: MonthlySalesBranches
                 {/* Header section */}
                 <MonthlySalesBranchesHeader />
 
-                {/* Branch collapsibles with real API data */}
+                {/* Filter controls */}
+                <BranchFilters
+                    filters={filters}
+                    filterOptions={filterOptions}
+                    onFiltersChange={setFilters}
+                    disabled={isLoading}
+                />
+
+                {/* Summary card with filtered metrics */}
+                <BranchSummaryCard
+                    summary={summary}
+                    hasActiveFilters={hasActiveFilters}
+                />
+
+                {/* Branch collapsibles with filtered data */}
                 <DateRangeProvider dateRange={selectedDateRange}>
                     <div className="space-y-2" role="region" aria-label="Detalles de ventas por sucursal mensuales">
-                        {branchesData.map((branch) => (
+                        {filteredBranches.map((branch) => (
                             <BranchCollapsibleItem key={branch.id} branch={branch} isCurrentMonth={isCurrentMonth} />
                         ))}
                     </div>
