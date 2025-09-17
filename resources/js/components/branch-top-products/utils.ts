@@ -53,6 +53,16 @@ export function formatQuantity(quantity: number): string {
  * Filters out products with unit_cost less than 10 pesos
  */
 export function transformToTableRows(products: TopProduct[]): TopProductTableRow[] {
+    if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 BranchTopProducts Debug - Raw products received:', {
+            totalProducts: products.length,
+            productsWithLowCost: products.filter(p => p.unit_cost < 10).length,
+            productsWithHighCost: products.filter(p => p.unit_cost >= 10).length,
+            sampleProducts: products.slice(0, 3).map(p => ({ name: p.name, unit_cost: p.unit_cost, quantity: p.quantity })),
+            lowCostProducts: products.filter(p => p.unit_cost < 10).map(p => ({ name: p.name, unit_cost: p.unit_cost }))
+        });
+    }
+
     return products
         .filter((product) => product.unit_cost >= 10)
         .map((product) => ({
@@ -79,22 +89,54 @@ export function filterProductsBySearch(products: TopProductTableRow[], searchTer
  */
 export function validateProductsData(data: unknown): data is TopProduct[] {
     if (!Array.isArray(data)) {
+        if (process.env.NODE_ENV === 'development') {
+            console.error('🔍 BranchTopProducts Validation - Data is not an array:', typeof data);
+        }
         return false;
     }
 
-    return data.every(
-        (item) =>
-            typeof item === 'object' &&
-            typeof item.item_id === 'number' &&
-            typeof item.name === 'string' &&
-            typeof item.quantity === 'number' &&
-            typeof item.unit_cost === 'number' &&
-            typeof item.percentage === 'number' &&
-            item.name.length > 0 &&
-            item.quantity >= 0 &&
-            item.unit_cost >= 0 &&
-            item.percentage >= 0,
+    const isValid = data.every(
+        (item) => {
+            const validItem = typeof item === 'object' &&
+                item !== null &&
+                // item_id can be string or number (API sometimes returns empty string)
+                (typeof item.item_id === 'number' || typeof item.item_id === 'string') &&
+                typeof item.name === 'string' &&
+                typeof item.quantity === 'number' &&
+                typeof item.unit_cost === 'number' &&
+                typeof item.percentage === 'number' &&
+                item.name.length > 0 &&
+                item.quantity >= 0 &&
+                item.unit_cost >= 0 &&
+                item.percentage >= 0;
+
+            if (!validItem && process.env.NODE_ENV === 'development') {
+                console.error('🔍 BranchTopProducts Validation - Invalid item:', {
+                    item,
+                    checks: {
+                        isObject: typeof item === 'object' && item !== null,
+                        hasValidItemId: typeof item?.item_id === 'number' || typeof item?.item_id === 'string',
+                        hasValidName: typeof item?.name === 'string' && item?.name?.length > 0,
+                        hasValidQuantity: typeof item?.quantity === 'number' && item?.quantity >= 0,
+                        hasValidUnitCost: typeof item?.unit_cost === 'number' && item?.unit_cost >= 0,
+                        hasValidPercentage: typeof item?.percentage === 'number' && item?.percentage >= 0,
+                    }
+                });
+            }
+
+            return validItem;
+        }
     );
+
+    if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 BranchTopProducts Validation Result:', {
+            isValid,
+            dataLength: data.length,
+            sampleItem: data[0]
+        });
+    }
+
+    return isValid;
 }
 
 /**
@@ -112,7 +154,9 @@ export function truncateProductName(name: string, maxLength: number = 25): strin
  * Excludes products with unit_cost less than 10 pesos
  */
 export function calculateTotalSales(products: TopProduct[]): number {
-    return products.filter((product) => product.unit_cost >= 10).reduce((total, product) => total + product.quantity * product.unit_cost, 0);
+    return products
+        .filter((product) => product.unit_cost >= 10)
+        .reduce((total, product) => total + product.quantity * product.unit_cost, 0);
 }
 
 /**

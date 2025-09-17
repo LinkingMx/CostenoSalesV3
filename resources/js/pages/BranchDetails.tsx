@@ -5,14 +5,15 @@ import { MainFilterCalendar, type DateRange } from '@/components/main-filter-cal
 import { Button } from '@/components/ui/button';
 import { useBranchDetails } from '@/hooks/use-branch-details';
 import { useDashboardState } from '@/hooks/use-dashboard-state';
+import { fetchStoreDetailsWithCache } from '@/lib/services/branch-details.service';
 import { dashboard } from '@/routes';
 import { Head, router } from '@inertiajs/react';
 import { ArrowLeft, Building } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-// Import test utility in development
+// Import test utilities in development
 if (process.env.NODE_ENV === 'development') {
-    import('@/lib/services/test-branch-api');
+    import('@/lib/services/test-branch-api').catch(console.error);
 }
 
 interface BranchDetailsProps {
@@ -121,6 +122,111 @@ export default function BranchDetails({ id, name, region, dateRange }: BranchDet
             setCurrentDateRange(fallbackRange);
         }
     }, []); // Empty dependency array - run only on mount
+
+    // Add testing functions for debugging products API in development
+    useEffect(() => {
+        if (process.env.NODE_ENV === 'development') {
+            // Testing functions for branch products API
+            const testBranchProductsAPI = {
+                async testCurrentDate(storeId = 1) {
+                    console.log(`\n🧪 Testing Branch Products API - Current Date (17-09-2025)`);
+                    console.log(`🏪 Store ID: ${storeId}`);
+
+                    const testDateRange: DateRange = {
+                        from: new Date(2025, 8, 17), // September 17, 2025
+                        to: new Date(2025, 8, 17)
+                    };
+
+                    console.log(`📅 Date Range: ${testDateRange.from?.toLocaleDateString('es-MX')} - ${testDateRange.to?.toLocaleDateString('es-MX')}`);
+
+                    try {
+                        const startTime = Date.now();
+                        const data = await fetchStoreDetailsWithCache(storeId, testDateRange, {
+                            forceRefresh: true
+                        });
+                        const endTime = Date.now();
+
+                        console.log(`⏱️ Response Time: ${endTime - startTime}ms`);
+                        console.log(`✅ API Response Success`);
+
+                        const totalSales = (data.food?.money || 0) + (data.drinks?.money || 0) + (data.others?.money || 0);
+                        const topProducts = data.top_products || [];
+
+                        console.log(`💰 Total Sales: $${totalSales.toLocaleString('es-MX', { minimumFractionDigits: 2 })}`);
+                        console.log(`👥 Diners: ${data.diners || 0}`);
+                        console.log(`🎫 Tickets: Open=${data.ticket?.open || 0}, Closed=${data.ticket?.closed || 0}`);
+                        console.log(`📦 Products Count: ${topProducts.length}`);
+
+                        if (topProducts.length > 0) {
+                            console.log(`🏆 Top 3 Products:`);
+                            topProducts.slice(0, 3).forEach((product, index) => {
+                                console.log(`   ${index + 1}. ${product.name} - Qty: ${product.quantity} - $${product.unit_cost}`);
+                            });
+                        } else {
+                            console.log(`⚠️ NO PRODUCTS FOUND for this date range`);
+                            console.log(`🔍 Possible reasons:`);
+                            console.log(`   - No sales occurred on this date`);
+                            console.log(`   - Data hasn't been processed yet for current date`);
+                            console.log(`   - Store was closed`);
+                            console.log(`   - API data sync delay`);
+                        }
+
+                        console.log(`🏢 Store Info: ${data.brand || 'N/A'} - ${data.region || 'N/A'}`);
+                        console.log(`📊 Raw API Data:`, data);
+
+                        return data;
+                    } catch (error) {
+                        console.error(`❌ Test Failed:`, error);
+                        return null;
+                    }
+                },
+
+                async compareDates(storeId = 1) {
+                    console.log(`\n🔍 Comparing Multiple Dates for Store ${storeId}`);
+
+                    const dates = [
+                        { name: "Current Date (17-09-2025)", date: new Date(2025, 8, 17) },
+                        { name: "Previous Day (16-09-2025)", date: new Date(2025, 8, 16) },
+                        { name: "Day Before (15-09-2025)", date: new Date(2025, 8, 15) }
+                    ];
+
+                    for (const dateInfo of dates) {
+                        console.log(`\n📅 Testing: ${dateInfo.name}`);
+
+                        const testDateRange: DateRange = {
+                            from: dateInfo.date,
+                            to: dateInfo.date
+                        };
+
+                        try {
+                            const data = await fetchStoreDetailsWithCache(storeId, testDateRange, {
+                                forceRefresh: true
+                            });
+
+                            const totalSales = (data.food?.money || 0) + (data.drinks?.money || 0) + (data.others?.money || 0);
+                            const productsCount = data.top_products?.length || 0;
+
+                            console.log(`   💰 Sales: $${totalSales.toLocaleString('es-MX')} | 📦 Products: ${productsCount} | 👥 Diners: ${data.diners || 0}`);
+
+                        } catch (error) {
+                            console.error(`   ❌ Error:`, error instanceof Error ? error.message : error);
+                        }
+
+                        // Wait between requests
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+            };
+
+            // Assign to window for console access
+            (window as any).testBranchAPI = testBranchProductsAPI;
+
+            console.log(`🔧 Branch Products API Test functions loaded:`);
+            console.log(`   - testBranchAPI.testCurrentDate(storeId)`);
+            console.log(`   - testBranchAPI.compareDates(storeId)`);
+            console.log(`💡 Example: testBranchAPI.testCurrentDate(1)`);
+        }
+    }, []);
 
     const handleDateChange = React.useCallback(
         (range: DateRange | undefined) => {

@@ -30,7 +30,7 @@ export interface AverageMetrics {
 }
 
 export interface TopProduct {
-    item_id: number; // ID único del producto
+    item_id: number | string; // ID único del producto (API a veces devuelve string vacía)
     name: string; // Nombre del producto
     quantity: number; // Cantidad vendida (puede ser decimal para productos por kg)
     unit_cost: number; // Precio unitario en pesos

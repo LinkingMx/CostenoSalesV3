@@ -12,9 +12,9 @@ export function transformToTotalSalesData(data: StoreData): TotalSalesData {
     const openMoneyBeforeIVA = data.ticket?.open_money || 0;
     const closedMoneyBeforeIVA = data.ticket?.closed_money || 0;
 
-    // Agregar 16% de IVA a los valores (multiplicar por 1.16)
-    const openMoney = openMoneyBeforeIVA * 1.16;
-    const closedMoney = closedMoneyBeforeIVA * 1.16;
+    // Los valores ya incluyen IVA desde el API
+    const openMoney = openMoneyBeforeIVA;
+    const closedMoney = closedMoneyBeforeIVA;
     const totalSales = openMoney + closedMoney;
 
     const discounts = data.discounts || 0;
